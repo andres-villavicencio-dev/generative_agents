@@ -123,11 +123,26 @@ def generate_one_utterance(maze, init_persona, target_persona, retrieved, curr_c
 
   return x["utterance"], x["end"]
 
-def agent_chat_v2(maze, init_persona, target_persona): 
+def _conversation_should_end(utterance):
+  """Heuristic to detect conversation wrap-up phrases that indicate natural ending."""
+  if not utterance:
+    return False
+  utt_lower = utterance.lower()
+  end_phrases = [
+    "see you", "bye", "goodbye", "take care", "looking forward",
+    "sounds good", "see you then", "have a great", "talk to you later",
+    "catch you later", "until then", "have a good", "nice talking",
+    "great talking", "it was nice", "gotta go", "have to go",
+    "need to go", "i'll let you", "let me let you", "talk soon"
+  ]
+  return any(phrase in utt_lower for phrase in end_phrases)
+
+
+def agent_chat_v2(maze, init_persona, target_persona):
   curr_chat = []
   print ("July 23")
 
-  for i in range(8): 
+  for i in range(6):  # Reduced from 8 to limit runaway loops 
     focal_points = [f"{target_persona.scratch.name}"]
     retrieved = new_retrieve(init_persona, focal_points, 50)
     relationship = generate_summarize_agent_relationship(init_persona, target_persona, retrieved)
@@ -146,9 +161,8 @@ def agent_chat_v2(maze, init_persona, target_persona):
     utt, end = generate_one_utterance(maze, init_persona, target_persona, retrieved, curr_chat)
 
     curr_chat += [[init_persona.scratch.name, utt]]
-    if end:
+    if end or _conversation_should_end(utt):
       break
-
 
     focal_points = [f"{init_persona.scratch.name}"]
     retrieved = new_retrieve(target_persona, focal_points, 50)
@@ -168,7 +182,7 @@ def agent_chat_v2(maze, init_persona, target_persona):
     utt, end = generate_one_utterance(maze, target_persona, init_persona, retrieved, curr_chat)
 
     curr_chat += [[target_persona.scratch.name, utt]]
-    if end:
+    if end or _conversation_should_end(utt):
       break
 
   print ("July 23 PU")

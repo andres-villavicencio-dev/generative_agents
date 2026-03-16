@@ -28,7 +28,7 @@ import os
 import shutil
 import traceback
 
-from selenium import webdriver
+# from selenium import webdriver  # not needed for local run
 
 from global_methods import *
 from utils import *
@@ -276,7 +276,131 @@ class ReverieServer:
       time.sleep(self.server_sleep * 10)
 
 
-  def start_server(self, int_counter): 
+  def tick_needs(self):
+    """
+    Decay agent needs each simulation tick.
+    Called from the main simulation loop after each step.
+
+    Behavior:
+    - Loop over all personas
+    - Check if agent is sleeping (from act_description)
+    - Decay each need by its rate each tick
+    - Energy restores during sleep (+1/60 per tick), decays when awake
+    - Social only decays when not chatting_with anyone
+    - Hunger/hydration/bladder decay at 30% rate during sleep
+    - Clamp all values 0-100
+    """
+    for persona_name, persona in self.personas.items():
+      s = persona.scratch
+
+      # Guard for backwards compatibility
+      if not hasattr(s, "needs"):
+        continue
+
+      # Check if sleeping
+      is_sleeping = False
+      if s.act_description:
+        act_lower = s.act_description.lower()
+        is_sleeping = "sleep" in act_lower or "asleep" in act_lower or "in bed" in act_lower
+
+      # Check if chatting
+      is_chatting = s.chatting_with is not None
+
+      for need, rate in s.needs_decay_rates.items():
+        current_val = s.needs[need]
+
+        if need == "energy":
+          if is_sleeping:
+            # Energy restores during sleep
+            current_val += 1/60
+          else:
+            # Energy decays when awake
+            current_val -= rate
+        elif need == "social":
+          # Social only decays when not chatting
+          if not is_chatting:
+            current_val -= rate
+        elif need in ("hunger", "hydration", "bladder"):
+          # These decay at 30% rate during sleep
+          if is_sleeping:
+            current_val -= rate * 0.3
+          else:
+            current_val -= rate
+        else:
+          # hygiene, comfort, stimulation decay normally (but not during sleep for simplicity)
+          if not is_sleeping:
+            current_val -= rate
+
+        # Clamp to 0-100
+        s.needs[need] = max(0, min(100, current_val))
+
+
+  def satisfy_needs_for_action(self, persona, act_description):
+    """
+    Satisfy needs based on the action being performed.
+    Called when a persona transitions to a new action.
+
+    Mappings:
+    - eat/breakfast/lunch/dinner/meal/food/snack/cook -> hunger +40, hydration +10
+    - coffee/drink/water/tea/juice/beverage -> hydration +30, stimulation +10
+    - shower/wash/bath/brush teeth -> hygiene +60
+    - toilet/bathroom/restroom -> bladder +70
+    - rest/nap/relax/sit/lounge -> comfort +30, energy +15
+    - chat/talk/convers/meet/visit/party -> social +25
+    - read/work/study/research/write/creat/paint/play -> stimulation +20
+    """
+    s = persona.scratch
+
+    # Guard for backwards compatibility
+    if not hasattr(s, "needs"):
+      return
+
+    if not act_description:
+      return
+
+    act_lower = act_description.lower()
+
+    # Define keyword mappings
+    satisfactions = []
+
+    # Eating activities
+    if any(kw in act_lower for kw in ["eat", "breakfast", "lunch", "dinner", "meal", "food", "snack", "cook"]):
+      satisfactions.append(("hunger", 40))
+      satisfactions.append(("hydration", 10))
+
+    # Drinking activities
+    if any(kw in act_lower for kw in ["coffee", "drink", "water", "tea", "juice", "beverage"]):
+      satisfactions.append(("hydration", 30))
+      satisfactions.append(("stimulation", 10))
+
+    # Hygiene activities
+    if any(kw in act_lower for kw in ["shower", "wash", "bath", "brush teeth"]):
+      satisfactions.append(("hygiene", 60))
+
+    # Bathroom activities
+    if any(kw in act_lower for kw in ["toilet", "bathroom", "restroom"]):
+      satisfactions.append(("bladder", 70))
+
+    # Rest activities
+    if any(kw in act_lower for kw in ["rest", "nap", "relax", "sit", "lounge"]):
+      satisfactions.append(("comfort", 30))
+      satisfactions.append(("energy", 15))
+
+    # Social activities
+    if any(kw in act_lower for kw in ["chat", "talk", "convers", "meet", "visit", "party"]):
+      satisfactions.append(("social", 25))
+
+    # Stimulating activities
+    if any(kw in act_lower for kw in ["read", "work", "study", "research", "write", "creat", "paint", "play"]):
+      satisfactions.append(("stimulation", 20))
+
+    # Apply satisfactions
+    for need, amount in satisfactions:
+      if need in s.needs:
+        s.needs[need] = min(100, s.needs[need] + amount)
+
+
+  def start_server(self, int_counter):
     """
     The main backend server of Reverie. 
     This function retrieves the environment file from the frontend to 
@@ -367,18 +491,27 @@ class ReverieServer:
           # Then we need to actually have each of the personas perceive and
           # move. The movement for each of the personas comes in the form of
           # x y coordinates where the persona will move towards. e.g., (50, 34)
-          # This is where the core brains of the personas are invoked. 
-          movements = {"persona": dict(), 
+          # This is where the core brains of the personas are invoked.
+          movements = {"persona": dict(),
                        "meta": dict()}
-          for persona_name, persona in self.personas.items(): 
+          for persona_name, persona in self.personas.items():
+            # Track previous action to detect transitions
+            prev_act_description = persona.scratch.act_description
+
             # <next_tile> is a x,y coordinate. e.g., (58, 9)
             # <pronunciatio> is an emoji. e.g., "\ud83d\udca4"
-            # <description> is a string description of the movement. e.g., 
-            #   writing her next novel (editing her novel) 
+            # <description> is a string description of the movement. e.g.,
+            #   writing her next novel (editing her novel)
             #   @ double studio:double studio:common room:sofa
             next_tile, pronunciatio, description = persona.move(
-              self.maze, self.personas, self.personas_tile[persona_name], 
+              self.maze, self.personas, self.personas_tile[persona_name],
               self.curr_time)
+
+            # Satisfy needs when persona transitions to a new action
+            curr_act_description = persona.scratch.act_description
+            if curr_act_description != prev_act_description:
+              self.satisfy_needs_for_action(persona, curr_act_description)
+
             movements["persona"][persona_name] = {}
             movements["persona"][persona_name]["movement"] = next_tile
             movements["persona"][persona_name]["pronunciatio"] = pronunciatio
@@ -398,6 +531,7 @@ class ReverieServer:
           #  "persona": {"Klaus Mueller": {"movement": [38, 12]}}, 
           #  "meta": {curr_time: <datetime>}}
           curr_move_file = f"{sim_folder}/movement/{self.step}.json"
+          os.makedirs(f"{sim_folder}/movement", exist_ok=True)
           with open(curr_move_file, "w") as outfile: 
             outfile.write(json.dumps(movements, indent=2))
 
@@ -407,7 +541,10 @@ class ReverieServer:
           self.curr_time += datetime.timedelta(seconds=self.sec_per_step)
 
           int_counter -= 1
-          
+
+          # Tick agent needs each step
+          self.tick_needs()
+
       # Sleep so we don't burn our machines. 
       time.sleep(self.server_sleep)
 

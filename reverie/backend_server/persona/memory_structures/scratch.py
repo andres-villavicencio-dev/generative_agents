@@ -6,6 +6,7 @@ Description: Defines the short-term memory module for generative agents.
 """
 import datetime
 import json
+import random as _random
 import sys
 sys.path.append('../../')
 
@@ -152,11 +153,39 @@ class Scratch:
     # scratch.planned_path.
     self.act_path_set = False
     # <planned_path> is a list of x y coordinate tuples (tiles) that describe
-    # the path the persona is to take to execute the <curr_action>. 
-    # The list does not include the persona's current tile, and includes the 
-    # destination tile. 
+    # the path the persona is to take to execute the <curr_action>.
+    # The list does not include the persona's current tile, and includes the
+    # destination tile.
     # e.g., [(50, 10), (49, 10), (48, 10), ...]
     self.planned_path = []
+
+    # NEEDS SYSTEM
+    # Agent need meters with randomized starting values (40-80)
+    self.needs = {
+        "hunger":      _random.randint(40, 80),
+        "energy":      _random.randint(40, 80),
+        "hydration":   _random.randint(40, 80),
+        "hygiene":     _random.randint(40, 80),
+        "bladder":     _random.randint(40, 80),
+        "social":      _random.randint(40, 80),
+        "comfort":     _random.randint(40, 80),
+        "stimulation": _random.randint(40, 80),
+    }
+
+    # Decay per sim-tick (each tick = 10 sim seconds)
+    self.needs_decay_rates = {
+        "hunger":      1/180,   # ~30 sim-min per point
+        "energy":      1/270,   # ~45 sim-min per point (awake only)
+        "hydration":   1/120,   # ~20 sim-min per point
+        "hygiene":     1/360,   # ~60 sim-min per point
+        "bladder":     1/150,   # ~25 sim-min per point
+        "social":      1/270,   # ~45 sim-min per point
+        "comfort":     1/540,   # ~90 sim-min per point
+        "stimulation": 1/360,   # ~60 sim-min per point
+    }
+
+    self.needs_critical = 20   # threshold for emergency replanning
+    self.needs_danger   = 5    # threshold for involuntary action
 
     if check_if_file_exists(f_saved): 
       # If we have a bootstrap file, load that here. 
@@ -233,6 +262,16 @@ class Scratch:
       self.act_path_set = scratch_load["act_path_set"]
       self.planned_path = scratch_load["planned_path"]
 
+      # Load needs if present (for backwards compatibility)
+      if "needs" in scratch_load:
+        self.needs = scratch_load["needs"]
+      if "needs_decay_rates" in scratch_load:
+        self.needs_decay_rates = scratch_load["needs_decay_rates"]
+      if "needs_critical" in scratch_load:
+        self.needs_critical = scratch_load["needs_critical"]
+      if "needs_danger" in scratch_load:
+        self.needs_danger = scratch_load["needs_danger"]
+
 
   def save(self, out_json):
     """
@@ -305,6 +344,16 @@ class Scratch:
 
     scratch["act_path_set"] = self.act_path_set
     scratch["planned_path"] = self.planned_path
+
+    # Save needs system
+    if hasattr(self, "needs"):
+      scratch["needs"] = self.needs
+    if hasattr(self, "needs_decay_rates"):
+      scratch["needs_decay_rates"] = self.needs_decay_rates
+    if hasattr(self, "needs_critical"):
+      scratch["needs_critical"] = self.needs_critical
+    if hasattr(self, "needs_danger"):
+      scratch["needs_danger"] = self.needs_danger
 
     with open(out_json, "w") as outfile:
       json.dump(scratch, outfile, indent=2) 
@@ -606,15 +655,57 @@ class Scratch:
     return ret
 
 
-  def get_str_daily_schedule_hourly_org_summary(self): 
+  def get_str_daily_schedule_hourly_org_summary(self):
     ret = ""
     curr_min_sum = 0
-    for row in self.f_daily_schedule_hourly_org: 
+    for row in self.f_daily_schedule_hourly_org:
       curr_min_sum += row[1]
       hour = int(curr_min_sum/60)
       minute = curr_min_sum%60
       ret += f"{hour:02}:{minute:02} || {row[0]}\n"
     return ret
+
+
+  def get_str_needs_summary(self):
+    """
+    Returns a natural-language description of low needs (below 40).
+    If all needs are fine, returns "{name} is feeling fine."
+    Otherwise returns something like "{name} is quite hungry (hunger: 18),
+    and somewhat tired (energy: 35)."
+    """
+    if not hasattr(self, "needs"):
+      return f"{self.name} is feeling fine."
+
+    low_needs = []
+    for need, value in self.needs.items():
+      if value < 40:
+        # Describe severity based on value
+        if value < 15:
+          severity = "desperately"
+        elif value < 25:
+          severity = "quite"
+        else:
+          severity = "somewhat"
+
+        # Map need names to natural descriptions
+        need_descriptions = {
+          "hunger": f"{severity} hungry (hunger: {int(value)})",
+          "energy": f"{severity} tired (energy: {int(value)})",
+          "hydration": f"{severity} thirsty (hydration: {int(value)})",
+          "hygiene": f"{severity} in need of a shower (hygiene: {int(value)})",
+          "bladder": f"{severity} in need of a bathroom (bladder: {int(value)})",
+          "social": f"{severity} lonely (social: {int(value)})",
+          "comfort": f"{severity} uncomfortable (comfort: {int(value)})",
+          "stimulation": f"{severity} bored (stimulation: {int(value)})",
+        }
+        low_needs.append(need_descriptions.get(need, f"{severity} low on {need} ({need}: {int(value)})"))
+
+    if not low_needs:
+      return f"{self.name} is feeling fine."
+    elif len(low_needs) == 1:
+      return f"{self.name} is {low_needs[0]}."
+    else:
+      return f"{self.name} is {', and '.join([', '.join(low_needs[:-1]), low_needs[-1]])}."
 
 
 

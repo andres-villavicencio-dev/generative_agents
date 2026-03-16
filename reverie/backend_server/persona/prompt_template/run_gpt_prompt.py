@@ -103,7 +103,12 @@ def run_gpt_prompt_daily_plan(persona,
   def create_prompt_input(persona, wake_up_hour, test_input=None):
     if test_input: return test_input
     prompt_input = []
-    prompt_input += [persona.scratch.get_str_iss()]
+    # Get the identity stable set and append needs summary if available
+    iss = persona.scratch.get_str_iss()
+    if hasattr(persona.scratch, 'get_str_needs_summary'):
+      needs_summary = persona.scratch.get_str_needs_summary()
+      iss += f"\nCurrent physical/emotional state: {needs_summary}"
+    prompt_input += [iss]
     prompt_input += [persona.scratch.get_str_lifestyle()]
     prompt_input += [persona.scratch.get_str_curr_date_str()]
     prompt_input += [persona.scratch.get_str_firstname()]

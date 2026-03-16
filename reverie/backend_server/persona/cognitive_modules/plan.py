@@ -94,19 +94,75 @@ def generate_hourly_schedule(persona, wake_up_hour):
               "10:00 AM", "11:00 AM", "12:00 PM", "01:00 PM", "02:00 PM", 
               "03:00 PM", "04:00 PM", "05:00 PM", "06:00 PM", "07:00 PM",
               "08:00 PM", "09:00 PM", "10:00 PM", "11:00 PM"]
-  n_m1_activity = []
-  diversity_repeat_count = 3
-  for i in range(diversity_repeat_count): 
-    n_m1_activity_set = set(n_m1_activity)
-    if len(n_m1_activity_set) < 5: 
-      n_m1_activity = []
-      for count, curr_hour_str in enumerate(hour_str): 
-        if wake_up_hour > 0: 
-          n_m1_activity += ["sleeping"]
-          wake_up_hour -= 1
-        else: 
-          n_m1_activity += [run_gpt_prompt_generate_hourly_schedule(
-                          persona, curr_hour_str, n_m1_activity, hour_str)[0]]
+  # FIX: Build schedule ENTIRELY from daily_req — no LLM calls needed.
+  # The original code called LLM 18 times per agent per day, but small models (gemma3,
+  # qwen3) pattern-match the leading "sleeping" entries and output "sleeping" for every
+  # waking hour too. The daily_req list has explicit times ("at 8:00 am") that are
+  # authoritative. We use those directly and skip 54+ redundant LLM calls on day 1.
+  def _build_req_time_map(daily_req):
+    """Parse daily_req list → sorted [(start_hour, activity_text)] pairs."""
+    import re
+    pairs = []
+    for req in daily_req:
+      m = re.search(r'\bat\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b', req, re.IGNORECASE)
+      if m:
+        h = int(m.group(1)); ampm = m.group(3).lower()
+        if ampm == 'pm' and h != 12: h += 12
+        elif ampm == 'am' and h == 12: h = 0
+        act = re.sub(r'\bat\s+\d{1,2}(?::\d{2})?\s*(?:am|pm)\b.*', '', req, flags=re.IGNORECASE).strip().rstrip(',').strip()
+        if act:
+          pairs.append((h, act))
+    return sorted(pairs)
+
+  def _build_schedule_from_req(daily_req, wake_up_hour):
+    """Build 24-slot hourly activity list directly from daily_req + wake_up_hour.
+    
+    Each slot corresponds to the hour at that index (slot 0 = 00:00, slot 8 = 08:00).
+    Slots before wake_up_hour = 'sleeping'.
+    Remaining slots filled from req_time_map using forward-fill.
+    Final hours default to 'going to bed and sleeping'.
+    """
+    req_map = _build_req_time_map(daily_req)
+    schedule = []
+    
+    # Determine sleep hour: last req hour + 2 hours buffer, capped at 23
+    if req_map:
+      last_req_hour = max(h for h, _ in req_map)
+      # FIX: minimum sleep hour = 21 (9pm) so agents with sparse req maps (e.g. only
+      # "study at 8am") don't get a sleep_hour of 10, which makes them "go to bed" mid-morning.
+      sleep_hour = max(last_req_hour + 2, 21)
+      sleep_hour = min(sleep_hour, 23)
+    else:
+      sleep_hour = 22
+
+    def _req_for_hour(h):
+      """Forward-fill: return last req whose start hour <= h."""
+      act = None
+      for rh, ra in req_map:
+        if rh <= h:
+          act = ra
+      return act
+
+    for h in range(24):
+      if h < wake_up_hour:
+        schedule.append("sleeping")
+      elif h >= sleep_hour:
+        schedule.append("going to bed and sleeping")
+      else:
+        act = _req_for_hour(h)
+        if act:
+          schedule.append(act)
+        else:
+          # Before first req starts but after wake_up — use wake-up activity
+          schedule.append("waking up and completing morning routine")
+
+    print(f"[schedule-deterministic] {persona.scratch.name}: wake={wake_up_hour} sleep={sleep_hour} req_anchors={len(req_map)}")
+    for h, act in enumerate(schedule):
+      if h >= wake_up_hour:
+        print(f"  {h:02d}:00 → {act}")
+    return schedule
+
+  n_m1_activity = _build_schedule_from_req(persona.scratch.daily_req, wake_up_hour)
   
   # Step 1. Compressing the hourly schedule to the following format: 
   # The integer indicates the number of hours. They should add up to 24. 
@@ -159,9 +215,27 @@ def generate_task_decomp(persona, task, duration):
      ['getting her supplies ready for the day', 15], 
      ['starting to work on her painting', 15]] 
 
+  FIX: cap duration at 120 minutes before sending to LLM. Large durations
+  (e.g. 720 min "working at the cafe") cause qwen3 to generate 144 subtasks
+  and time out. We clamp to 2 hours max — the caller will expand the last
+  entry to fill remaining time anyway (see run_gpt_prompt_task_decomp).
+
   """
   if debug: print ("GNS FUNCTION: <generate_task_decomp>")
-  return run_gpt_prompt_task_decomp(persona, task, duration)[0]
+  # FIX: cap duration passed to LLM at 120 min to avoid timeouts on huge blocks
+  capped_duration = min(duration, 120)
+  if capped_duration < duration:
+    print(f"[task_decomp] capping duration {duration}min → {capped_duration}min for: {task[:60]}")
+  result = run_gpt_prompt_task_decomp(persona, task, capped_duration)[0]
+  # Scale the decomposed subtask durations back up proportionally so total = original duration
+  if result and capped_duration < duration:
+    scale = duration / capped_duration
+    result = [[t, max(5, round(d * scale / 5) * 5)] for t, d in result]
+    # Adjust last item to make total match exactly
+    total = sum(d for _, d in result)
+    if total != duration and result:
+      result[-1][1] += duration - total
+  return result
 
 
 def generate_action_sector(act_desp, persona, maze): 
@@ -266,7 +340,10 @@ def generate_action_event_triple(act_desp, persona):
 
 def generate_act_obj_desc(act_game_object, act_desp, persona): 
   if debug: print ("GNS FUNCTION: <generate_act_obj_desc>")
-  return run_gpt_prompt_act_obj_desc(act_game_object, act_desp, persona)[0]
+  result = run_gpt_prompt_act_obj_desc(act_game_object, act_desp, persona)
+  if result is None:
+    return f"{act_game_object} is idle"
+  return result[0]
 
 
 def generate_act_obj_event_triple(act_game_object, act_obj_desc, persona): 
@@ -625,10 +702,18 @@ def _determine_action(persona, maze):
   # act_sector = maze.access_tile(persona.scratch.curr_tile)["sector"]
   act_sector = generate_action_sector(act_desp, persona, maze)
   act_arena = generate_action_arena(act_desp, persona, maze, act_world, act_sector)
+  # Strip any LLM artifacts from arena name
+  import re as _re
+  act_arena = _re.sub(r'^Answer:\s*', '', act_arena, flags=_re.IGNORECASE).strip()
+  act_arena = act_arena.lstrip("{[(\"'").rstrip("}])\"'").strip()
   act_address = f"{act_world}:{act_sector}:{act_arena}"
   act_game_object = generate_action_game_object(act_desp, act_address,
                                                 persona, maze)
-  new_address = f"{act_world}:{act_sector}:{act_arena}:{act_game_object}"
+  # Don't include <random> placeholder in the address — use arena address only
+  if act_game_object and act_game_object != "<random>":
+    new_address = f"{act_world}:{act_sector}:{act_arena}:{act_game_object}"
+  else:
+    new_address = f"{act_world}:{act_sector}:{act_arena}"
   act_pron = generate_action_pronunciatio(act_desp, persona)
   act_event = generate_action_event_triple(act_desp, persona)
   # Persona's actions also influence the object states. We set those up here. 

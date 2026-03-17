@@ -134,12 +134,21 @@
 	    var c = document.createElement('canvas');
 	    return (c.toDataURL('image/webp').indexOf('data:image/webp') === 0) ? '.webp' : '.png';
 	  })();
-	  this.load.image("walls", "{% static 'assets/the_ville/visuals/map_assets/v1/Room_Builder_32x32' %}" + webpExt);
-	  this.load.image("interiors_pt1", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt1' %}" + webpExt);
-	  this.load.image("interiors_pt2", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt2' %}" + webpExt);
-	  this.load.image("interiors_pt3", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt3' %}" + webpExt);
-	  this.load.image("interiors_pt4", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt4' %}" + webpExt);
-	  this.load.image("interiors_pt5", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt5' %}" + webpExt);
+	  this.load.image("Room_Builder_32x32", "{% static 'assets/the_ville/visuals/map_assets/v1/Room_Builder_32x32' %}" + webpExt);
+	  // Interior tilesets — loaded as chunks to match the_ville_jan7.json tileset names
+	  this.load.image("interiors_pt1_chunk0", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt1_chunk0.png' %}");
+	  this.load.image("interiors_pt1_chunk1", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt1_chunk1.png' %}");
+	  this.load.image("interiors_pt1_chunk2", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt1_chunk2.png' %}");
+	  this.load.image("interiors_pt2_chunk0", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt2_chunk0.png' %}");
+	  this.load.image("interiors_pt2_chunk1", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt2_chunk1.png' %}");
+	  this.load.image("interiors_pt2_chunk2", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt2_chunk2.png' %}");
+	  this.load.image("interiors_pt3_chunk0", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt3_chunk0.png' %}");
+	  this.load.image("interiors_pt3_chunk1", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt3_chunk1.png' %}");
+	  this.load.image("interiors_pt3_chunk2", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt3_chunk2.png' %}");
+	  this.load.image("interiors_pt4", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt4.png' %}");
+	  this.load.image("interiors_pt5_chunk0", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt5_chunk0.png' %}");
+	  this.load.image("interiors_pt5_chunk1", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt5_chunk1.png' %}");
+	  this.load.image("interiors_pt5_chunk2", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt5_chunk2.png' %}");
 	  this.load.image("CuteRPG_Field_B", "{% static 'assets/the_ville/visuals/map_assets/cute_rpg_word_VXAce/tilesets/CuteRPG_Field_B.png' %}");
 	  this.load.image("CuteRPG_Field_C", "{% static 'assets/the_ville/visuals/map_assets/cute_rpg_word_VXAce/tilesets/CuteRPG_Field_C.png' %}");
 	  this.load.image("CuteRPG_Harbor_C", "{% static 'assets/the_ville/visuals/map_assets/cute_rpg_word_VXAce/tilesets/CuteRPG_Harbor_C.png' %}");
@@ -186,12 +195,20 @@
 	  //       console.log(map) output. You need to make sure that the name 
 	  //       matches.
 	  const collisions = map.addTilesetImage("blocks", "blocks_1");
-	  const walls = map.addTilesetImage("Room_Builder_32x32", "walls");
-	  const interiors_pt1 = map.addTilesetImage("interiors_pt1", "interiors_pt1");
-	  const interiors_pt2 = map.addTilesetImage("interiors_pt2", "interiors_pt2");
-	  const interiors_pt3 = map.addTilesetImage("interiors_pt3", "interiors_pt3");
+	  const walls = map.addTilesetImage("Room_Builder_32x32", "Room_Builder_32x32");
+	  const interiors_pt1_chunk0 = map.addTilesetImage("interiors_pt1_chunk0", "interiors_pt1_chunk0");
+	  const interiors_pt1_chunk1 = map.addTilesetImage("interiors_pt1_chunk1", "interiors_pt1_chunk1");
+	  const interiors_pt1_chunk2 = map.addTilesetImage("interiors_pt1_chunk2", "interiors_pt1_chunk2");
+	  const interiors_pt2_chunk0 = map.addTilesetImage("interiors_pt2_chunk0", "interiors_pt2_chunk0");
+	  const interiors_pt2_chunk1 = map.addTilesetImage("interiors_pt2_chunk1", "interiors_pt2_chunk1");
+	  const interiors_pt2_chunk2 = map.addTilesetImage("interiors_pt2_chunk2", "interiors_pt2_chunk2");
+	  const interiors_pt3_chunk0 = map.addTilesetImage("interiors_pt3_chunk0", "interiors_pt3_chunk0");
+	  const interiors_pt3_chunk1 = map.addTilesetImage("interiors_pt3_chunk1", "interiors_pt3_chunk1");
+	  const interiors_pt3_chunk2 = map.addTilesetImage("interiors_pt3_chunk2", "interiors_pt3_chunk2");
 	  const interiors_pt4 = map.addTilesetImage("interiors_pt4", "interiors_pt4");
-	  const interiors_pt5 = map.addTilesetImage("interiors_pt5", "interiors_pt5");
+	  const interiors_pt5_chunk0 = map.addTilesetImage("interiors_pt5_chunk0", "interiors_pt5_chunk0");
+	  const interiors_pt5_chunk1 = map.addTilesetImage("interiors_pt5_chunk1", "interiors_pt5_chunk1");
+	  const interiors_pt5_chunk2 = map.addTilesetImage("interiors_pt5_chunk2", "interiors_pt5_chunk2");
 	  const CuteRPG_Field_B = map.addTilesetImage("CuteRPG_Field_B", "CuteRPG_Field_B");
 	  const CuteRPG_Field_C = map.addTilesetImage("CuteRPG_Field_C", "CuteRPG_Field_C");
 	  const CuteRPG_Harbor_C = map.addTilesetImage("CuteRPG_Harbor_C", "CuteRPG_Harbor_C");
@@ -211,7 +228,12 @@
 	  //       named things there. 
 	  let tileset_group_1 = [CuteRPG_Field_B, CuteRPG_Field_C, CuteRPG_Harbor_C, CuteRPG_Village_B, 
 	  											 CuteRPG_Forest_B, CuteRPG_Desert_C, CuteRPG_Mountains_B, CuteRPG_Desert_B, CuteRPG_Forest_C,
-	  											 interiors_pt1, interiors_pt2, interiors_pt3, interiors_pt4, interiors_pt5, walls];
+	  											 interiors_pt1_chunk0, interiors_pt1_chunk1, interiors_pt1_chunk2,
+	  											 interiors_pt2_chunk0, interiors_pt2_chunk1, interiors_pt2_chunk2,
+	  											 interiors_pt3_chunk0, interiors_pt3_chunk1, interiors_pt3_chunk2,
+	  											 interiors_pt4,
+	  											 interiors_pt5_chunk0, interiors_pt5_chunk1, interiors_pt5_chunk2,
+	  											 walls];
 	  const bottomGroundLayer = map.createLayer("Bottom Ground", tileset_group_1, 0, 0);
 	  const exteriorGroundLayer = map.createLayer("Exterior Ground", tileset_group_1, 0, 0);
 	  const exteriorDecorationL1Layer = map.createLayer("Exterior Decoration L1", tileset_group_1, 0, 0);

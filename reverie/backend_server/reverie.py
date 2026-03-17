@@ -466,8 +466,8 @@ class ReverieServer:
         embedding_pair, []
       )
 
-      # Force replan by marking current action as needing check
-      persona.scratch.act_check_finished = True
+      # Force replan by clearing act_address (causes act_check_finished() to return True)
+      persona.scratch.act_address = None
 
       print(f"[ResourceManager] {persona.name} noticed: {event_desc}")
 

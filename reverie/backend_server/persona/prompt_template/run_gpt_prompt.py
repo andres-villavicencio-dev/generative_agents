@@ -2985,6 +2985,17 @@ def run_gpt_generate_iterative_chat_utt(maze, init_persona, target_persona, retr
       convo_str = "[The conversation has not started yet -- start it!]"
 
     init_iss = f"Here is Here is a brief description of {init_persona.scratch.name}.\n{init_persona.scratch.get_str_iss()}"
+
+    # Inject resource context for conversing agents (Phase 3.3)
+    if hasattr(maze, 'resource_manager') and maze.resource_manager is not None:
+      try:
+        resource_ctx = maze.resource_manager.get_str_resource_context(
+          init_persona.name, init_persona.scratch.act_address or "")
+        if resource_ctx:
+          init_iss += f"\nResource situation: {resource_ctx}"
+      except Exception:
+        pass  # Fail silently - resource context is optional
+
     prompt_input = [init_iss, init_persona.scratch.name, retrieved_str, prev_convo_insert,
       curr_location, curr_context, init_persona.scratch.name, target_persona.scratch.name,
       convo_str, init_persona.scratch.name, target_persona.scratch.name,

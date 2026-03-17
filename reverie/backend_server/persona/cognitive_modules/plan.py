@@ -38,34 +38,35 @@ def generate_wake_up_hour(persona):
   return int(run_gpt_prompt_wake_up_hour(persona)[0])
 
 
-def generate_first_daily_plan(persona, wake_up_hour): 
+def generate_first_daily_plan(persona, wake_up_hour, resource_manager=None):
   """
-  Generates the daily plan for the persona. 
+  Generates the daily plan for the persona.
   Basically the long term planning that spans a day. Returns a list of actions
-  that the persona will take today. Usually comes in the following form: 
-  'wake up and complete the morning routine at 6:00 am', 
-  'eat breakfast at 7:00 am',.. 
-  Note that the actions come without a period. 
+  that the persona will take today. Usually comes in the following form:
+  'wake up and complete the morning routine at 6:00 am',
+  'eat breakfast at 7:00 am',..
+  Note that the actions come without a period.
 
   Persona state: identity stable set, lifestyle, cur_data_str, first_name
 
-  INPUT: 
-    persona: The Persona class instance 
-    wake_up_hour: an integer that indicates when the hour the persona wakes up 
+  INPUT:
+    persona: The Persona class instance
+    wake_up_hour: an integer that indicates when the hour the persona wakes up
                   (e.g., 8)
-  OUTPUT: 
+    resource_manager: Optional WorldResourceManager for resource context (Phase 3.2)
+  OUTPUT:
     a list of daily actions in broad strokes.
-  EXAMPLE OUTPUT: 
-    ['wake up and complete the morning routine at 6:00 am', 
+  EXAMPLE OUTPUT:
+    ['wake up and complete the morning routine at 6:00 am',
      'have breakfast and brush teeth at 6:30 am',
-     'work on painting project from 8:00 am to 12:00 pm', 
-     'have lunch at 12:00 pm', 
-     'take a break and watch TV from 2:00 pm to 4:00 pm', 
-     'work on painting project from 4:00 pm to 6:00 pm', 
+     'work on painting project from 8:00 am to 12:00 pm',
+     'have lunch at 12:00 pm',
+     'take a break and watch TV from 2:00 pm to 4:00 pm',
+     'work on painting project from 4:00 pm to 6:00 pm',
      'have dinner at 6:00 pm', 'watch TV from 7:00 pm to 8:00 pm']
   """
   if debug: print ("GNS FUNCTION: <generate_first_daily_plan>")
-  return run_gpt_prompt_daily_plan(persona, wake_up_hour)[0]
+  return run_gpt_prompt_daily_plan(persona, wake_up_hour, resource_manager=resource_manager)[0]
 
 
 def generate_hourly_schedule(persona, wake_up_hour): 
@@ -535,29 +536,36 @@ def revise_identity(persona):
   persona.scratch.daily_plan_req = new_daily_req
 
 
-def _long_term_planning(persona, new_day): 
+def _long_term_planning(persona, new_day, maze=None):
   """
-  Formulates the persona's daily long-term plan if it is the start of a new 
-  day. This basically has two components: first, we create the wake-up hour, 
-  and second, we create the hourly schedule based on it. 
+  Formulates the persona's daily long-term plan if it is the start of a new
+  day. This basically has two components: first, we create the wake-up hour,
+  and second, we create the hourly schedule based on it.
   INPUT
     new_day: Indicates whether the current time signals a "First day",
              "New day", or False (for neither). This is important because we
-             create the personas' long term planning on the new day. 
+             create the personas' long term planning on the new day.
+    maze: Optional Maze instance to access resource_manager (Phase 3.2)
   """
-  # We start by creating the wake up hour for the persona. 
+  # We start by creating the wake up hour for the persona.
   wake_up_hour = generate_wake_up_hour(persona)
+
+  # Get resource_manager from maze if available (Phase 3.2)
+  resource_manager = None
+  if maze is not None and hasattr(maze, 'resource_manager'):
+    resource_manager = maze.resource_manager
 
   # When it is a new day, we start by creating the daily_req of the persona.
   # Note that the daily_req is a list of strings that describe the persona's
   # day in broad strokes.
-  if new_day == "First day": 
+  if new_day == "First day":
     # Bootstrapping the daily plan for the start of then generation:
-    # if this is the start of generation (so there is no previous day's 
+    # if this is the start of generation (so there is no previous day's
     # daily requirement, or if we are on a new day, we want to create a new
     # set of daily requirements.
-    persona.scratch.daily_req = generate_first_daily_plan(persona, 
-                                                          wake_up_hour)
+    persona.scratch.daily_req = generate_first_daily_plan(persona,
+                                                          wake_up_hour,
+                                                          resource_manager)
   elif new_day == "New day":
     revise_identity(persona)
 
@@ -1033,8 +1041,92 @@ def _chat_react(maze, persona, focused_event, reaction_mode, personas):
 
     _create_react(p, inserted_act, inserted_act_dur,
       act_address, act_event, chatting_with, convo, chatting_with_buffer, chatting_end_time,
-      act_pronunciatio, act_obj_description, act_obj_pronunciatio, 
+      act_pronunciatio, act_obj_description, act_obj_pronunciatio,
       act_obj_event, act_start_time)
+
+  # Phase 3.3b: Resource sharing memory injection
+  # If conversation mentions resources, inject a memory for the listener
+  _inject_resource_sharing_memories(maze, init_persona, target_persona, convo)
+
+
+def _inject_resource_sharing_memories(maze, init_persona, target_persona, convo):
+  """
+  After a conversation ends, if resource-related keywords appear in the conversation,
+  inject a memory node for the *other* agent so they're aware of the shared info.
+
+  Phase 3.3b: Social resource awareness in conversations
+  """
+  if not convo:
+    return
+
+  resource_keywords = ["out of", "empty", "no coffee", "no eggs", "grocery", "fridge",
+                       "running low", "store", "restocked", "supplies", "ran out",
+                       "need to buy", "shopping", "market", "cafe", "breakfast"]
+
+  # Build full conversation text
+  all_utt = ""
+  for row in convo:
+    speaker = row[0]
+    utt = row[1]
+    all_utt += f"{speaker}: {utt}\n"
+
+  all_utt_lower = all_utt.lower()
+
+  # Check if any resource keywords appear
+  if not any(kw in all_utt_lower for kw in resource_keywords):
+    return
+
+  # For each utterance, check if it contains resource keywords and inject memory for listener
+  for row in convo:
+    speaker_name = row[0]
+    utterance = row[1]
+    utt_lower = utterance.lower()
+
+    # Check for resource-related keywords in this utterance
+    found_keywords = [kw for kw in resource_keywords if kw in utt_lower]
+    if not found_keywords:
+      continue
+
+    # Determine the listener (the other persona)
+    if speaker_name == init_persona.name:
+      listener = target_persona
+    elif speaker_name == target_persona.name:
+      listener = init_persona
+    else:
+      continue
+
+    # Create a memory for the listener about what the speaker mentioned
+    try:
+      curr_time = listener.scratch.curr_time
+      expiration = curr_time + datetime.timedelta(days=7)
+
+      # Build a concise memory description
+      keyword_str = ", ".join(found_keywords[:2])  # Limit to 2 keywords
+      memory_desc = f"{speaker_name} mentioned something about {keyword_str} during conversation"
+
+      s = speaker_name
+      p = "mentioned"
+      o = keyword_str
+
+      keywords = set([speaker_name.lower(), "conversation", "resource"] + found_keywords[:2])
+      poignancy = 4  # Moderate importance
+
+      # Simple embedding key
+      embedding_key = f"resource_chat_{speaker_name}_{listener.name}_{curr_time.strftime('%Y%m%d%H%M%S')}"
+      embedding_pair = (embedding_key, [0.0] * 1536)
+
+      listener.a_mem.add_event(
+        curr_time, expiration,
+        s, p, o,
+        memory_desc, keywords, poignancy,
+        embedding_pair, []
+      )
+
+      print(f"[ResourceSharing] {listener.name} remembers: {memory_desc}")
+
+    except Exception as e:
+      print(f"[ResourceSharing] Error injecting memory: {e}")
+      continue
 
 
 def _wait_react(persona, reaction_mode): 
@@ -1083,9 +1175,9 @@ def plan(persona, maze, personas, new_day, retrieved):
   OUTPUT 
     The target action address of the persona (persona.scratch.act_address).
   """ 
-  # PART 1: Generate the hourly schedule. 
-  if new_day: 
-    _long_term_planning(persona, new_day)
+  # PART 1: Generate the hourly schedule.
+  if new_day:
+    _long_term_planning(persona, new_day, maze)
 
   # PART 2: If the current action has expired, we want to create a new plan.
   if persona.scratch.act_check_finished(): 

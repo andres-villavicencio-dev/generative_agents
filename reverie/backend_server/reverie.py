@@ -156,6 +156,8 @@ class ReverieServer:
 
     # Initialize the world resource manager (Phase 2)
     self.resource_manager = WorldResourceManager(sim_folder)
+    # Attach to maze for easy access throughout the cognitive modules
+    self.maze.resource_manager = self.resource_manager
 
 
   def save(self): 

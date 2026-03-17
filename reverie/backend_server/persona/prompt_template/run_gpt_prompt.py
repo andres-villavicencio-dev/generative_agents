@@ -87,7 +87,8 @@ def run_gpt_prompt_wake_up_hour(persona, test_input=None, verbose=False):
 def run_gpt_prompt_daily_plan(persona,
                               wake_up_hour,
                               test_input=None,
-                              verbose=False):
+                              verbose=False,
+                              resource_manager=None):
   """
   Basically the long term planning that spans a day. Returns a list of actions
   that the persona will take today. Usually comes in the following form:
@@ -97,10 +98,14 @@ def run_gpt_prompt_daily_plan(persona,
 
   INPUT:
     persona: The Persona class instance
+    wake_up_hour: Integer hour when persona wakes up
+    test_input: Optional test input for debugging
+    verbose: Whether to print debug info
+    resource_manager: Optional WorldResourceManager for resource context (Phase 2)
   OUTPUT:
     a list of daily actions in broad strokes.
   """
-  def create_prompt_input(persona, wake_up_hour, test_input=None):
+  def create_prompt_input(persona, wake_up_hour, test_input=None, resource_manager=None):
     if test_input: return test_input
     prompt_input = []
     # Get the identity stable set and append needs summary if available
@@ -108,6 +113,24 @@ def run_gpt_prompt_daily_plan(persona,
     if hasattr(persona.scratch, 'get_str_needs_summary'):
       needs_summary = persona.scratch.get_str_needs_summary()
       iss += f"\nCurrent physical/emotional state: {needs_summary}"
+
+    # Append resource context if resource_manager is available (Phase 2)
+    if resource_manager is not None:
+      try:
+        # Use persona's home location for resource context during daily planning
+        # Try to find the persona's home address
+        persona_name = persona.name
+        home_location = f"{persona_name}'s apartment:kitchen" if "apartment" in persona_name.lower() or True else ""
+        # Also check current location if available
+        curr_location = getattr(persona.scratch, 'act_address', '') or home_location
+
+        resource_context = resource_manager.get_str_resource_context(persona_name, curr_location)
+        if resource_context:
+          iss += f"\nAvailable resources: {resource_context}"
+      except Exception as e:
+        # Fail silently - resource context is optional
+        pass
+
     prompt_input += [iss]
     prompt_input += [persona.scratch.get_str_lifestyle()]
     prompt_input += [persona.scratch.get_str_curr_date_str()]
@@ -149,7 +172,7 @@ def run_gpt_prompt_daily_plan(persona,
                "temperature": 1, "top_p": 1, "stream": False,
                "frequency_penalty": 0, "presence_penalty": 0, "stop": None}
   prompt_template = "persona/prompt_template/v2/daily_planning_v6.txt"
-  prompt_input = create_prompt_input(persona, wake_up_hour, test_input)
+  prompt_input = create_prompt_input(persona, wake_up_hour, test_input, resource_manager)
   prompt = generate_prompt(prompt_input, prompt_template)
   fail_safe = get_fail_safe()
 

@@ -34,6 +34,7 @@ from global_methods import *
 from utils import *
 from maze import *
 from persona.persona import *
+from resource_manager import WorldResourceManager, ACTION_RESOURCE_MAPPINGS, PRODUCTION_MAPPINGS
 
 ##############################################################################
 #                                  REVERIE                                   #
@@ -150,8 +151,11 @@ class ReverieServer:
     
     curr_step = dict()
     curr_step["step"] = self.step
-    with open(f"{fs_temp_storage}/curr_step.json", "w") as outfile: 
+    with open(f"{fs_temp_storage}/curr_step.json", "w") as outfile:
       outfile.write(json.dumps(curr_step, indent=2))
+
+    # Initialize the world resource manager (Phase 2)
+    self.resource_manager = WorldResourceManager(sim_folder)
 
 
   def save(self): 
@@ -182,9 +186,15 @@ class ReverieServer:
       outfile.write(json.dumps(reverie_meta, indent=2))
 
     # Save the personas.
-    for persona_name, persona in self.personas.items(): 
+    for persona_name, persona in self.personas.items():
       save_folder = f"{sim_folder}/personas/{persona_name}/bootstrap_memory"
       persona.save(save_folder)
+
+    # Save the world resource state (Phase 2)
+    try:
+      self.resource_manager.save(sim_folder)
+    except Exception as e:
+      print(f"[Reverie] Warning: Could not save resource manager: {e}")
 
 
   def start_path_tester_server(self): 
@@ -334,6 +344,135 @@ class ReverieServer:
         # Clamp to 0-100
         s.needs[need] = max(0, min(100, current_val))
 
+
+  def consume_resources_for_action(self, persona, act_description):
+    """
+    Consume world resources based on the action being performed.
+    Called when a persona transitions to a new action.
+
+    If resources are insufficient, injects a perception event into memory
+    and triggers a replan.
+
+    Returns:
+      bool: True if all resources consumed successfully, False if any failed
+    """
+    if not act_description:
+      return True
+
+    act_lower = act_description.lower()
+    persona_name = persona.name
+    curr_location = persona.scratch.act_address or ""
+
+    all_success = True
+
+    # Find matching action keywords
+    for keyword, consumptions in ACTION_RESOURCE_MAPPINGS.items():
+      if keyword not in act_lower:
+        continue
+
+      for resource_pattern, item, amount in consumptions:
+        # Find matching resource address based on pattern and persona location
+        consumed = False
+
+        for address in self.resource_manager.world_state:
+          address_lower = address.lower()
+
+          # Check if resource pattern matches
+          if resource_pattern.lower() not in address_lower:
+            continue
+
+          # Prefer persona's own resources (their apartment/home)
+          persona_first = persona_name.split()[0].lower()
+          is_home = persona_first in address_lower
+
+          # Check location match
+          location_match = False
+          if curr_location:
+            curr_loc_lower = curr_location.lower()
+            # Check if in same building/area
+            loc_parts = curr_loc_lower.split(":")
+            if any(part in address_lower for part in loc_parts[:2]):
+              location_match = True
+
+          # Prioritize home resources, then location matches
+          if is_home or location_match:
+            success = self.resource_manager.consume(address, item, amount)
+            if success:
+              consumed = True
+              break
+            else:
+              # Resource depleted - inject event
+              self._inject_resource_depleted_event(persona, address, item)
+              all_success = False
+              consumed = True  # Mark as handled even though failed
+              break
+
+        # If no specific location matched, try any matching resource
+        if not consumed:
+          for address in self.resource_manager.world_state:
+            if resource_pattern.lower() in address.lower():
+              success = self.resource_manager.consume(address, item, amount)
+              if success:
+                consumed = True
+                break
+
+      # Handle production (e.g., preparing food produces sandwiches)
+      if keyword in PRODUCTION_MAPPINGS:
+        for prod_pattern, prod_item, prod_amount in PRODUCTION_MAPPINGS[keyword]:
+          for address in self.resource_manager.world_state:
+            if prod_pattern.lower() in address.lower():
+              self.resource_manager.restock(address, prod_item, prod_amount)
+              break
+
+    return all_success
+
+  def _inject_resource_depleted_event(self, persona, address, item):
+    """
+    Inject a perception event into persona's memory when a resource is depleted.
+    This triggers awareness and potential replanning.
+    """
+    try:
+      # Parse the resource location for a human-readable description
+      parts = address.split(":")
+      location_name = parts[-1] if parts else address
+
+      # Create event description
+      event_desc = f"The {location_name} is out of {item}"
+
+      # Add event to persona's associative memory
+      curr_time = self.curr_time
+      expiration = None
+
+      s = location_name
+      p = "is"
+      o = f"out of {item}"
+
+      keywords = {location_name.lower(), item.lower(), "empty", "depleted"}
+
+      # Generate a simple embedding key
+      embedding_key = f"resource_depleted_{persona.name}_{item}_{curr_time.strftime('%Y%m%d%H%M%S')}"
+
+      # Use a moderate poignancy (importance) - resource depletion is notable
+      poignancy = 5
+
+      # Create embedding pair (simple zero vector as placeholder)
+      embedding_pair = (embedding_key, [0.0] * 1536)
+
+      # Add the event to memory
+      persona.a_mem.add_event(
+        curr_time, expiration,
+        s, p, o,
+        event_desc, keywords, poignancy,
+        embedding_pair, []
+      )
+
+      # Force replan by marking current action as needing check
+      persona.scratch.act_check_finished = True
+
+      print(f"[ResourceManager] {persona.name} noticed: {event_desc}")
+
+    except Exception as e:
+      print(f"[ResourceManager] Error injecting depleted event: {e}")
 
   def satisfy_needs_for_action(self, persona, act_description):
     """
@@ -511,6 +650,11 @@ class ReverieServer:
             curr_act_description = persona.scratch.act_description
             if curr_act_description != prev_act_description:
               self.satisfy_needs_for_action(persona, curr_act_description)
+              # Consume world resources for the action (Phase 2)
+              try:
+                self.consume_resources_for_action(persona, curr_act_description)
+              except Exception as e:
+                print(f"[Reverie] Warning: resource consumption failed: {e}")
 
             movements["persona"][persona_name] = {}
             movements["persona"][persona_name]["movement"] = next_tile
@@ -544,6 +688,12 @@ class ReverieServer:
 
           # Tick agent needs each step
           self.tick_needs()
+
+          # Tick world resources (hot water refill, daily deliveries)
+          try:
+            self.resource_manager.tick(self.curr_time)
+          except Exception as e:
+            print(f"[Reverie] Warning: resource_manager.tick failed: {e}")
 
       # Sleep so we don't burn our machines. 
       time.sleep(self.server_sleep)

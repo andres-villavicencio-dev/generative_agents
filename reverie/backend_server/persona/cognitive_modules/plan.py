@@ -595,18 +595,66 @@ def _long_term_planning(persona, new_day):
 
 
 
-def _determine_action(persona, maze): 
+def _determine_action(persona, maze):
   """
-  Creates the next action sequence for the persona. 
-  The main goal of this function is to run "add_new_action" on the persona's 
-  scratch space, which sets up all the action related variables for the next 
-  action. 
-  As a part of this, the persona may need to decompose its hourly schedule as 
-  needed.   
+  Creates the next action sequence for the persona.
+  The main goal of this function is to run "add_new_action" on the persona's
+  scratch space, which sets up all the action related variables for the next
+  action.
+  As a part of this, the persona may need to decompose its hourly schedule as
+  needed.
   INPUT
-    persona: Current <Persona> instance whose action we are determining. 
-    maze: Current <Maze> instance. 
+    persona: Current <Persona> instance whose action we are determining.
+    maze: Current <Maze> instance.
   """
+  # Check resource goals first — these take priority over normal replanning
+  if hasattr(persona.scratch, "resource_goals") and persona.scratch.resource_goals:
+    resource_goal = persona.scratch.resource_goals.pop(0)
+    print(f"[ResourceGoal] {persona.name} pursuing: {resource_goal}")
+
+    # Use the resource goal as the action description
+    act_desp = resource_goal
+    act_dura = 30  # 30 minutes for resource-driven actions
+
+    # Determine the target location based on the goal
+    act_world = maze.access_tile(persona.scratch.curr_tile)["world"]
+    act_sector = generate_action_sector(act_desp, persona, maze)
+    act_arena = generate_action_arena(act_desp, persona, maze, act_world, act_sector)
+
+    # Strip any LLM artifacts from arena name
+    import re as _re
+    act_arena = _re.sub(r'^Answer:\s*', '', act_arena, flags=_re.IGNORECASE).strip()
+    act_arena = act_arena.lstrip("{[(\"'").rstrip("}])\"'").strip()
+
+    act_address = f"{act_world}:{act_sector}:{act_arena}"
+    act_game_object = generate_action_game_object(act_desp, act_address, persona, maze)
+
+    if act_game_object and act_game_object != "<random>":
+      new_address = f"{act_world}:{act_sector}:{act_arena}:{act_game_object}"
+    else:
+      new_address = f"{act_world}:{act_sector}:{act_arena}"
+
+    act_pron = generate_action_pronunciatio(act_desp, persona)
+    act_event = generate_action_event_triple(act_desp, persona)
+    act_obj_desp = generate_act_obj_desc(act_game_object, act_desp, persona)
+    act_obj_pron = generate_action_pronunciatio(act_obj_desp, persona)
+    act_obj_event = generate_act_obj_event_triple(act_game_object, act_obj_desp, persona)
+
+    # Add the resource-goal action to persona's queue
+    persona.scratch.add_new_action(new_address,
+                                   int(act_dura),
+                                   act_desp,
+                                   act_pron,
+                                   act_event,
+                                   None,
+                                   None,
+                                   None,
+                                   None,
+                                   act_obj_desp,
+                                   act_obj_pron,
+                                   act_obj_event)
+    return  # Exit early - resource goal handled
+
   def determine_decomp(act_desp, act_dura):
     """
     Given an action description and its duration, we determine whether we need

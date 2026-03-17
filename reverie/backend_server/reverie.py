@@ -417,12 +417,16 @@ class ReverieServer:
                 break
 
       # Handle production (e.g., preparing food produces sandwiches)
+      # Only trigger production if persona is at Hobbs Cafe
       if keyword in PRODUCTION_MAPPINGS:
-        for prod_pattern, prod_item, prod_amount in PRODUCTION_MAPPINGS[keyword]:
-          for address in self.resource_manager.world_state:
-            if prod_pattern.lower() in address.lower():
-              self.resource_manager.restock(address, prod_item, prod_amount)
-              break
+        act_addr = getattr(persona.scratch, "act_address", "") or ""
+        if "Hobbs Cafe" in act_addr or "hobbs cafe" in act_addr.lower():
+          for prod_pattern, prod_item, prod_amount in PRODUCTION_MAPPINGS[keyword]:
+            for address in self.resource_manager.world_state:
+              if prod_pattern.lower() in address.lower():
+                self.resource_manager.restock(address, prod_item, prod_amount)
+                print(f"[ResourceManager] {persona.name} produced {prod_amount} {prod_item} at {address}")
+                break
 
     return all_success
 
@@ -436,8 +440,20 @@ class ReverieServer:
       parts = address.split(":")
       location_name = parts[-1] if parts else address
 
-      # Create event description
-      event_desc = f"The {location_name} is out of {item}"
+      # Create richer event description with alternatives based on item type
+      food_items = ["eggs", "bread", "milk"]
+      if any(food in item for food in food_items):
+        event_desc = f"{persona.name} found the refrigerator empty (no {item}). They cannot prepare food at home. Hobbs Café serves breakfast nearby."
+        poignancy = 8  # Higher importance for food depletion
+      elif item == "coffee_beans":
+        event_desc = f"{persona.name} found no coffee at home. Hobbs Café is nearby and serves coffee."
+        poignancy = 8  # Higher importance for coffee depletion
+      elif item == "hot_water":
+        event_desc = f"{persona.name} found no hot water for a shower."
+        poignancy = 5  # Moderate importance for hot water
+      else:
+        event_desc = f"The {location_name} is out of {item}"
+        poignancy = 5  # Default importance
 
       # Add event to persona's associative memory
       curr_time = self.curr_time
@@ -452,9 +468,6 @@ class ReverieServer:
       # Generate a simple embedding key
       embedding_key = f"resource_depleted_{persona.name}_{item}_{curr_time.strftime('%Y%m%d%H%M%S')}"
 
-      # Use a moderate poignancy (importance) - resource depletion is notable
-      poignancy = 5
-
       # Create embedding pair (simple zero vector as placeholder)
       embedding_pair = (embedding_key, [0.0] * 1536)
 
@@ -468,6 +481,16 @@ class ReverieServer:
 
       # Force replan by clearing act_address (causes act_check_finished() to return True)
       persona.scratch.act_address = None
+
+      # Push a resource goal so replanning has direction
+      if not hasattr(persona.scratch, "resource_goals"):
+        persona.scratch.resource_goals = []
+      if any(food in item for food in ["eggs", "bread", "milk"]):
+        persona.scratch.resource_goals.append("go to Hobbs Cafe to have breakfast")
+      elif item == "coffee_beans":
+        persona.scratch.resource_goals.append("go to Hobbs Cafe to get coffee")
+      elif item == "hot_water":
+        persona.scratch.resource_goals.append("use the common bathroom shower")
 
       print(f"[ResourceManager] {persona.name} noticed: {event_desc}")
 

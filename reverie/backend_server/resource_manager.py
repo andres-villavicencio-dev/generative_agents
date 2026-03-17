@@ -443,4 +443,10 @@ ACTION_RESOURCE_MAPPINGS = {
 PRODUCTION_MAPPINGS = {
     "preparing cafe": [("counter", "sandwiches", 5), ("counter", "pastries", 5)],
     "preparing food": [("counter", "sandwiches", 2), ("counter", "pastries", 2)],
+    "preparing pastries": [("counter", "sandwiches", 2), ("counter", "pastries", 3)],
+    "baked goods": [("counter", "sandwiches", 2), ("counter", "pastries", 3)],
+    "opening the cafe": [("counter", "sandwiches", 3), ("counter", "pastries", 3)],
+    "open hobbs": [("counter", "sandwiches", 3), ("counter", "pastries", 3)],
+    "preparing the cafe": [("counter", "sandwiches", 3), ("counter", "pastries", 3)],
+    "open cafe": [("counter", "sandwiches", 3), ("counter", "pastries", 3)],
 }

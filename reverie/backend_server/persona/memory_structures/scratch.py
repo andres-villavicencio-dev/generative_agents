@@ -187,6 +187,9 @@ class Scratch:
     self.needs_critical = 20   # threshold for emergency replanning
     self.needs_danger   = 5    # threshold for involuntary action
 
+    # Resource goals: priority actions triggered by depletion events
+    self.resource_goals = []  # e.g. ["go to Hobbs Cafe for breakfast"]
+
     if check_if_file_exists(f_saved): 
       # If we have a bootstrap file, load that here. 
       scratch_load = json.load(open(f_saved))
@@ -271,6 +274,8 @@ class Scratch:
         self.needs_critical = scratch_load["needs_critical"]
       if "needs_danger" in scratch_load:
         self.needs_danger = scratch_load["needs_danger"]
+      if "resource_goals" in scratch_load:
+        self.resource_goals = scratch_load["resource_goals"]
 
 
   def save(self, out_json):
@@ -354,6 +359,7 @@ class Scratch:
       scratch["needs_critical"] = self.needs_critical
     if hasattr(self, "needs_danger"):
       scratch["needs_danger"] = self.needs_danger
+    scratch["resource_goals"] = self.resource_goals if hasattr(self, "resource_goals") else []
 
     with open(out_json, "w") as outfile:
       json.dump(scratch, outfile, indent=2) 

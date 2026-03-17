@@ -417,10 +417,16 @@ class ReverieServer:
                 break
 
       # Handle production (e.g., preparing food produces sandwiches)
-      # Only trigger production if persona is at Hobbs Cafe
+      # Only trigger production if persona is at Hobbs Cafe (check full act_address path)
       if keyword in PRODUCTION_MAPPINGS:
-        act_addr = getattr(persona.scratch, "act_address", "") or ""
-        if "Hobbs Cafe" in act_addr or "hobbs cafe" in act_addr.lower():
+        act_addr = (getattr(persona.scratch, "act_address", "") or "").lower()
+        curr_tile_addr = (getattr(persona.scratch, "curr_tile", "") or "")
+        at_cafe = "hobbs cafe" in act_addr or "hobbs cafe" in str(curr_tile_addr).lower()
+        if not at_cafe:
+          # Also check description for cafe context
+          act_desc = (getattr(persona.scratch, "act_description", "") or "").lower()
+          at_cafe = "hobbs cafe" in act_desc or "open cafe" in act_desc or "cafe counter" in act_desc
+        if at_cafe:
           for prod_pattern, prod_item, prod_amount in PRODUCTION_MAPPINGS[keyword]:
             for address in self.resource_manager.world_state:
               if prod_pattern.lower() in address.lower():
@@ -482,15 +488,19 @@ class ReverieServer:
       # Force replan by clearing act_address (causes act_check_finished() to return True)
       persona.scratch.act_address = None
 
-      # Push a resource goal so replanning has direction
+      # Push a resource goal so replanning has direction (dedup — max 1 of each goal)
       if not hasattr(persona.scratch, "resource_goals"):
         persona.scratch.resource_goals = []
       if any(food in item for food in ["eggs", "bread", "milk"]):
-        persona.scratch.resource_goals.append("go to Hobbs Cafe to have breakfast")
+        goal = "go to Hobbs Cafe to have breakfast"
       elif item == "coffee_beans":
-        persona.scratch.resource_goals.append("go to Hobbs Cafe to get coffee")
+        goal = "go to Hobbs Cafe to get coffee"
       elif item == "hot_water":
-        persona.scratch.resource_goals.append("use the common bathroom shower")
+        goal = "use the common bathroom shower"
+      else:
+        goal = None
+      if goal and goal not in persona.scratch.resource_goals:
+        persona.scratch.resource_goals.append(goal)
 
       print(f"[ResourceManager] {persona.name} noticed: {event_desc}")
 

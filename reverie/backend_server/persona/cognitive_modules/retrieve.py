@@ -191,6 +191,10 @@ def extract_relevance(persona, nodes, focal_pt):
   relevance_out = dict()
   for count, node in enumerate(nodes): 
     node_embedding = persona.a_mem.embeddings[node.embedding_key]
+    # Guard against dimension mismatch (e.g. old OpenAI 1536-dim vs Ollama 768-dim)
+    if len(node_embedding) != len(focal_embedding):
+      relevance_out[node.node_id] = 0.0
+      continue
     relevance_out[node.node_id] = cos_sim(node_embedding, focal_embedding)
 
   return relevance_out

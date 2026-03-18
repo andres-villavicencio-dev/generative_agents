@@ -30,5 +30,7 @@ urlpatterns = [
     url(r'^update_environment/$', translator_views.update_environment, name='update_environment'),
     url(r'^path_tester/$', translator_views.path_tester, name='path_tester'),
     url(r'^path_tester_update/$', translator_views.path_tester_update, name='path_tester_update'),
+    url(r'^api/needs/(?P<sim_code>[\w-]+)/(?P<persona_name>[\w_-]+)/$', translator_views.get_agent_needs, name='get_agent_needs'),
+    url(r'^api/resources/(?P<sim_code>[\w-]+)/$', translator_views.get_world_resources, name='get_world_resources'),
     path('admin/', admin.site.urls),
 ]

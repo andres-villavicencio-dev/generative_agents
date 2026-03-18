@@ -295,15 +295,15 @@ def update_environment(request):
   return JsonResponse(response_data)
 
 
-def path_tester_update(request): 
+def path_tester_update(request):
   """
-  Processing the path and saving it to path_tester_env.json temp storage for 
-  conducting the path tester. 
+  Processing the path and saving it to path_tester_env.json temp storage for
+  conducting the path tester.
 
   ARGS:
     request: Django request
-  RETURNS: 
-    HttpResponse: string confirmation message. 
+  RETURNS:
+    HttpResponse: string confirmation message.
   """
   data = json.loads(request.body)
   camera = data["camera"]
@@ -314,6 +314,105 @@ def path_tester_update(request):
   return HttpResponse("received")
 
 
+def get_agent_needs(request, sim_code, persona_name):
+    """
+    API endpoint to get agent needs for a persona.
+    Returns JSON with needs levels (0-100) for hunger, thirst, energy, hygiene, etc.
+
+    Works for both live simulations (storage/) and compressed demos (compressed_storage/).
+    """
+    persona_name_spaced = persona_name.replace("_", " ")
+
+    # Try live storage first, then compressed
+    scratch_paths = [
+        f"storage/{sim_code}/personas/{persona_name_spaced}/bootstrap_memory/scratch.json",
+        f"compressed_storage/{sim_code}/personas/{persona_name_spaced}/bootstrap_memory/scratch.json",
+    ]
+
+    scratch_data = None
+    for path in scratch_paths:
+        if os.path.exists(path):
+            try:
+                with open(path) as f:
+                    scratch_data = json.load(f)
+                break
+            except (json.JSONDecodeError, IOError):
+                continue
+
+    if not scratch_data:
+        return JsonResponse({"error": "Persona not found", "persona": persona_name_spaced}, status=404)
+
+    # Extract needs data with defaults for backwards compatibility
+    needs = scratch_data.get("needs", {
+        "hunger": 80,
+        "energy": 80,
+        "hydration": 80,
+        "hygiene": 80,
+        "bladder": 80,
+        "social": 80,
+        "comfort": 80,
+        "stimulation": 80,
+    })
+
+    # Include resource goals if present
+    resource_goals = scratch_data.get("resource_goals", [])
+
+    return JsonResponse({
+        "persona": persona_name_spaced,
+        "needs": needs,
+        "resource_goals": resource_goals,
+        "needs_critical": scratch_data.get("needs_critical", 20),
+        "needs_danger": scratch_data.get("needs_danger", 5),
+    })
+
+
+def get_world_resources(request, sim_code):
+    """
+    API endpoint to get world resource state.
+    Returns JSON with resource levels for all tracked locations.
+
+    Works for both live simulations (storage/) and compressed demos (compressed_storage/).
+    """
+    resource_paths = [
+        f"storage/{sim_code}/resources/world_state.json",
+        f"compressed_storage/{sim_code}/resources/world_state.json",
+    ]
+
+    world_state = None
+    for path in resource_paths:
+        if os.path.exists(path):
+            try:
+                with open(path) as f:
+                    world_state = json.load(f)
+                break
+            except (json.JSONDecodeError, IOError):
+                continue
+
+    if not world_state:
+        # Return default empty state if file doesn't exist yet
+        return JsonResponse({"resources": {}, "message": "No resource state found"})
+
+    # Process resources into frontend-friendly format
+    resources = {}
+    for address, items in world_state.items():
+        # Calculate percentage for resources with max values
+        processed = {}
+        for item, value in items.items():
+            if item in ("max", "last_restocked", "last_delivery", "refill_rate"):
+                continue
+            if isinstance(value, (int, float)):
+                max_val = items.get("max", 100)
+                if item == "level":
+                    # Hot water level as percentage
+                    processed["level_pct"] = int((value / max_val) * 100) if max_val > 0 else 0
+                    processed["level"] = value
+                else:
+                    processed[item] = value
+
+        if processed:
+            resources[address] = processed
+
+    return JsonResponse({"resources": resources})
 
 
 

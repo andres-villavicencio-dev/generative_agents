@@ -34,7 +34,7 @@ from global_methods import *
 from utils import *
 from maze import *
 from persona.persona import *
-from resource_manager import WorldResourceManager, ACTION_RESOURCE_MAPPINGS, PRODUCTION_MAPPINGS
+from resource_manager import WorldResourceManager, ACTION_RESOURCE_MAPPINGS, PRODUCTION_MAPPINGS, get_persona_decay_multiplier
 
 ##############################################################################
 #                                  REVERIE                                   #
@@ -296,7 +296,7 @@ class ReverieServer:
     Behavior:
     - Loop over all personas
     - Check if agent is sleeping (from act_description)
-    - Decay each need by its rate each tick
+    - Decay each need by its rate (with persona-specific multiplier) each tick
     - Energy restores during sleep (+1/60 per tick), decays when awake
     - Social only decays when not chatting_with anyone
     - Hunger/hydration/bladder decay at 30% rate during sleep
@@ -318,8 +318,12 @@ class ReverieServer:
       # Check if chatting
       is_chatting = s.chatting_with is not None
 
-      for need, rate in s.needs_decay_rates.items():
+      for need, base_rate in s.needs_decay_rates.items():
         current_val = s.needs[need]
+
+        # Apply persona-specific multiplier
+        multiplier = get_persona_decay_multiplier(persona_name, need)
+        rate = base_rate * multiplier
 
         if need == "energy":
           if is_sleeping:
@@ -398,6 +402,24 @@ class ReverieServer:
 
           # Prioritize home resources, then location matches
           if is_home or location_match:
+            # Check for shared resource contention (shower, hot_water)
+            resource_type = None
+            if "hot_water" in address_lower or "shower" in address_lower:
+              resource_type = "hot_water"
+            elif "bathroom" in address_lower:
+              resource_type = "bathroom"
+
+            if resource_type:
+              success, wait_ticks, locked_by = self.resource_manager.try_acquire(
+                address, resource_type, persona_name, self.step
+              )
+              if not success:
+                # Resource is occupied - inject perception event
+                self._inject_resource_occupied_event(persona, address, resource_type, locked_by, wait_ticks)
+                all_success = False
+                consumed = True  # Mark as handled
+                break
+
             success = self.resource_manager.consume(address, item, amount)
             if success:
               consumed = True
@@ -508,6 +530,44 @@ class ReverieServer:
 
     except Exception as e:
       print(f"[ResourceManager] Error injecting depleted event: {e}")
+
+  def _inject_resource_occupied_event(self, persona, address, resource_type, locked_by, wait_ticks):
+    """
+    Inject a perception event when a shared resource is occupied by another persona.
+    """
+    try:
+      parts = address.split(":")
+      location_name = parts[-2] if len(parts) >= 2 else parts[-1] if parts else address
+
+      if resource_type == "hot_water" or resource_type == "shower":
+        event_desc = f"The bathroom is occupied. {locked_by} is using the shower. {persona.name} will need to wait."
+      elif resource_type == "bathroom":
+        event_desc = f"The bathroom is occupied by {locked_by}. {persona.name} will need to wait."
+      else:
+        event_desc = f"The {location_name} is currently in use by {locked_by}."
+
+      poignancy = 4  # Moderate importance
+
+      curr_time = self.curr_time
+      s = location_name
+      p = "is"
+      o = f"occupied by {locked_by}"
+      keywords = {location_name.lower(), "occupied", "waiting", locked_by.lower().split()[0]}
+
+      embedding_key = f"resource_occupied_{persona.name}_{resource_type}_{curr_time.strftime('%Y%m%d%H%M%S')}"
+      embedding_pair = (embedding_key, [0.0] * 1536)
+
+      persona.a_mem.add_event(
+        curr_time, None,
+        s, p, o,
+        event_desc, keywords, poignancy,
+        embedding_pair, []
+      )
+
+      print(f"[ResourceManager] {persona.name} found {resource_type} occupied by {locked_by}")
+
+    except Exception as e:
+      print(f"[ResourceManager] Error injecting occupied event: {e}")
 
   def satisfy_needs_for_action(self, persona, act_description):
     """

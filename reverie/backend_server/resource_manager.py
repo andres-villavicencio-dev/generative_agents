@@ -10,6 +10,7 @@ consumption, passive refills, and daily deliveries.
 import json
 import os
 import datetime
+import threading
 
 
 class WorldResourceManager:
@@ -75,6 +76,13 @@ class WorldResourceManager:
         }
     }
 
+    # Shared resources that can only be used by one agent at a time
+    SHARED_RESOURCES = {
+        "hot_water": {"capacity": 1, "use_duration_ticks": 3},
+        "shower": {"capacity": 1, "use_duration_ticks": 3},
+        "bathroom": {"capacity": 1, "use_duration_ticks": 2},
+    }
+
     # Store locations for daily restocking
     STORE_ADDRESSES = [
         "store:shelves:groceries",
@@ -112,6 +120,12 @@ class WorldResourceManager:
         else:
             print("[ResourceManager] Initializing with default world state")
             self.world_state = dict(self.DEFAULT_WORLD_STATE)
+
+        # Resource locks for shared resources (concurrent contention)
+        # Format: {address: {"locked_by": persona_name, "until_tick": tick_number}}
+        self.resource_locks = {}
+        self._lock_mutex = threading.Lock()
+        self.current_tick = 0
 
     def _normalize_address(self, address):
         """
@@ -254,6 +268,82 @@ class WorldResourceManager:
                     location[item] = max_stock
                 location["last_delivery"] = time_str
                 print(f"[ResourceManager] Daily delivery to {normalized}")
+
+    def try_acquire(self, address, resource_type, persona_name, current_tick):
+        """
+        Try to acquire exclusive access to a shared resource.
+
+        Args:
+            address: Location address string (e.g., "common bathroom:bathroom:hot_water")
+            resource_type: Type of shared resource (e.g., "hot_water", "shower")
+            persona_name: Name of the persona trying to acquire
+            current_tick: Current simulation tick number
+
+        Returns:
+            tuple: (success: bool, wait_ticks: int, locked_by: str or None)
+        """
+        # Check if this is a shared resource type
+        if resource_type not in self.SHARED_RESOURCES:
+            return (True, 0, None)  # Not a shared resource, always succeeds
+
+        with self._lock_mutex:
+            self.current_tick = current_tick
+
+            # Clean up expired locks
+            self._cleanup_expired_locks(current_tick)
+
+            # Check if resource is currently locked
+            lock_key = f"{address}:{resource_type}"
+            if lock_key in self.resource_locks:
+                lock_info = self.resource_locks[lock_key]
+                if lock_info["until_tick"] > current_tick:
+                    # Resource is locked by someone else
+                    wait_ticks = lock_info["until_tick"] - current_tick
+                    return (False, wait_ticks, lock_info["locked_by"])
+
+            # Acquire the lock
+            duration = self.SHARED_RESOURCES[resource_type]["use_duration_ticks"]
+            self.resource_locks[lock_key] = {
+                "locked_by": persona_name,
+                "until_tick": current_tick + duration
+            }
+            return (True, 0, None)
+
+    def release(self, address, resource_type, persona_name):
+        """
+        Release a resource lock early (e.g., if action is interrupted).
+
+        Args:
+            address: Location address string
+            resource_type: Type of shared resource
+            persona_name: Name of the persona releasing
+        """
+        with self._lock_mutex:
+            lock_key = f"{address}:{resource_type}"
+            if lock_key in self.resource_locks:
+                lock_info = self.resource_locks[lock_key]
+                # Only release if this persona owns the lock
+                if lock_info["locked_by"] == persona_name:
+                    del self.resource_locks[lock_key]
+
+    def _cleanup_expired_locks(self, current_tick):
+        """Remove expired locks."""
+        expired = [k for k, v in self.resource_locks.items()
+                   if v["until_tick"] <= current_tick]
+        for k in expired:
+            del self.resource_locks[k]
+
+    def get_lock_status(self, address, resource_type):
+        """
+        Check if a resource is currently locked.
+
+        Returns:
+            dict or None: Lock info if locked, None if available
+        """
+        lock_key = f"{address}:{resource_type}"
+        with self._lock_mutex:
+            self._cleanup_expired_locks(self.current_tick)
+            return self.resource_locks.get(lock_key)
 
     def save(self, sim_folder=None):
         """
@@ -450,3 +540,66 @@ PRODUCTION_MAPPINGS = {
     "preparing the cafe": [("counter", "sandwiches", 3), ("counter", "pastries", 3)],
     "open cafe": [("counter", "sandwiches", 3), ("counter", "pastries", 3)],
 }
+
+# Persona-specific need decay rates and starting values
+# Different characters have different metabolic/personality traits
+PERSONA_NEED_BASELINES = {
+    "Klaus Mueller": {
+        "hunger_decay_mult": 0.75,       # Less hungry (disciplined researcher)
+        "thirst_decay_mult": 1.5,        # Coffee addict — needs drinks often
+        "energy_decay_mult": 1.0,        # Normal energy
+        "hygiene_decay_mult": 1.0,       # Normal hygiene
+        "bladder_decay_mult": 1.2,       # Drinks more -> more bathroom
+        "social_decay_mult": 0.8,        # Introverted, less social need
+        "comfort_decay_mult": 1.0,       # Normal
+        "stimulation_decay_mult": 1.3,   # Needs mental stimulation
+    },
+    "Isabella Rodriguez": {
+        "hunger_decay_mult": 1.0,        # Normal hunger
+        "thirst_decay_mult": 0.7,        # Stays hydrated (café owner)
+        "energy_decay_mult": 0.8,        # High stamina from work
+        "hygiene_decay_mult": 0.8,       # Professional appearance
+        "bladder_decay_mult": 1.0,       # Normal
+        "social_decay_mult": 1.3,        # Social butterfly, needs interaction
+        "comfort_decay_mult": 1.0,       # Normal
+        "stimulation_decay_mult": 0.9,   # Gets stimulation from customers
+    },
+    "Maria Lopez": {
+        "hunger_decay_mult": 1.0,        # Normal
+        "thirst_decay_mult": 1.0,        # Normal
+        "energy_decay_mult": 0.9,        # Writer stamina
+        "hygiene_decay_mult": 1.2,       # Higher hygiene standard
+        "bladder_decay_mult": 1.0,       # Normal
+        "social_decay_mult": 1.1,        # Moderate social need
+        "comfort_decay_mult": 0.8,       # Comfortable working from home
+        "stimulation_decay_mult": 1.1,   # Needs creative stimulation
+    },
+}
+
+# Default multipliers for personas not in the list above
+DEFAULT_PERSONA_BASELINES = {
+    "hunger_decay_mult": 1.0,
+    "thirst_decay_mult": 1.0,
+    "energy_decay_mult": 1.0,
+    "hygiene_decay_mult": 1.0,
+    "bladder_decay_mult": 1.0,
+    "social_decay_mult": 1.0,
+    "comfort_decay_mult": 1.0,
+    "stimulation_decay_mult": 1.0,
+}
+
+
+def get_persona_decay_multiplier(persona_name, need_type):
+    """
+    Get the decay rate multiplier for a specific persona and need type.
+
+    Args:
+        persona_name: Full name of the persona (e.g., "Klaus Mueller")
+        need_type: The need type (e.g., "hunger", "thirst", etc.)
+
+    Returns:
+        float: Multiplier to apply to the base decay rate
+    """
+    baselines = PERSONA_NEED_BASELINES.get(persona_name, DEFAULT_PERSONA_BASELINES)
+    key = f"{need_type}_decay_mult"
+    return baselines.get(key, 1.0)

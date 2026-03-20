@@ -14,7 +14,7 @@ from utils import *
 
 # Ollama configuration
 OLLAMA_BASE_URL = "http://localhost:11434"
-OLLAMA_CHAT_MODEL = "qwen3:latest"
+OLLAMA_CHAT_MODEL = "claude-distilled-v2:9b"
 OLLAMA_EMBED_MODEL = "embeddinggemma"
 
 
@@ -66,6 +66,10 @@ def _ollama_generate(prompt, retries=5, free_form=False):
         "prompt": prompt,
         "stream": False,
         "think": False,
+        "options": {
+            "num_ctx": 8192,
+            "temperature": 0.7,
+        }
     }
     if not free_form:
         request_body["format"] = {"type": "object", "properties": {"output": {"type": "string"}}, "required": ["output"]}  # schema-constrained: always produces {"output": "..."}
@@ -79,7 +83,10 @@ def _ollama_generate(prompt, retries=5, free_form=False):
         request_body["system"] = (
             "You are a simulation assistant. "
             "IMPORTANT: Respond in English only. "
-            "Follow the output format shown in the prompt exactly."
+            "Follow the output format shown in the prompt EXACTLY. "
+            "Use numbered lists like '1) task (duration in minutes: X, minutes left: Y)'. "
+            "Do NOT use markdown tables, headers, or any formatting. "
+            "Plain text numbered list only."
         )
     data = json.dumps(request_body).encode('utf-8')
 
@@ -90,7 +97,7 @@ def _ollama_generate(prompt, retries=5, free_form=False):
                 data=data,
                 headers={"Content-Type": "application/json"}
             )
-            with urllib.request.urlopen(req, timeout=300) as response:  # 5 min max per call
+            with urllib.request.urlopen(req, timeout=None) as response:  # no timeout - local model, let it run
                 result = json.loads(response.read().decode('utf-8'))
                 text = result.get("response", "")
                 # qwen3.5 is a thinking model — response is in response field when complete,

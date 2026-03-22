@@ -1,4 +1,86 @@
-{% load staticfiles %}
+{% load static %}
+
+<style>
+/* Needs Panel Styles */
+.needs-panel {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.85);
+  border: 2px solid #444;
+  border-radius: 8px;
+  padding: 10px;
+  min-width: 180px;
+  z-index: 1000;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: white;
+  pointer-events: none;
+  display: none;
+}
+.needs-panel.visible { display: block; }
+.needs-panel h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  border-bottom: 1px solid #555;
+  padding-bottom: 4px;
+}
+.need-row {
+  display: flex;
+  align-items: center;
+  margin: 4px 0;
+}
+.need-label {
+  width: 70px;
+  text-transform: capitalize;
+}
+.need-bar-container {
+  flex: 1;
+  height: 10px;
+  background: #333;
+  border-radius: 5px;
+  overflow: hidden;
+}
+.need-bar {
+  height: 100%;
+  transition: width 0.3s ease;
+  border-radius: 5px;
+}
+.need-bar.hunger { background: linear-gradient(90deg, #e74c3c, #27ae60); }
+.need-bar.energy { background: linear-gradient(90deg, #e74c3c, #f1c40f); }
+.need-bar.hydration { background: linear-gradient(90deg, #e74c3c, #3498db); }
+.need-bar.hygiene { background: linear-gradient(90deg, #e74c3c, #1abc9c); }
+.need-bar.bladder { background: linear-gradient(90deg, #e74c3c, #9b59b6); }
+.need-bar.social { background: linear-gradient(90deg, #e74c3c, #e91e63); }
+.need-bar.comfort { background: linear-gradient(90deg, #e74c3c, #ff9800); }
+.need-bar.stimulation { background: linear-gradient(90deg, #e74c3c, #00bcd4); }
+.need-value {
+  width: 30px;
+  text-align: right;
+  margin-left: 5px;
+}
+.need-critical { color: #e74c3c !important; font-weight: bold; }
+
+/* Resource tooltip */
+.resource-tooltip {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid #666;
+  border-radius: 6px;
+  padding: 8px;
+  z-index: 1001;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  color: white;
+  display: none;
+  max-width: 200px;
+}
+.resource-tooltip.visible { display: block; }
+</style>
+
+<div id="needsPanel" class="needs-panel">
+  <h4 id="needsPersonaName">Agent Needs</h4>
+  <div id="needsBars"></div>
+</div>
+<div id="resourceTooltip" class="resource-tooltip"></div>
 
 <script type="text/javascript">
 	/*
@@ -128,12 +210,27 @@
 	  //       Also IMPORTANT: when you create a tileset in Tiled, always be  
 	  //       sure to check the "embedded" option. 
 	  this.load.image("blocks_1", "{% static 'assets/the_ville/visuals/map_assets/blocks/blocks_1.png' %}");
-	  this.load.image("walls", "{% static 'assets/the_ville/visuals/map_assets/v1/Room_Builder_32x32.png' %}");
-	  this.load.image("interiors_pt1", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt1.png' %}");
-	  this.load.image("interiors_pt2", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt2.png' %}");
-	  this.load.image("interiors_pt3", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt3.png' %}");
+	  // WebP versions of large tilesets for faster mobile loading (PNG kept as fallback).
+	  // Phaser 3 loads whatever URL you give it — browser WebP support is ~97% globally.
+	  var webpExt = (function() {
+	    var c = document.createElement('canvas');
+	    return (c.toDataURL('image/webp').indexOf('data:image/webp') === 0) ? '.webp' : '.png';
+	  })();
+	  this.load.image("Room_Builder_32x32", "{% static 'assets/the_ville/visuals/map_assets/v1/Room_Builder_32x32' %}" + webpExt);
+	  // Interior tilesets — loaded as chunks to match the_ville_jan7.json tileset names
+	  this.load.image("interiors_pt1_chunk0", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt1_chunk0.png' %}");
+	  this.load.image("interiors_pt1_chunk1", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt1_chunk1.png' %}");
+	  this.load.image("interiors_pt1_chunk2", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt1_chunk2.png' %}");
+	  this.load.image("interiors_pt2_chunk0", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt2_chunk0.png' %}");
+	  this.load.image("interiors_pt2_chunk1", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt2_chunk1.png' %}");
+	  this.load.image("interiors_pt2_chunk2", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt2_chunk2.png' %}");
+	  this.load.image("interiors_pt3_chunk0", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt3_chunk0.png' %}");
+	  this.load.image("interiors_pt3_chunk1", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt3_chunk1.png' %}");
+	  this.load.image("interiors_pt3_chunk2", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt3_chunk2.png' %}");
 	  this.load.image("interiors_pt4", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt4.png' %}");
-	  this.load.image("interiors_pt5", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt5.png' %}");
+	  this.load.image("interiors_pt5_chunk0", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt5_chunk0.png' %}");
+	  this.load.image("interiors_pt5_chunk1", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt5_chunk1.png' %}");
+	  this.load.image("interiors_pt5_chunk2", "{% static 'assets/the_ville/visuals/map_assets/v1/interiors_pt5_chunk2.png' %}");
 	  this.load.image("CuteRPG_Field_B", "{% static 'assets/the_ville/visuals/map_assets/cute_rpg_word_VXAce/tilesets/CuteRPG_Field_B.png' %}");
 	  this.load.image("CuteRPG_Field_C", "{% static 'assets/the_ville/visuals/map_assets/cute_rpg_word_VXAce/tilesets/CuteRPG_Field_C.png' %}");
 	  this.load.image("CuteRPG_Harbor_C", "{% static 'assets/the_ville/visuals/map_assets/cute_rpg_word_VXAce/tilesets/CuteRPG_Harbor_C.png' %}");
@@ -180,12 +277,20 @@
 	  //       console.log(map) output. You need to make sure that the name 
 	  //       matches.
 	  const collisions = map.addTilesetImage("blocks", "blocks_1");
-	  const walls = map.addTilesetImage("Room_Builder_32x32", "walls");
-	  const interiors_pt1 = map.addTilesetImage("interiors_pt1", "interiors_pt1");
-	  const interiors_pt2 = map.addTilesetImage("interiors_pt2", "interiors_pt2");
-	  const interiors_pt3 = map.addTilesetImage("interiors_pt3", "interiors_pt3");
+	  const walls = map.addTilesetImage("Room_Builder_32x32", "Room_Builder_32x32");
+	  const interiors_pt1_chunk0 = map.addTilesetImage("interiors_pt1_chunk0", "interiors_pt1_chunk0");
+	  const interiors_pt1_chunk1 = map.addTilesetImage("interiors_pt1_chunk1", "interiors_pt1_chunk1");
+	  const interiors_pt1_chunk2 = map.addTilesetImage("interiors_pt1_chunk2", "interiors_pt1_chunk2");
+	  const interiors_pt2_chunk0 = map.addTilesetImage("interiors_pt2_chunk0", "interiors_pt2_chunk0");
+	  const interiors_pt2_chunk1 = map.addTilesetImage("interiors_pt2_chunk1", "interiors_pt2_chunk1");
+	  const interiors_pt2_chunk2 = map.addTilesetImage("interiors_pt2_chunk2", "interiors_pt2_chunk2");
+	  const interiors_pt3_chunk0 = map.addTilesetImage("interiors_pt3_chunk0", "interiors_pt3_chunk0");
+	  const interiors_pt3_chunk1 = map.addTilesetImage("interiors_pt3_chunk1", "interiors_pt3_chunk1");
+	  const interiors_pt3_chunk2 = map.addTilesetImage("interiors_pt3_chunk2", "interiors_pt3_chunk2");
 	  const interiors_pt4 = map.addTilesetImage("interiors_pt4", "interiors_pt4");
-	  const interiors_pt5 = map.addTilesetImage("interiors_pt5", "interiors_pt5");
+	  const interiors_pt5_chunk0 = map.addTilesetImage("interiors_pt5_chunk0", "interiors_pt5_chunk0");
+	  const interiors_pt5_chunk1 = map.addTilesetImage("interiors_pt5_chunk1", "interiors_pt5_chunk1");
+	  const interiors_pt5_chunk2 = map.addTilesetImage("interiors_pt5_chunk2", "interiors_pt5_chunk2");
 	  const CuteRPG_Field_B = map.addTilesetImage("CuteRPG_Field_B", "CuteRPG_Field_B");
 	  const CuteRPG_Field_C = map.addTilesetImage("CuteRPG_Field_C", "CuteRPG_Field_C");
 	  const CuteRPG_Harbor_C = map.addTilesetImage("CuteRPG_Harbor_C", "CuteRPG_Harbor_C");
@@ -205,7 +310,12 @@
 	  //       named things there. 
 	  let tileset_group_1 = [CuteRPG_Field_B, CuteRPG_Field_C, CuteRPG_Harbor_C, CuteRPG_Village_B, 
 	  											 CuteRPG_Forest_B, CuteRPG_Desert_C, CuteRPG_Mountains_B, CuteRPG_Desert_B, CuteRPG_Forest_C,
-	  											 interiors_pt1, interiors_pt2, interiors_pt3, interiors_pt4, interiors_pt5, walls];
+	  											 interiors_pt1_chunk0, interiors_pt1_chunk1, interiors_pt1_chunk2,
+	  											 interiors_pt2_chunk0, interiors_pt2_chunk1, interiors_pt2_chunk2,
+	  											 interiors_pt3_chunk0, interiors_pt3_chunk1, interiors_pt3_chunk2,
+	  											 interiors_pt4,
+	  											 interiors_pt5_chunk0, interiors_pt5_chunk1, interiors_pt5_chunk2,
+	  											 walls];
 	  const bottomGroundLayer = map.createLayer("Bottom Ground", tileset_group_1, 0, 0);
 	  const exteriorGroundLayer = map.createLayer("Exterior Ground", tileset_group_1, 0, 0);
 	  const exteriorDecorationL1Layer = map.createLayer("Exterior Decoration L1", tileset_group_1, 0, 0);
@@ -276,22 +386,45 @@
 
 	    // Here, we are creating the persona and its pronunciatio sprites.
 	    personas[persona_name] = new_sprite;
-	    speech_bubbles[persona_name] = this.add.image(new_sprite.body.x - 0, 
+	    speech_bubbles[persona_name] = this.add.image(new_sprite.body.x - 0,
 	    																						  new_sprite.body.y - 30,
 	    																						  'speech_bubble').setDepth(3);
       speech_bubbles[persona_name].displayWidth = 130;
       speech_bubbles[persona_name].displayHeight = 58;
 
 	    pronunciatios[persona_name] = this.add.text(
-	                                   new_sprite.body.x - 6, 
-	                                   new_sprite.body.y - 42, 
+	                                   new_sprite.body.x - 6,
+	                                   new_sprite.body.y - 42,
 	                                   "🦁", {
-	                                   font: "24px monospace", 
-	                                   fill: "#000000", 
-	                                   padding: { x: 8, y: 8}, 
+	                                   font: "24px monospace",
+	                                   fill: "#000000",
+	                                   padding: { x: 8, y: 8},
 	                                   border:"solid",
 	                                   borderRadius:"10px"}).setDepth(3);
+
+	    // Make sprite interactive for needs panel
+	    new_sprite.setInteractive();
+	    new_sprite.on('pointerdown', function(pointer) {
+	      const displayName = persona_name.replace(/_/g, ' ');
+	      showNeedsPanel(displayName, pointer.x, pointer.y);
+	    });
 	  }
+
+	  // Close needs panel when clicking on empty space
+	  this.input.on('pointerdown', function(pointer) {
+	    if (!pointer.downElement || pointer.downElement.tagName === 'CANVAS') {
+	      const clickedOnSprite = Object.values(personas).some(sprite => {
+	        return sprite.getBounds().contains(pointer.worldX, pointer.worldY);
+	      });
+	      if (!clickedOnSprite) {
+	        hideNeedsPanel();
+	      }
+	    }
+	  });
+
+	  // Initialize needs polling with persona names
+	  const personaNamesList = Object.keys(personas).map(name => name.replace(/_/g, ' '));
+	  startNeedsPolling(sim_code, personaNamesList);
 
 	  // Create the player's walking animations from the texture atlas. These are
 	  // stored in the global animation manager so any sprite can access them.
@@ -494,6 +627,154 @@
 	// Control button binders
 	var play_button=document.getElementById("play_button");
 	var pause_button=document.getElementById("pause_button");
+
+	// ###########################################################################
+	// NEEDS PANEL MANAGEMENT
+	// ###########################################################################
+
+	// Needs Panel Management
+	let needsCache = {};
+	let resourcesCache = {};
+	let selectedPersona = null;
+	const NEEDS_POLL_INTERVAL = 5000; // Poll every 5 seconds
+
+	function fetchAgentNeeds(simCode, personaName) {
+	  const url = `/api/needs/${simCode}/${personaName.replace(/ /g, '_')}/`;
+	  fetch(url)
+	    .then(response => response.json())
+	    .then(data => {
+	      if (data.needs) {
+	        needsCache[personaName] = data;
+	        if (selectedPersona === personaName) {
+	          updateNeedsPanel(personaName, data);
+	        }
+	      }
+	    })
+	    .catch(err => console.log('Needs fetch error:', err));
+	}
+
+	function fetchWorldResources(simCode) {
+	  fetch(`/api/resources/${simCode}/`)
+	    .then(response => response.json())
+	    .then(data => {
+	      if (data.resources) {
+	        resourcesCache = data.resources;
+	      }
+	    })
+	    .catch(err => console.log('Resources fetch error:', err));
+	}
+
+	function showNeedsPanel(personaName, x, y) {
+	  selectedPersona = personaName;
+	  const panel = document.getElementById('needsPanel');
+	  const data = needsCache[personaName];
+
+	  if (data) {
+	    updateNeedsPanel(personaName, data);
+	  } else {
+	    document.getElementById('needsPersonaName').textContent = personaName;
+	    document.getElementById('needsBars').innerHTML = '<div>Loading...</div>';
+	  }
+
+	  // Position panel near click but keep on screen
+	  const panelWidth = 200;
+	  const panelHeight = 250;
+	  let left = x + 20;
+	  let top = y - 50;
+
+	  if (left + panelWidth > window.innerWidth) left = x - panelWidth - 20;
+	  if (top + panelHeight > window.innerHeight) top = window.innerHeight - panelHeight - 10;
+	  if (top < 10) top = 10;
+
+	  panel.style.left = left + 'px';
+	  panel.style.top = top + 'px';
+	  panel.classList.add('visible');
+
+	  // Fetch fresh data
+	  if (typeof sim_code !== 'undefined') {
+	    fetchAgentNeeds(sim_code, personaName);
+	  }
+	}
+
+	function hideNeedsPanel() {
+	  selectedPersona = null;
+	  document.getElementById('needsPanel').classList.remove('visible');
+	}
+
+	function updateNeedsPanel(personaName, data) {
+	  document.getElementById('needsPersonaName').textContent = personaName;
+
+	  const needsOrder = ['hunger', 'energy', 'hydration', 'hygiene', 'bladder', 'social', 'comfort', 'stimulation'];
+	  let html = '';
+
+	  for (const need of needsOrder) {
+	    const value = Math.round(data.needs[need] || 0);
+	    const isCritical = value < (data.needs_critical || 20);
+	    const criticalClass = isCritical ? ' need-critical' : '';
+
+	    html += `
+	      <div class="need-row">
+	        <span class="need-label${criticalClass}">${need}</span>
+	        <div class="need-bar-container">
+	          <div class="need-bar ${need}" style="width: ${value}%"></div>
+	        </div>
+	        <span class="need-value${criticalClass}">${value}</span>
+	      </div>
+	    `;
+	  }
+
+	  document.getElementById('needsBars').innerHTML = html;
+	}
+
+	function showResourceTooltip(locationName, x, y) {
+	  const tooltip = document.getElementById('resourceTooltip');
+	  let content = `<strong>${locationName}</strong><br>`;
+
+	  // Find matching resources
+	  let found = false;
+	  for (const [address, items] of Object.entries(resourcesCache)) {
+	    if (address.toLowerCase().includes(locationName.toLowerCase())) {
+	      found = true;
+	      for (const [item, value] of Object.entries(items)) {
+	        if (item === 'level_pct') {
+	          content += `Hot Water: ${value}%<br>`;
+	        } else if (typeof value === 'number') {
+	          content += `${item}: ${Math.round(value)}<br>`;
+	        }
+	      }
+	    }
+	  }
+
+	  if (!found) {
+	    content += 'No resource data';
+	  }
+
+	  tooltip.innerHTML = content;
+	  tooltip.style.left = (x + 15) + 'px';
+	  tooltip.style.top = (y + 15) + 'px';
+	  tooltip.classList.add('visible');
+	}
+
+	function hideResourceTooltip() {
+	  document.getElementById('resourceTooltip').classList.remove('visible');
+	}
+
+	// Start polling for needs/resources data
+	function startNeedsPolling(simCode, personaNames) {
+	  // Initial fetch
+	  fetchWorldResources(simCode);
+	  for (const name of personaNames) {
+	    fetchAgentNeeds(simCode, name);
+	  }
+
+	  // Periodic refresh
+	  setInterval(() => {
+	    fetchWorldResources(simCode);
+	    if (selectedPersona) {
+	      fetchAgentNeeds(simCode, selectedPersona);
+	    }
+	  }, NEEDS_POLL_INTERVAL);
+	}
 </script>
 
 

@@ -12,15 +12,76 @@ from global_methods import *
 from persona.prompt_template.gpt_structure import *
 from persona.prompt_template.run_gpt_prompt import *
 
-def generate_poig_score(persona, event_type, description): 
-  if "is idle" in description: 
+def generate_poig_score(persona, event_type, description):
+  if "is idle" in description:
     return 1
 
-  if event_type == "event": 
+  if event_type == "event":
     return run_gpt_prompt_event_poignancy(persona, description)[0]
-  elif event_type == "chat": 
-    return run_gpt_prompt_chat_poignancy(persona, 
+  elif event_type == "chat":
+    return run_gpt_prompt_chat_poignancy(persona,
                            persona.scratch.act_description)[0]
+
+
+def perceive_resource_context(persona):
+  """
+  Generate natural-language perception strings based on low needs and current location.
+
+  Returns a list of perception strings that describe the persona's internal state
+  based on their needs levels and current location context.
+
+  INPUT:
+    persona: An instance of <Persona> that represents the current persona.
+  OUTPUT:
+    perceptions: a list of strings describing needs-based perceptions.
+  """
+  perceptions = []
+  s = persona.scratch
+
+  # Guard for backwards compatibility
+  if not hasattr(s, "needs"):
+    return perceptions
+
+  name = s.first_name if s.first_name else s.name
+
+  # Get current location context from act_address
+  location_lower = ""
+  if s.act_address:
+    location_lower = s.act_address.lower()
+
+  # Check each need and generate appropriate perceptions
+  needs = s.needs
+
+  # Hunger perceptions
+  if needs.get("hunger", 100) < 40:
+    if any(loc in location_lower for loc in ["kitchen", "home", "dorm", "house"]):
+      perceptions.append(f"{name} feels hungry and notices the kitchen nearby.")
+    elif any(loc in location_lower for loc in ["cafe", "restaurant", "diner", "cafeteria"]):
+      perceptions.append(f"{name} feels hungry and smells food nearby.")
+    else:
+      perceptions.append(f"{name} is feeling hungry.")
+
+  # Hydration perceptions
+  if needs.get("hydration", 100) < 30:
+    perceptions.append(f"{name} is quite thirsty and could use a drink.")
+
+  # Energy perceptions
+  if needs.get("energy", 100) < 25:
+    perceptions.append(f"{name} is exhausted and struggling to concentrate.")
+
+  # Hygiene perceptions
+  if needs.get("hygiene", 100) < 20:
+    perceptions.append(f"{name} feels like they need a shower.")
+
+  # Bladder perceptions
+  if needs.get("bladder", 100) < 15:
+    perceptions.append(f"{name} urgently needs to find a bathroom.")
+
+  # Social perceptions
+  if needs.get("social", 100) < 25:
+    perceptions.append(f"{name} has been alone for a while and feels like talking to someone.")
+
+  return perceptions
 
 def perceive(persona, maze): 
   """
@@ -171,12 +232,34 @@ def perceive(persona, maze):
                       persona.scratch.chat)
         chat_node_ids = [chat_node.node_id]
 
-      # Finally, we add the current event to the agent's memory. 
+      # Finally, we add the current event to the agent's memory.
       ret_events += [persona.a_mem.add_event(persona.scratch.curr_time, None,
-                           s, p, o, desc, keywords, event_poignancy, 
+                           s, p, o, desc, keywords, event_poignancy,
                            event_embedding_pair, chat_node_ids)]
       persona.scratch.importance_trigger_curr -= event_poignancy
       persona.scratch.importance_ele_n += 1
+
+  # NEEDS-AWARE PERCEPTION
+  # Add internal state perceptions based on low needs and location context
+  resource_perceptions = perceive_resource_context(persona)
+  for perception_desc in resource_perceptions:
+    # Create a low-importance (score 1) observation memory
+    keywords = set(["internal state", "needs"])
+    s_subj = persona.name
+    p_pred = "feels"
+    o_obj = perception_desc.split(" feels ")[-1] if " feels " in perception_desc else perception_desc
+
+    # Get embedding for the perception
+    if perception_desc in persona.a_mem.embeddings:
+      perception_embedding = persona.a_mem.embeddings[perception_desc]
+    else:
+      perception_embedding = get_embedding(perception_desc)
+    perception_embedding_pair = (perception_desc, perception_embedding)
+
+    # Add as low-importance event (poignancy = 1)
+    ret_events += [persona.a_mem.add_event(persona.scratch.curr_time, None,
+                         s_subj, p_pred, o_obj, perception_desc, keywords, 1,
+                         perception_embedding_pair, [])]
 
   return ret_events
 

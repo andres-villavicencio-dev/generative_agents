@@ -79,7 +79,10 @@ def execute(persona, maze, personas, plan):
     elif "<random>" in plan: 
       # Executing a random location action.
       plan = ":".join(plan.split(":")[:-1])
-      target_tiles = maze.address_tiles[plan]
+      if plan in maze.address_tiles:
+        target_tiles = maze.address_tiles[plan]
+      else:
+        target_tiles = list(maze.address_tiles.values())[0]  # any valid tile
       target_tiles = random.sample(list(target_tiles), 1)
 
     else: 
@@ -88,8 +91,25 @@ def execute(persona, maze, personas, plan):
       # Retrieve the target addresses. Again, plan is an action address in its
       # string form. <maze.address_tiles> takes this and returns candidate 
       # coordinates. 
-      if plan not in maze.address_tiles: 
-        maze.address_tiles["Johnson Park:park:park garden"] #ERRORRRRRRR
+      if plan not in maze.address_tiles:
+        # LLM hallucinated an address that doesn't exist in the maze.
+        # Try progressively shorter prefixes, then fall back to curr_tile.
+        print(f"[execute] WARNING: address not in maze: '{plan}' — trying fallback")
+        fallback = None
+        parts = plan.split(":")
+        while len(parts) > 1:
+          parts = parts[:-1]
+          candidate = ":".join(parts)
+          if candidate in maze.address_tiles:
+            fallback = maze.address_tiles[candidate]
+            print(f"[execute] Fallback to: '{candidate}'")
+            break
+        if fallback:
+          target_tiles = fallback
+        else:
+          # Last resort: stay on current tile
+          print(f"[execute] No fallback found, staying on current tile")
+          target_tiles = [persona.scratch.curr_tile]
       else: 
         target_tiles = maze.address_tiles[plan]
 

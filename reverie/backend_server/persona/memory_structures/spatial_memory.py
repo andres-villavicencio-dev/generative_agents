@@ -96,16 +96,39 @@ class MemoryTree:
     EXAMPLE STR OUTPUT
       "phone, charger, bed, nightstand"
     """
-    curr_world, curr_sector, curr_arena = arena.split(":")
+    try:
+      parts = arena.split(":")
+      if len(parts) < 3:
+        return ""
+      curr_world, curr_sector, curr_arena = parts[0], parts[1], ":".join(parts[2:])
 
-    if not curr_arena: 
+      if not curr_arena:
+        return ""
+
+      # Strip stray punctuation/brackets that LLMs sometimes inject
+      curr_arena_clean = curr_arena.strip().lstrip("{[(\"'").rstrip("}])\"'")
+
+      sector_tree = self.tree.get(curr_world, {}).get(curr_sector)
+      if not sector_tree:
+        # Try case-insensitive world/sector lookup
+        for w in self.tree:
+          if w.lower() == curr_world.lower():
+            for s in self.tree[w]:
+              if s.lower() == curr_sector.lower():
+                sector_tree = self.tree[w][s]
+                break
+            if sector_tree:
+              break
+      if not sector_tree:
+        return ""
+
+      for candidate in [curr_arena_clean, curr_arena_clean.lower(), curr_arena, curr_arena.lower()]:
+        if candidate in sector_tree:
+          return ", ".join(list(sector_tree[candidate]))
+
       return ""
-
-    try: 
-      x = ", ".join(list(self.tree[curr_world][curr_sector][curr_arena]))
-    except: 
-      x = ", ".join(list(self.tree[curr_world][curr_sector][curr_arena.lower()]))
-    return x
+    except Exception:
+      return ""
 
 
 if __name__ == '__main__':

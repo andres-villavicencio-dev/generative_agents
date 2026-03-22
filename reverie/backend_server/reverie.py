@@ -28,12 +28,13 @@ import os
 import shutil
 import traceback
 
-from selenium import webdriver
+# from selenium import webdriver  # not needed for local run
 
 from global_methods import *
 from utils import *
 from maze import *
 from persona.persona import *
+from resource_manager import WorldResourceManager, ACTION_RESOURCE_MAPPINGS, PRODUCTION_MAPPINGS, get_persona_decay_multiplier
 
 ##############################################################################
 #                                  REVERIE                                   #
@@ -150,8 +151,13 @@ class ReverieServer:
     
     curr_step = dict()
     curr_step["step"] = self.step
-    with open(f"{fs_temp_storage}/curr_step.json", "w") as outfile: 
+    with open(f"{fs_temp_storage}/curr_step.json", "w") as outfile:
       outfile.write(json.dumps(curr_step, indent=2))
+
+    # Initialize the world resource manager (Phase 2)
+    self.resource_manager = WorldResourceManager(sim_folder)
+    # Attach to maze for easy access throughout the cognitive modules
+    self.maze.resource_manager = self.resource_manager
 
 
   def save(self): 
@@ -182,9 +188,15 @@ class ReverieServer:
       outfile.write(json.dumps(reverie_meta, indent=2))
 
     # Save the personas.
-    for persona_name, persona in self.personas.items(): 
+    for persona_name, persona in self.personas.items():
       save_folder = f"{sim_folder}/personas/{persona_name}/bootstrap_memory"
       persona.save(save_folder)
+
+    # Save the world resource state (Phase 2)
+    try:
+      self.resource_manager.save(sim_folder)
+    except Exception as e:
+      print(f"[Reverie] Warning: Could not save resource manager: {e}")
 
 
   def start_path_tester_server(self): 
@@ -276,7 +288,353 @@ class ReverieServer:
       time.sleep(self.server_sleep * 10)
 
 
-  def start_server(self, int_counter): 
+  def tick_needs(self):
+    """
+    Decay agent needs each simulation tick.
+    Called from the main simulation loop after each step.
+
+    Behavior:
+    - Loop over all personas
+    - Check if agent is sleeping (from act_description)
+    - Decay each need by its rate (with persona-specific multiplier) each tick
+    - Energy restores during sleep (+1/60 per tick), decays when awake
+    - Social only decays when not chatting_with anyone
+    - Hunger/hydration/bladder decay at 30% rate during sleep
+    - Clamp all values 0-100
+    """
+    for persona_name, persona in self.personas.items():
+      s = persona.scratch
+
+      # Guard for backwards compatibility
+      if not hasattr(s, "needs"):
+        continue
+
+      # Check if sleeping
+      is_sleeping = False
+      if s.act_description:
+        act_lower = s.act_description.lower()
+        is_sleeping = "sleep" in act_lower or "asleep" in act_lower or "in bed" in act_lower
+
+      # Check if chatting
+      is_chatting = s.chatting_with is not None
+
+      for need, base_rate in s.needs_decay_rates.items():
+        current_val = s.needs[need]
+
+        # Apply persona-specific multiplier
+        multiplier = get_persona_decay_multiplier(persona_name, need)
+        rate = base_rate * multiplier
+
+        if need == "energy":
+          if is_sleeping:
+            # Energy restores during sleep
+            current_val += 1/60
+          else:
+            # Energy decays when awake
+            current_val -= rate
+        elif need == "social":
+          # Social only decays when not chatting
+          if not is_chatting:
+            current_val -= rate
+        elif need in ("hunger", "hydration", "bladder"):
+          # These decay at 30% rate during sleep
+          if is_sleeping:
+            current_val -= rate * 0.3
+          else:
+            current_val -= rate
+        else:
+          # hygiene, comfort, stimulation decay normally (but not during sleep for simplicity)
+          if not is_sleeping:
+            current_val -= rate
+
+        # Clamp to 0-100
+        s.needs[need] = max(0, min(100, current_val))
+
+
+  def consume_resources_for_action(self, persona, act_description):
+    """
+    Consume world resources based on the action being performed.
+    Called when a persona transitions to a new action.
+
+    If resources are insufficient, injects a perception event into memory
+    and triggers a replan.
+
+    Returns:
+      bool: True if all resources consumed successfully, False if any failed
+    """
+    if not act_description:
+      return True
+
+    act_lower = act_description.lower()
+    persona_name = persona.name
+    curr_location = persona.scratch.act_address or ""
+
+    all_success = True
+
+    # Find matching action keywords
+    for keyword, consumptions in ACTION_RESOURCE_MAPPINGS.items():
+      if keyword not in act_lower:
+        continue
+
+      for resource_pattern, item, amount in consumptions:
+        # Find matching resource address based on pattern and persona location
+        consumed = False
+
+        for address in self.resource_manager.world_state:
+          address_lower = address.lower()
+
+          # Check if resource pattern matches
+          if resource_pattern.lower() not in address_lower:
+            continue
+
+          # Prefer persona's own resources (their apartment/home)
+          persona_first = persona_name.split()[0].lower()
+          is_home = persona_first in address_lower
+
+          # Check location match
+          location_match = False
+          if curr_location:
+            curr_loc_lower = curr_location.lower()
+            # Check if in same building/area
+            loc_parts = curr_loc_lower.split(":")
+            if any(part in address_lower for part in loc_parts[:2]):
+              location_match = True
+
+          # Prioritize home resources, then location matches
+          if is_home or location_match:
+            # Check for shared resource contention (shower, hot_water)
+            resource_type = None
+            if "hot_water" in address_lower or "shower" in address_lower:
+              resource_type = "hot_water"
+            elif "bathroom" in address_lower:
+              resource_type = "bathroom"
+
+            if resource_type:
+              success, wait_ticks, locked_by = self.resource_manager.try_acquire(
+                address, resource_type, persona_name, self.step
+              )
+              if not success:
+                # Resource is occupied - inject perception event
+                self._inject_resource_occupied_event(persona, address, resource_type, locked_by, wait_ticks)
+                all_success = False
+                consumed = True  # Mark as handled
+                break
+
+            success = self.resource_manager.consume(address, item, amount)
+            if success:
+              consumed = True
+              break
+            else:
+              # Resource depleted - inject event
+              self._inject_resource_depleted_event(persona, address, item)
+              all_success = False
+              consumed = True  # Mark as handled even though failed
+              break
+
+        # If no specific location matched, try any matching resource
+        if not consumed:
+          for address in self.resource_manager.world_state:
+            if resource_pattern.lower() in address.lower():
+              success = self.resource_manager.consume(address, item, amount)
+              if success:
+                consumed = True
+                break
+
+      # Handle production (e.g., preparing food produces sandwiches)
+      # Only trigger production if persona is at Hobbs Cafe (check full act_address path)
+      if keyword in PRODUCTION_MAPPINGS:
+        act_addr = (getattr(persona.scratch, "act_address", "") or "").lower()
+        curr_tile_addr = (getattr(persona.scratch, "curr_tile", "") or "")
+        at_cafe = "hobbs cafe" in act_addr or "hobbs cafe" in str(curr_tile_addr).lower()
+        if not at_cafe:
+          # Also check description for cafe context
+          act_desc = (getattr(persona.scratch, "act_description", "") or "").lower()
+          at_cafe = "hobbs cafe" in act_desc or "open cafe" in act_desc or "cafe counter" in act_desc
+        if at_cafe:
+          for prod_pattern, prod_item, prod_amount in PRODUCTION_MAPPINGS[keyword]:
+            for address in self.resource_manager.world_state:
+              if prod_pattern.lower() in address.lower():
+                self.resource_manager.restock(address, prod_item, prod_amount)
+                print(f"[ResourceManager] {persona.name} produced {prod_amount} {prod_item} at {address}")
+                break
+
+    return all_success
+
+  def _inject_resource_depleted_event(self, persona, address, item):
+    """
+    Inject a perception event into persona's memory when a resource is depleted.
+    This triggers awareness and potential replanning.
+    """
+    try:
+      # Parse the resource location for a human-readable description
+      parts = address.split(":")
+      location_name = parts[-1] if parts else address
+
+      # Create richer event description with alternatives based on item type
+      food_items = ["eggs", "bread", "milk"]
+      if any(food in item for food in food_items):
+        event_desc = f"{persona.name} found the refrigerator empty (no {item}). They cannot prepare food at home. Hobbs Café serves breakfast nearby."
+        poignancy = 8  # Higher importance for food depletion
+      elif item == "coffee_beans":
+        event_desc = f"{persona.name} found no coffee at home. Hobbs Café is nearby and serves coffee."
+        poignancy = 8  # Higher importance for coffee depletion
+      elif item == "hot_water":
+        event_desc = f"{persona.name} found no hot water for a shower."
+        poignancy = 5  # Moderate importance for hot water
+      else:
+        event_desc = f"The {location_name} is out of {item}"
+        poignancy = 5  # Default importance
+
+      # Add event to persona's associative memory
+      curr_time = self.curr_time
+      expiration = None
+
+      s = location_name
+      p = "is"
+      o = f"out of {item}"
+
+      keywords = {location_name.lower(), item.lower(), "empty", "depleted"}
+
+      # Generate a simple embedding key
+      embedding_key = f"resource_depleted_{persona.name}_{item}_{curr_time.strftime('%Y%m%d%H%M%S')}"
+
+      # Create embedding pair (simple zero vector as placeholder)
+      embedding_pair = (embedding_key, [0.0] * 1536)
+
+      # Add the event to memory
+      persona.a_mem.add_event(
+        curr_time, expiration,
+        s, p, o,
+        event_desc, keywords, poignancy,
+        embedding_pair, []
+      )
+
+      # Force replan by clearing act_address (causes act_check_finished() to return True)
+      persona.scratch.act_address = None
+
+      # Push a resource goal so replanning has direction (dedup — max 1 of each goal)
+      if not hasattr(persona.scratch, "resource_goals"):
+        persona.scratch.resource_goals = []
+      if any(food in item for food in ["eggs", "bread", "milk"]):
+        goal = "go to Hobbs Cafe to have breakfast"
+      elif item == "coffee_beans":
+        goal = "go to Hobbs Cafe to get coffee"
+      elif item == "hot_water":
+        goal = "use the common bathroom shower"
+      else:
+        goal = None
+      if goal and goal not in persona.scratch.resource_goals:
+        persona.scratch.resource_goals.append(goal)
+
+      print(f"[ResourceManager] {persona.name} noticed: {event_desc}")
+
+    except Exception as e:
+      print(f"[ResourceManager] Error injecting depleted event: {e}")
+
+  def _inject_resource_occupied_event(self, persona, address, resource_type, locked_by, wait_ticks):
+    """
+    Inject a perception event when a shared resource is occupied by another persona.
+    """
+    try:
+      parts = address.split(":")
+      location_name = parts[-2] if len(parts) >= 2 else parts[-1] if parts else address
+
+      if resource_type == "hot_water" or resource_type == "shower":
+        event_desc = f"The bathroom is occupied. {locked_by} is using the shower. {persona.name} will need to wait."
+      elif resource_type == "bathroom":
+        event_desc = f"The bathroom is occupied by {locked_by}. {persona.name} will need to wait."
+      else:
+        event_desc = f"The {location_name} is currently in use by {locked_by}."
+
+      poignancy = 4  # Moderate importance
+
+      curr_time = self.curr_time
+      s = location_name
+      p = "is"
+      o = f"occupied by {locked_by}"
+      keywords = {location_name.lower(), "occupied", "waiting", locked_by.lower().split()[0]}
+
+      embedding_key = f"resource_occupied_{persona.name}_{resource_type}_{curr_time.strftime('%Y%m%d%H%M%S')}"
+      embedding_pair = (embedding_key, [0.0] * 1536)
+
+      persona.a_mem.add_event(
+        curr_time, None,
+        s, p, o,
+        event_desc, keywords, poignancy,
+        embedding_pair, []
+      )
+
+      print(f"[ResourceManager] {persona.name} found {resource_type} occupied by {locked_by}")
+
+    except Exception as e:
+      print(f"[ResourceManager] Error injecting occupied event: {e}")
+
+  def satisfy_needs_for_action(self, persona, act_description):
+    """
+    Satisfy needs based on the action being performed.
+    Called when a persona transitions to a new action.
+
+    Mappings:
+    - eat/breakfast/lunch/dinner/meal/food/snack/cook -> hunger +40, hydration +10
+    - coffee/drink/water/tea/juice/beverage -> hydration +30, stimulation +10
+    - shower/wash/bath/brush teeth -> hygiene +60
+    - toilet/bathroom/restroom -> bladder +70
+    - rest/nap/relax/sit/lounge -> comfort +30, energy +15
+    - chat/talk/convers/meet/visit/party -> social +25
+    - read/work/study/research/write/creat/paint/play -> stimulation +20
+    """
+    s = persona.scratch
+
+    # Guard for backwards compatibility
+    if not hasattr(s, "needs"):
+      return
+
+    if not act_description:
+      return
+
+    act_lower = act_description.lower()
+
+    # Define keyword mappings
+    satisfactions = []
+
+    # Eating activities
+    if any(kw in act_lower for kw in ["eat", "breakfast", "lunch", "dinner", "meal", "food", "snack", "cook"]):
+      satisfactions.append(("hunger", 40))
+      satisfactions.append(("hydration", 10))
+
+    # Drinking activities
+    if any(kw in act_lower for kw in ["coffee", "drink", "water", "tea", "juice", "beverage"]):
+      satisfactions.append(("hydration", 30))
+      satisfactions.append(("stimulation", 10))
+
+    # Hygiene activities
+    if any(kw in act_lower for kw in ["shower", "wash", "bath", "brush teeth"]):
+      satisfactions.append(("hygiene", 60))
+
+    # Bathroom activities
+    if any(kw in act_lower for kw in ["toilet", "bathroom", "restroom"]):
+      satisfactions.append(("bladder", 70))
+
+    # Rest activities
+    if any(kw in act_lower for kw in ["rest", "nap", "relax", "sit", "lounge"]):
+      satisfactions.append(("comfort", 30))
+      satisfactions.append(("energy", 15))
+
+    # Social activities
+    if any(kw in act_lower for kw in ["chat", "talk", "convers", "meet", "visit", "party"]):
+      satisfactions.append(("social", 25))
+
+    # Stimulating activities
+    if any(kw in act_lower for kw in ["read", "work", "study", "research", "write", "creat", "paint", "play"]):
+      satisfactions.append(("stimulation", 20))
+
+    # Apply satisfactions
+    for need, amount in satisfactions:
+      if need in s.needs:
+        s.needs[need] = min(100, s.needs[need] + amount)
+
+
+  def start_server(self, int_counter):
     """
     The main backend server of Reverie. 
     This function retrieves the environment file from the frontend to 
@@ -367,18 +725,32 @@ class ReverieServer:
           # Then we need to actually have each of the personas perceive and
           # move. The movement for each of the personas comes in the form of
           # x y coordinates where the persona will move towards. e.g., (50, 34)
-          # This is where the core brains of the personas are invoked. 
-          movements = {"persona": dict(), 
+          # This is where the core brains of the personas are invoked.
+          movements = {"persona": dict(),
                        "meta": dict()}
-          for persona_name, persona in self.personas.items(): 
+          for persona_name, persona in self.personas.items():
+            # Track previous action to detect transitions
+            prev_act_description = persona.scratch.act_description
+
             # <next_tile> is a x,y coordinate. e.g., (58, 9)
             # <pronunciatio> is an emoji. e.g., "\ud83d\udca4"
-            # <description> is a string description of the movement. e.g., 
-            #   writing her next novel (editing her novel) 
+            # <description> is a string description of the movement. e.g.,
+            #   writing her next novel (editing her novel)
             #   @ double studio:double studio:common room:sofa
             next_tile, pronunciatio, description = persona.move(
-              self.maze, self.personas, self.personas_tile[persona_name], 
+              self.maze, self.personas, self.personas_tile[persona_name],
               self.curr_time)
+
+            # Satisfy needs when persona transitions to a new action
+            curr_act_description = persona.scratch.act_description
+            if curr_act_description != prev_act_description:
+              self.satisfy_needs_for_action(persona, curr_act_description)
+              # Consume world resources for the action (Phase 2)
+              try:
+                self.consume_resources_for_action(persona, curr_act_description)
+              except Exception as e:
+                print(f"[Reverie] Warning: resource consumption failed: {e}")
+
             movements["persona"][persona_name] = {}
             movements["persona"][persona_name]["movement"] = next_tile
             movements["persona"][persona_name]["pronunciatio"] = pronunciatio
@@ -398,6 +770,7 @@ class ReverieServer:
           #  "persona": {"Klaus Mueller": {"movement": [38, 12]}}, 
           #  "meta": {curr_time: <datetime>}}
           curr_move_file = f"{sim_folder}/movement/{self.step}.json"
+          os.makedirs(f"{sim_folder}/movement", exist_ok=True)
           with open(curr_move_file, "w") as outfile: 
             outfile.write(json.dumps(movements, indent=2))
 
@@ -407,7 +780,16 @@ class ReverieServer:
           self.curr_time += datetime.timedelta(seconds=self.sec_per_step)
 
           int_counter -= 1
-          
+
+          # Tick agent needs each step
+          self.tick_needs()
+
+          # Tick world resources (hot water refill, daily deliveries)
+          try:
+            self.resource_manager.tick(self.curr_time)
+          except Exception as e:
+            print(f"[Reverie] Warning: resource_manager.tick failed: {e}")
+
       # Sleep so we don't burn our machines. 
       time.sleep(self.server_sleep)
 

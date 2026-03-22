@@ -28,7 +28,7 @@ Location: Sam is in double studio that has the following areas: {kitchen, common
 Currently: Sam is a painter who is preparing for her first solo show. She mostly works from home. She is currently living alone in a two bedroom apartment.
 Daily plan requirement: Sam is planning to stay at home all day and never go out of her home.
 
-In 5 min increments, list the subtasks Sam does when Sam is working on her painting (total duration in minutes 270):
+In 5 min increments, list the subtasks Sam does to complete the following activity: working on her painting (total duration in minutes 270):
 1) Sam is setting up her easel and canvas (duration in minutes: 15, minutes left: 255)
 2) Sam is sketching out her painting (duration in minutes: 30, minutes left: 225)
 3) Sam is mixing her paint (duration in minutes: 15, minutes left: 210)
@@ -47,7 +47,7 @@ Location: Kelly is in an older condo that has the following areas: {kitchen, bed
 Currently: Kelly is a teacher during the school year. She teaches at the school but works on lesson plans at home. She is currently living alone in a single bedroom condo.
 Daily plan requirement: Kelly is planning to teach during the morning and work from home in the afternoon.
 
-In 5 min increments, list the subtasks Kelly does when Kelly is working on the next day's kindergarten lesson plan (total duration in minutes: 210):
+In 5 min increments, list the subtasks Kelly does to complete the following activity: working on the next day's kindergarten lesson plan (total duration in minutes: 210):
 1) Kelly is reviewing the kindergarten curriculum standards. (duration in minutes: 15, minutes left: 195)
 2) Kelly is brainstorming ideas for the lesson. (duration in minutes: 30, minutes left: 165)
 3) Kelly is creating the lesson plan. (duration in minutes: 60, minutes left: 105)
@@ -65,13 +65,13 @@ Personality: social, hardworking, busy
 Location: Anthony lives in a single bedroom in a dorm that has the following areas: {single dorm room, communal bathroom, lounge, shared kitchen, hallway, mailroom, dining hall}.
 Currently: Anthony is a student during midterms. He attends his college classes virtually. He is currently living alone in a single dorm room.
 
-In 5 min increments, list the subtasks Anthony does when Anthony is studying for midterms (total duration in minutes 120):
+In 5 min increments, list the subtasks Anthony does to complete the following activity: studying for midterms (total duration in minutes 120):
 1) Anthony is reviewing the lecture notes from the past few weeks. (duration in minutes: 15, minutes left: 105)
 2) Anthony is doing practice problems from the textbook. (duration in minutes: 30, minutes left: 75)
 3) Anthony is checking his answers in the back of the textbook. (duration in minutes: 10, minutes left: 65)
 4) Anthony makes a snack. (duration in minutes: 5, minutes left: 60)
 5) Anthony is making a study guide. (duration in minutes: 15, minutes left: 45)
-6) Anthony is calls a friend to work through problems together. (duration in minutes: 45, minutes left: 0)
+6) Anthony is calling a friend to work through problems together. (duration in minutes: 45, minutes left: 0)
 ---
 Name: !<INPUT 0>!
 Age: !<INPUT 1>!
@@ -81,5 +81,5 @@ Location: !<INPUT 4>! is in !<INPUT 5>! that has the following areas: {!<INPUT 6
 Currently: !<INPUT 7>!
 Daily plan requirement: !<INPUT 8>!
 
-Today is !<INPUT 9>!. In 5 min increments, list the subtasks !<INPUT 10>! does when !<INPUT 11>! is !<INPUT 12>! (total duration in minutes !<INPUT 13>!): 
+Today is !<INPUT 9>!. In 5 min increments, list the subtasks !<INPUT 10>! does to complete the following activity: !<INPUT 12>! (total duration in minutes !<INPUT 13>!): 
 1) !<INPUT 14>! is

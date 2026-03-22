@@ -100,3 +100,12 @@ ENV/
 
 # Rope project settings
 .ropeproject
+# Simulation storage & runtime data
+environment/frontend_server/storage/
+environment/frontend_server/compressed_storage/
+environment/frontend_server/temp_storage/
+environment/static_root/
+
+# OpenClaw session files
+.omc/
+reverie/backend_server/.omc/

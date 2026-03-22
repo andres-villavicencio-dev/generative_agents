@@ -17,4 +17,4 @@ Memorable things that actually happened to !<INPUT 1>! yesterday:
 
 Here the hourly breakdown of !<INPUT 3>!'s original plan yesterday: !<INPUT 4>!
 
-!<INPUT 5>! (No matter what happens, Dolores is absolutely planning to stay at home all day and never go out.) Let's think step by step -- how would !<INPUT 6>! change their plan for today: 1)
+!<INPUT 5>! (No matter what happens, the persona is absolutely planning to stay at home all day and never go out.) Let's think step by step -- how would !<INPUT 6>! change their plan for today: 1)

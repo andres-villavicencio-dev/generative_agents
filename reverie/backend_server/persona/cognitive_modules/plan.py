@@ -38,34 +38,35 @@ def generate_wake_up_hour(persona):
   return int(run_gpt_prompt_wake_up_hour(persona)[0])
 
 
-def generate_first_daily_plan(persona, wake_up_hour): 
+def generate_first_daily_plan(persona, wake_up_hour, resource_manager=None):
   """
-  Generates the daily plan for the persona. 
+  Generates the daily plan for the persona.
   Basically the long term planning that spans a day. Returns a list of actions
-  that the persona will take today. Usually comes in the following form: 
-  'wake up and complete the morning routine at 6:00 am', 
-  'eat breakfast at 7:00 am',.. 
-  Note that the actions come without a period. 
+  that the persona will take today. Usually comes in the following form:
+  'wake up and complete the morning routine at 6:00 am',
+  'eat breakfast at 7:00 am',..
+  Note that the actions come without a period.
 
   Persona state: identity stable set, lifestyle, cur_data_str, first_name
 
-  INPUT: 
-    persona: The Persona class instance 
-    wake_up_hour: an integer that indicates when the hour the persona wakes up 
+  INPUT:
+    persona: The Persona class instance
+    wake_up_hour: an integer that indicates when the hour the persona wakes up
                   (e.g., 8)
-  OUTPUT: 
+    resource_manager: Optional WorldResourceManager for resource context (Phase 3.2)
+  OUTPUT:
     a list of daily actions in broad strokes.
-  EXAMPLE OUTPUT: 
-    ['wake up and complete the morning routine at 6:00 am', 
+  EXAMPLE OUTPUT:
+    ['wake up and complete the morning routine at 6:00 am',
      'have breakfast and brush teeth at 6:30 am',
-     'work on painting project from 8:00 am to 12:00 pm', 
-     'have lunch at 12:00 pm', 
-     'take a break and watch TV from 2:00 pm to 4:00 pm', 
-     'work on painting project from 4:00 pm to 6:00 pm', 
+     'work on painting project from 8:00 am to 12:00 pm',
+     'have lunch at 12:00 pm',
+     'take a break and watch TV from 2:00 pm to 4:00 pm',
+     'work on painting project from 4:00 pm to 6:00 pm',
      'have dinner at 6:00 pm', 'watch TV from 7:00 pm to 8:00 pm']
   """
   if debug: print ("GNS FUNCTION: <generate_first_daily_plan>")
-  return run_gpt_prompt_daily_plan(persona, wake_up_hour)[0]
+  return run_gpt_prompt_daily_plan(persona, wake_up_hour, resource_manager=resource_manager)[0]
 
 
 def generate_hourly_schedule(persona, wake_up_hour): 
@@ -94,19 +95,75 @@ def generate_hourly_schedule(persona, wake_up_hour):
               "10:00 AM", "11:00 AM", "12:00 PM", "01:00 PM", "02:00 PM", 
               "03:00 PM", "04:00 PM", "05:00 PM", "06:00 PM", "07:00 PM",
               "08:00 PM", "09:00 PM", "10:00 PM", "11:00 PM"]
-  n_m1_activity = []
-  diversity_repeat_count = 3
-  for i in range(diversity_repeat_count): 
-    n_m1_activity_set = set(n_m1_activity)
-    if len(n_m1_activity_set) < 5: 
-      n_m1_activity = []
-      for count, curr_hour_str in enumerate(hour_str): 
-        if wake_up_hour > 0: 
-          n_m1_activity += ["sleeping"]
-          wake_up_hour -= 1
-        else: 
-          n_m1_activity += [run_gpt_prompt_generate_hourly_schedule(
-                          persona, curr_hour_str, n_m1_activity, hour_str)[0]]
+  # FIX: Build schedule ENTIRELY from daily_req — no LLM calls needed.
+  # The original code called LLM 18 times per agent per day, but small models (gemma3,
+  # qwen3) pattern-match the leading "sleeping" entries and output "sleeping" for every
+  # waking hour too. The daily_req list has explicit times ("at 8:00 am") that are
+  # authoritative. We use those directly and skip 54+ redundant LLM calls on day 1.
+  def _build_req_time_map(daily_req):
+    """Parse daily_req list → sorted [(start_hour, activity_text)] pairs."""
+    import re
+    pairs = []
+    for req in daily_req:
+      m = re.search(r'\bat\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b', req, re.IGNORECASE)
+      if m:
+        h = int(m.group(1)); ampm = m.group(3).lower()
+        if ampm == 'pm' and h != 12: h += 12
+        elif ampm == 'am' and h == 12: h = 0
+        act = re.sub(r'\bat\s+\d{1,2}(?::\d{2})?\s*(?:am|pm)\b.*', '', req, flags=re.IGNORECASE).strip().rstrip(',').strip()
+        if act:
+          pairs.append((h, act))
+    return sorted(pairs)
+
+  def _build_schedule_from_req(daily_req, wake_up_hour):
+    """Build 24-slot hourly activity list directly from daily_req + wake_up_hour.
+    
+    Each slot corresponds to the hour at that index (slot 0 = 00:00, slot 8 = 08:00).
+    Slots before wake_up_hour = 'sleeping'.
+    Remaining slots filled from req_time_map using forward-fill.
+    Final hours default to 'going to bed and sleeping'.
+    """
+    req_map = _build_req_time_map(daily_req)
+    schedule = []
+    
+    # Determine sleep hour: last req hour + 2 hours buffer, capped at 23
+    if req_map:
+      last_req_hour = max(h for h, _ in req_map)
+      # FIX: minimum sleep hour = 21 (9pm) so agents with sparse req maps (e.g. only
+      # "study at 8am") don't get a sleep_hour of 10, which makes them "go to bed" mid-morning.
+      sleep_hour = max(last_req_hour + 2, 21)
+      sleep_hour = min(sleep_hour, 23)
+    else:
+      sleep_hour = 22
+
+    def _req_for_hour(h):
+      """Forward-fill: return last req whose start hour <= h."""
+      act = None
+      for rh, ra in req_map:
+        if rh <= h:
+          act = ra
+      return act
+
+    for h in range(24):
+      if h < wake_up_hour:
+        schedule.append("sleeping")
+      elif h >= sleep_hour:
+        schedule.append("going to bed and sleeping")
+      else:
+        act = _req_for_hour(h)
+        if act:
+          schedule.append(act)
+        else:
+          # Before first req starts but after wake_up — use wake-up activity
+          schedule.append("waking up and completing morning routine")
+
+    print(f"[schedule-deterministic] {persona.scratch.name}: wake={wake_up_hour} sleep={sleep_hour} req_anchors={len(req_map)}")
+    for h, act in enumerate(schedule):
+      if h >= wake_up_hour:
+        print(f"  {h:02d}:00 → {act}")
+    return schedule
+
+  n_m1_activity = _build_schedule_from_req(persona.scratch.daily_req, wake_up_hour)
   
   # Step 1. Compressing the hourly schedule to the following format: 
   # The integer indicates the number of hours. They should add up to 24. 
@@ -159,9 +216,27 @@ def generate_task_decomp(persona, task, duration):
      ['getting her supplies ready for the day', 15], 
      ['starting to work on her painting', 15]] 
 
+  FIX: cap duration at 120 minutes before sending to LLM. Large durations
+  (e.g. 720 min "working at the cafe") cause qwen3 to generate 144 subtasks
+  and time out. We clamp to 2 hours max — the caller will expand the last
+  entry to fill remaining time anyway (see run_gpt_prompt_task_decomp).
+
   """
   if debug: print ("GNS FUNCTION: <generate_task_decomp>")
-  return run_gpt_prompt_task_decomp(persona, task, duration)[0]
+  # FIX: cap duration passed to LLM at 120 min to avoid timeouts on huge blocks
+  capped_duration = min(duration, 120)
+  if capped_duration < duration:
+    print(f"[task_decomp] capping duration {duration}min → {capped_duration}min for: {task[:60]}")
+  result = run_gpt_prompt_task_decomp(persona, task, capped_duration)[0]
+  # Scale the decomposed subtask durations back up proportionally so total = original duration
+  if result and capped_duration < duration:
+    scale = duration / capped_duration
+    result = [[t, max(5, round(d * scale / 5) * 5)] for t, d in result]
+    # Adjust last item to make total match exactly
+    total = sum(d for _, d in result)
+    if total != duration and result:
+      result[-1][1] += duration - total
+  return result
 
 
 def generate_action_sector(act_desp, persona, maze): 
@@ -266,7 +341,10 @@ def generate_action_event_triple(act_desp, persona):
 
 def generate_act_obj_desc(act_game_object, act_desp, persona): 
   if debug: print ("GNS FUNCTION: <generate_act_obj_desc>")
-  return run_gpt_prompt_act_obj_desc(act_game_object, act_desp, persona)[0]
+  result = run_gpt_prompt_act_obj_desc(act_game_object, act_desp, persona)
+  if result is None:
+    return f"{act_game_object} is idle"
+  return result[0]
 
 
 def generate_act_obj_event_triple(act_game_object, act_obj_desc, persona): 
@@ -458,29 +536,36 @@ def revise_identity(persona):
   persona.scratch.daily_plan_req = new_daily_req
 
 
-def _long_term_planning(persona, new_day): 
+def _long_term_planning(persona, new_day, maze=None):
   """
-  Formulates the persona's daily long-term plan if it is the start of a new 
-  day. This basically has two components: first, we create the wake-up hour, 
-  and second, we create the hourly schedule based on it. 
+  Formulates the persona's daily long-term plan if it is the start of a new
+  day. This basically has two components: first, we create the wake-up hour,
+  and second, we create the hourly schedule based on it.
   INPUT
     new_day: Indicates whether the current time signals a "First day",
              "New day", or False (for neither). This is important because we
-             create the personas' long term planning on the new day. 
+             create the personas' long term planning on the new day.
+    maze: Optional Maze instance to access resource_manager (Phase 3.2)
   """
-  # We start by creating the wake up hour for the persona. 
+  # We start by creating the wake up hour for the persona.
   wake_up_hour = generate_wake_up_hour(persona)
+
+  # Get resource_manager from maze if available (Phase 3.2)
+  resource_manager = None
+  if maze is not None and hasattr(maze, 'resource_manager'):
+    resource_manager = maze.resource_manager
 
   # When it is a new day, we start by creating the daily_req of the persona.
   # Note that the daily_req is a list of strings that describe the persona's
   # day in broad strokes.
-  if new_day == "First day": 
+  if new_day == "First day":
     # Bootstrapping the daily plan for the start of then generation:
-    # if this is the start of generation (so there is no previous day's 
+    # if this is the start of generation (so there is no previous day's
     # daily requirement, or if we are on a new day, we want to create a new
     # set of daily requirements.
-    persona.scratch.daily_req = generate_first_daily_plan(persona, 
-                                                          wake_up_hour)
+    persona.scratch.daily_req = generate_first_daily_plan(persona,
+                                                          wake_up_hour,
+                                                          resource_manager)
   elif new_day == "New day":
     revise_identity(persona)
 
@@ -518,18 +603,66 @@ def _long_term_planning(persona, new_day):
 
 
 
-def _determine_action(persona, maze): 
+def _determine_action(persona, maze):
   """
-  Creates the next action sequence for the persona. 
-  The main goal of this function is to run "add_new_action" on the persona's 
-  scratch space, which sets up all the action related variables for the next 
-  action. 
-  As a part of this, the persona may need to decompose its hourly schedule as 
-  needed.   
+  Creates the next action sequence for the persona.
+  The main goal of this function is to run "add_new_action" on the persona's
+  scratch space, which sets up all the action related variables for the next
+  action.
+  As a part of this, the persona may need to decompose its hourly schedule as
+  needed.
   INPUT
-    persona: Current <Persona> instance whose action we are determining. 
-    maze: Current <Maze> instance. 
+    persona: Current <Persona> instance whose action we are determining.
+    maze: Current <Maze> instance.
   """
+  # Check resource goals first — these take priority over normal replanning
+  if hasattr(persona.scratch, "resource_goals") and persona.scratch.resource_goals:
+    resource_goal = persona.scratch.resource_goals.pop(0)
+    print(f"[ResourceGoal] {persona.name} pursuing: {resource_goal}")
+
+    # Use the resource goal as the action description
+    act_desp = resource_goal
+    act_dura = 30  # 30 minutes for resource-driven actions
+
+    # Determine the target location based on the goal
+    act_world = maze.access_tile(persona.scratch.curr_tile)["world"]
+    act_sector = generate_action_sector(act_desp, persona, maze)
+    act_arena = generate_action_arena(act_desp, persona, maze, act_world, act_sector)
+
+    # Strip any LLM artifacts from arena name
+    import re as _re
+    act_arena = _re.sub(r'^Answer:\s*', '', act_arena, flags=_re.IGNORECASE).strip()
+    act_arena = act_arena.lstrip("{[(\"'").rstrip("}])\"'").strip()
+
+    act_address = f"{act_world}:{act_sector}:{act_arena}"
+    act_game_object = generate_action_game_object(act_desp, act_address, persona, maze)
+
+    if act_game_object and act_game_object != "<random>":
+      new_address = f"{act_world}:{act_sector}:{act_arena}:{act_game_object}"
+    else:
+      new_address = f"{act_world}:{act_sector}:{act_arena}"
+
+    act_pron = generate_action_pronunciatio(act_desp, persona)
+    act_event = generate_action_event_triple(act_desp, persona)
+    act_obj_desp = generate_act_obj_desc(act_game_object, act_desp, persona)
+    act_obj_pron = generate_action_pronunciatio(act_obj_desp, persona)
+    act_obj_event = generate_act_obj_event_triple(act_game_object, act_obj_desp, persona)
+
+    # Add the resource-goal action to persona's queue
+    persona.scratch.add_new_action(new_address,
+                                   int(act_dura),
+                                   act_desp,
+                                   act_pron,
+                                   act_event,
+                                   None,
+                                   None,
+                                   None,
+                                   None,
+                                   act_obj_desp,
+                                   act_obj_pron,
+                                   act_obj_event)
+    return  # Exit early - resource goal handled
+
   def determine_decomp(act_desp, act_dura):
     """
     Given an action description and its duration, we determine whether we need
@@ -625,10 +758,18 @@ def _determine_action(persona, maze):
   # act_sector = maze.access_tile(persona.scratch.curr_tile)["sector"]
   act_sector = generate_action_sector(act_desp, persona, maze)
   act_arena = generate_action_arena(act_desp, persona, maze, act_world, act_sector)
+  # Strip any LLM artifacts from arena name
+  import re as _re
+  act_arena = _re.sub(r'^Answer:\s*', '', act_arena, flags=_re.IGNORECASE).strip()
+  act_arena = act_arena.lstrip("{[(\"'").rstrip("}])\"'").strip()
   act_address = f"{act_world}:{act_sector}:{act_arena}"
   act_game_object = generate_action_game_object(act_desp, act_address,
                                                 persona, maze)
-  new_address = f"{act_world}:{act_sector}:{act_arena}:{act_game_object}"
+  # Don't include <random> placeholder in the address — use arena address only
+  if act_game_object and act_game_object != "<random>":
+    new_address = f"{act_world}:{act_sector}:{act_arena}:{act_game_object}"
+  else:
+    new_address = f"{act_world}:{act_sector}:{act_arena}"
   act_pron = generate_action_pronunciatio(act_desp, persona)
   act_event = generate_action_event_triple(act_desp, persona)
   # Persona's actions also influence the object states. We set those up here. 
@@ -900,8 +1041,92 @@ def _chat_react(maze, persona, focused_event, reaction_mode, personas):
 
     _create_react(p, inserted_act, inserted_act_dur,
       act_address, act_event, chatting_with, convo, chatting_with_buffer, chatting_end_time,
-      act_pronunciatio, act_obj_description, act_obj_pronunciatio, 
+      act_pronunciatio, act_obj_description, act_obj_pronunciatio,
       act_obj_event, act_start_time)
+
+  # Phase 3.3b: Resource sharing memory injection
+  # If conversation mentions resources, inject a memory for the listener
+  _inject_resource_sharing_memories(maze, init_persona, target_persona, convo)
+
+
+def _inject_resource_sharing_memories(maze, init_persona, target_persona, convo):
+  """
+  After a conversation ends, if resource-related keywords appear in the conversation,
+  inject a memory node for the *other* agent so they're aware of the shared info.
+
+  Phase 3.3b: Social resource awareness in conversations
+  """
+  if not convo:
+    return
+
+  resource_keywords = ["out of", "empty", "no coffee", "no eggs", "grocery", "fridge",
+                       "running low", "store", "restocked", "supplies", "ran out",
+                       "need to buy", "shopping", "market", "cafe", "breakfast"]
+
+  # Build full conversation text
+  all_utt = ""
+  for row in convo:
+    speaker = row[0]
+    utt = row[1]
+    all_utt += f"{speaker}: {utt}\n"
+
+  all_utt_lower = all_utt.lower()
+
+  # Check if any resource keywords appear
+  if not any(kw in all_utt_lower for kw in resource_keywords):
+    return
+
+  # For each utterance, check if it contains resource keywords and inject memory for listener
+  for row in convo:
+    speaker_name = row[0]
+    utterance = row[1]
+    utt_lower = utterance.lower()
+
+    # Check for resource-related keywords in this utterance
+    found_keywords = [kw for kw in resource_keywords if kw in utt_lower]
+    if not found_keywords:
+      continue
+
+    # Determine the listener (the other persona)
+    if speaker_name == init_persona.name:
+      listener = target_persona
+    elif speaker_name == target_persona.name:
+      listener = init_persona
+    else:
+      continue
+
+    # Create a memory for the listener about what the speaker mentioned
+    try:
+      curr_time = listener.scratch.curr_time
+      expiration = curr_time + datetime.timedelta(days=7)
+
+      # Build a concise memory description
+      keyword_str = ", ".join(found_keywords[:2])  # Limit to 2 keywords
+      memory_desc = f"{speaker_name} mentioned something about {keyword_str} during conversation"
+
+      s = speaker_name
+      p = "mentioned"
+      o = keyword_str
+
+      keywords = set([speaker_name.lower(), "conversation", "resource"] + found_keywords[:2])
+      poignancy = 4  # Moderate importance
+
+      # Simple embedding key
+      embedding_key = f"resource_chat_{speaker_name}_{listener.name}_{curr_time.strftime('%Y%m%d%H%M%S')}"
+      embedding_pair = (embedding_key, [0.0] * 1536)
+
+      listener.a_mem.add_event(
+        curr_time, expiration,
+        s, p, o,
+        memory_desc, keywords, poignancy,
+        embedding_pair, []
+      )
+
+      print(f"[ResourceSharing] {listener.name} remembers: {memory_desc}")
+
+    except Exception as e:
+      print(f"[ResourceSharing] Error injecting memory: {e}")
+      continue
 
 
 def _wait_react(persona, reaction_mode): 
@@ -950,9 +1175,9 @@ def plan(persona, maze, personas, new_day, retrieved):
   OUTPUT 
     The target action address of the persona (persona.scratch.act_address).
   """ 
-  # PART 1: Generate the hourly schedule. 
-  if new_day: 
-    _long_term_planning(persona, new_day)
+  # PART 1: Generate the hourly schedule.
+  if new_day:
+    _long_term_planning(persona, new_day, maze)
 
   # PART 2: If the current action has expired, we want to create a new plan.
   if persona.scratch.act_check_finished(): 

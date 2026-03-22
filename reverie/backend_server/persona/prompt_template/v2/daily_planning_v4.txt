@@ -22,5 +22,5 @@ Currently: !<INPUT 7>!
 Lifestyle: !<INPUT 8>!
 
 !<INPUT 9>!
-Today is !<INPUT 10>!. After Dolores wakes up, here are 6 high-level tasks that !<INPUT 11>! will complete today before going to bed:
+Today is !<INPUT 10>!. Here are 6 high-level tasks that !<INPUT 11>! will complete today before going to bed:
 1.

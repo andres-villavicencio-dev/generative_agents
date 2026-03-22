@@ -16,4 +16,4 @@ Current Date: !<INPUT 0>!
 Currently: !<INPUT 2>!
 
 !<INPUT 3>!
-Summarize the most relevant statements above that can inform !<INPUT 4>! in his conversation with !<INPUT 5>!.
+Summarize the most relevant statements above that can inform !<INPUT 4>! in their conversation with !<INPUT 5>!.

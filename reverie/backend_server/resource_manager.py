@@ -13,6 +13,17 @@ import datetime
 import threading
 
 
+# Item prices for economy layer (Phase 5)
+ITEM_PRICES = {
+    "eggs": 0.50,       # per unit
+    "bread": 1.50,      # per loaf (unit)
+    "milk": 1.20,       # per unit
+    "coffee_beans": 2.00,
+    "sandwiches": 4.50,
+    "pastries": 3.00,
+}
+
+
 class WorldResourceManager:
     """
     Manages world resources across all locations in the simulation.
@@ -197,6 +208,41 @@ class WorldResourceManager:
             return False
 
         location[item] = current - amount
+        return True
+
+    def purchase(self, address, item, amount, buyer_scratch):
+        """
+        Consume stock AND deduct from buyer wallet.
+
+        Args:
+            address: Location address string
+            item: Item name to purchase
+            amount: Amount to purchase
+            buyer_scratch: Buyer's Scratch object (must have .wallet attribute)
+
+        Returns:
+            bool: True if purchase succeeded (stock + funds available), False otherwise
+        """
+        price = ITEM_PRICES.get(item, 1.0) * amount
+
+        # Check if buyer has enough funds
+        if not hasattr(buyer_scratch, 'wallet') or buyer_scratch.wallet < price:
+            return False
+
+        # Check if stock is available and consume it
+        if not self.consume(address, item, amount):
+            return False
+
+        # Deduct from wallet
+        buyer_scratch.wallet -= price
+
+        # Update financial stress based on remaining funds
+        if hasattr(buyer_scratch, 'financial_stress'):
+            if buyer_scratch.wallet < 20:
+                buyer_scratch.financial_stress = min(1.0, buyer_scratch.financial_stress + 0.1)
+            elif buyer_scratch.wallet < 50:
+                buyer_scratch.financial_stress = min(1.0, buyer_scratch.financial_stress + 0.05)
+
         return True
 
     def restock(self, address, item, amount):

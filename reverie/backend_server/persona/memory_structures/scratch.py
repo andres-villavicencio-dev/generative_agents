@@ -190,6 +190,11 @@ class Scratch:
     # Resource goals: priority actions triggered by depletion events
     self.resource_goals = []  # e.g. ["go to Hobbs Cafe for breakfast"]
 
+    # ECONOMY LAYER (Phase 5)
+    # Agent wallet and financial stress
+    self.wallet = self._get_initial_wallet()
+    self.financial_stress = 0.0  # 0.0 = no stress, 1.0 = max
+
     if check_if_file_exists(f_saved): 
       # If we have a bootstrap file, load that here. 
       scratch_load = json.load(open(f_saved))
@@ -277,6 +282,13 @@ class Scratch:
       if "resource_goals" in scratch_load:
         self.resource_goals = scratch_load["resource_goals"]
 
+      # Load economy layer (Phase 5) with backwards compatibility
+      if "wallet" in scratch_load:
+        self.wallet = scratch_load["wallet"]
+      else:
+        self.wallet = self._get_initial_wallet()
+      self.financial_stress = scratch_load.get("financial_stress", 0.0)
+
 
   def save(self, out_json):
     """
@@ -360,6 +372,10 @@ class Scratch:
     if hasattr(self, "needs_danger"):
       scratch["needs_danger"] = self.needs_danger
     scratch["resource_goals"] = self.resource_goals if hasattr(self, "resource_goals") else []
+
+    # Save economy layer (Phase 5)
+    scratch["wallet"] = self.wallet if hasattr(self, "wallet") else 100.0
+    scratch["financial_stress"] = self.financial_stress if hasattr(self, "financial_stress") else 0.0
 
     with open(out_json, "w") as outfile:
       json.dump(scratch, outfile, indent=2) 
@@ -712,6 +728,43 @@ class Scratch:
       return f"{self.name} is {low_needs[0]}."
     else:
       return f"{self.name} is {', and '.join([', '.join(low_needs[:-1]), low_needs[-1]])}."
+
+
+  def _get_initial_wallet(self):
+    """
+    Role-based starting wallet. Higher for owners/professionals, lower for students.
+    Called during init before self.name is set from file, so we return default.
+    After loading, wallet is overwritten from save file or re-initialized.
+    """
+    if not hasattr(self, 'name') or self.name is None:
+      return 100.0
+    role_wallets = {
+        "Isabella Rodriguez": 250.0,   # café owner
+        "Klaus Mueller": 120.0,         # researcher/grad student
+        "Maria Lopez": 80.0,            # artist/student
+        "John Lin": 180.0,              # pharmacist
+        "Eddy Lin": 60.0,               # music student
+        "Tom Moreno": 150.0,            # politician
+        "Jane Moreno": 140.0,
+        "Sam Moore": 90.0,
+        "Giorgio Rossi": 160.0,
+        "Ayesha Khan": 110.0,
+    }
+    return role_wallets.get(self.name, 100.0)
+
+
+  def get_str_financial_summary(self):
+    """Returns a natural-language financial status for injection into prompts."""
+    if not hasattr(self, 'wallet'):
+      return ""
+    if self.financial_stress > 0.7:
+      return f"{self.name} is very worried about money (wallet: ${self.wallet:.0f}). They are cutting back on spending."
+    elif self.financial_stress > 0.4:
+      return f"{self.name} is feeling some financial pressure (wallet: ${self.wallet:.0f})."
+    elif self.wallet > 200:
+      return f"{self.name} is financially comfortable (wallet: ${self.wallet:.0f})."
+    else:
+      return ""  # no need to mention if fine and not stressed
 
 
 

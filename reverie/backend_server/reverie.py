@@ -420,16 +420,37 @@ class ReverieServer:
                 consumed = True  # Mark as handled
                 break
 
-            success = self.resource_manager.consume(address, item, amount)
-            if success:
-              consumed = True
-              break
+            # Phase 5: Use purchase() for commercial locations (café counter, store)
+            # Use plain consume() for home/personal resources
+            is_commercial = (
+              "counter" in address.lower() or
+              "cafe" in address.lower() or
+              "supply store" in address.lower() or
+              ("shelves" in address.lower() and "store" in address.lower())
+            )
+            if is_commercial and hasattr(self.resource_manager, 'purchase'):
+              success = self.resource_manager.purchase(address, item, amount, persona.scratch)
+              if success:
+                consumed = True
+                # If buying at café counter, credit Isabella's wallet
+                self._credit_cafe_sale(item, amount)
+                break
+              else:
+                self._inject_resource_depleted_event(persona, address, item)
+                all_success = False
+                consumed = True
+                break
             else:
-              # Resource depleted - inject event
-              self._inject_resource_depleted_event(persona, address, item)
-              all_success = False
-              consumed = True  # Mark as handled even though failed
-              break
+              success = self.resource_manager.consume(address, item, amount)
+              if success:
+                consumed = True
+                break
+              else:
+                # Resource depleted - inject event
+                self._inject_resource_depleted_event(persona, address, item)
+                all_success = False
+                consumed = True  # Mark as handled even though failed
+                break
 
         # If no specific location matched, try any matching resource
         if not consumed:
@@ -459,6 +480,51 @@ class ReverieServer:
                 break
 
     return all_success
+
+  def _credit_cafe_sale(self, item, amount):
+    """Phase 5: Credit Isabella Rodriguez's wallet when café items are purchased."""
+    try:
+      cafe_owner = "Isabella Rodriguez"
+      if cafe_owner in self.personas:
+        from resource_manager import ITEM_PRICES
+        price = ITEM_PRICES.get(item, 1.0) * amount
+        self.personas[cafe_owner].scratch.wallet = getattr(
+          self.personas[cafe_owner].scratch, 'wallet', 250.0) + price
+        # Update financial stress
+        if hasattr(self.resource_manager, '_update_financial_stress'):
+          self.resource_manager._update_financial_stress(
+            self.personas[cafe_owner].scratch)
+        print(f"[Economy] Isabella earned ${price:.2f} from selling {amount} {item} (wallet: ${self.personas[cafe_owner].scratch.wallet:.0f})")
+    except Exception as e:
+      pass  # Economy is optional, never crash sim
+
+  def _check_and_do_payday(self):
+    """Phase 5: Weekly payday — credit each agent a role-based income every 7 sim-days."""
+    WEEKLY_INCOME = {
+      "Isabella Rodriguez": 400.0,
+      "Klaus Mueller": 200.0,
+      "Maria Lopez": 150.0,
+      "John Lin": 350.0,
+      "Eddy Lin": 100.0,
+      "Tom Moreno": 300.0,
+      "Jane Moreno": 280.0,
+      "Sam Moore": 180.0,
+      "Giorgio Rossi": 260.0,
+      "Ayesha Khan": 220.0,
+    }
+    # Trigger on Mondays at 6am sim time (every 7 days)
+    is_monday = self.curr_time.weekday() == 0
+    is_morning = self.curr_time.hour == 6 and self.curr_time.minute == 0
+    last_payday = getattr(self, '_last_payday_day', -1)
+    current_day = self.curr_time.toordinal()
+    if is_monday and is_morning and current_day != last_payday:
+      self._last_payday_day = current_day
+      for persona_name, persona in self.personas.items():
+        income = WEEKLY_INCOME.get(persona_name, 150.0)
+        persona.scratch.wallet = getattr(persona.scratch, 'wallet', 100.0) + income
+        if hasattr(self.resource_manager, '_update_financial_stress'):
+          self.resource_manager._update_financial_stress(persona.scratch)
+        print(f"[Payday] {persona_name} received ${income:.0f} (wallet: ${persona.scratch.wallet:.0f})")
 
   def _inject_resource_depleted_event(self, persona, address, item):
     """
@@ -789,6 +855,12 @@ class ReverieServer:
             self.resource_manager.tick(self.curr_time)
           except Exception as e:
             print(f"[Reverie] Warning: resource_manager.tick failed: {e}")
+
+          # Phase 5: Weekly payday check
+          try:
+            self._check_and_do_payday()
+          except Exception as e:
+            pass  # Economy is optional, never crash sim
 
       # Sleep so we don't burn our machines. 
       time.sleep(self.server_sleep)

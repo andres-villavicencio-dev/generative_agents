@@ -114,6 +114,12 @@ def run_gpt_prompt_daily_plan(persona,
       needs_summary = persona.scratch.get_str_needs_summary()
       iss += f"\nCurrent physical/emotional state: {needs_summary}"
 
+    # Append financial context if available (Phase 5)
+    if hasattr(persona.scratch, 'get_str_financial_summary'):
+      financial_summary = persona.scratch.get_str_financial_summary()
+      if financial_summary:
+        iss += f"\n{financial_summary}"
+
     # Append resource context if resource_manager is available (Phase 2)
     if resource_manager is not None:
       try:

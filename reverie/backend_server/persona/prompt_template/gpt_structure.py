@@ -14,7 +14,7 @@ from utils import *
 
 # Ollama configuration
 OLLAMA_BASE_URL = "http://localhost:11434"
-OLLAMA_CHAT_MODEL = "claude-distilled-v2:9b"
+OLLAMA_CHAT_MODEL = "qwen3.5:9b"
 OLLAMA_EMBED_MODEL = "embeddinggemma"
 
 

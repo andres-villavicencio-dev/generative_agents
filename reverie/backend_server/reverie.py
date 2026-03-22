@@ -428,12 +428,18 @@ class ReverieServer:
               "supply store" in address.lower() or
               ("shelves" in address.lower() and "store" in address.lower())
             )
-            if is_commercial and hasattr(self.resource_manager, 'purchase'):
+            # Bug 2: Owner using their own café stock is COGS, not a sale
+            CAFE_OWNER = "Isabella Rodriguez"
+            is_owner_at_own_cafe = (
+              persona.name == CAFE_OWNER and
+              "hobbs cafe" in (persona.scratch.act_address or "").lower()
+            )
+            if is_commercial and not is_owner_at_own_cafe and hasattr(self.resource_manager, 'purchase'):
               success = self.resource_manager.purchase(address, item, amount, persona.scratch)
               if success:
                 consumed = True
-                # If buying at café counter, credit Isabella's wallet
-                self._credit_cafe_sale(item, amount)
+                # Bug 3: Pass buyer name so credit log is complete
+                self._credit_cafe_sale(item, amount, persona.name)
                 break
               else:
                 self._inject_resource_depleted_event(persona, address, item)
@@ -481,7 +487,7 @@ class ReverieServer:
 
     return all_success
 
-  def _credit_cafe_sale(self, item, amount):
+  def _credit_cafe_sale(self, item, amount, buyer_name="unknown"):
     """Phase 5: Credit Isabella Rodriguez's wallet when café items are purchased."""
     try:
       cafe_owner = "Isabella Rodriguez"
@@ -494,7 +500,7 @@ class ReverieServer:
         if hasattr(self.resource_manager, '_update_financial_stress'):
           self.resource_manager._update_financial_stress(
             self.personas[cafe_owner].scratch)
-        print(f"[Economy] Isabella earned ${price:.2f} from selling {amount} {item} (wallet: ${self.personas[cafe_owner].scratch.wallet:.0f})")
+        print(f"[Economy] Isabella earned ${price:.2f} from {buyer_name} buying {amount}x {item} (wallet: ${self.personas[cafe_owner].scratch.wallet:.0f})")
     except Exception as e:
       pass  # Economy is optional, never crash sim
 

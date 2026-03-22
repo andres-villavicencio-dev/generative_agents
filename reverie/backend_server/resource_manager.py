@@ -243,6 +243,10 @@ class WorldResourceManager:
             elif buyer_scratch.wallet < 50:
                 buyer_scratch.financial_stress = min(1.0, buyer_scratch.financial_stress + 0.05)
 
+        # Bug 6: Log the buyer-side transaction
+        buyer_name = getattr(buyer_scratch, 'name', 'Unknown')
+        print(f"[Purchase] {buyer_name} spent ${price:.2f} on {amount}x {item} at {address} (wallet: ${buyer_scratch.wallet:.0f})")
+
         return True
 
     def restock(self, address, item, amount):

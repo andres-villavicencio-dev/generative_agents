@@ -550,6 +550,20 @@ class WorldResourceManager:
                 return address
         return None
 
+    def _update_financial_stress(self, scratch):
+        """Update financial stress based on wallet level (Phase 5)."""
+        if not hasattr(scratch, 'wallet'):
+            return
+        w = scratch.wallet
+        if w < 10:
+            scratch.financial_stress = 1.0  # max stress
+        elif w < 30:
+            scratch.financial_stress = 0.7
+        elif w < 60:
+            scratch.financial_stress = 0.4
+        else:
+            scratch.financial_stress = 0.0
+
 
 # Action to resource consumption mappings
 # Format: { keyword_in_action: [(resource_address_pattern, item, amount), ...] }

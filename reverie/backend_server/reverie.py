@@ -94,6 +94,24 @@ class ReverieServer:
     # of the number of tiles. 
     self.step = reverie_meta['step']
 
+    # Clean up stale environment and movement files from the parent sim
+    # that are beyond our starting step. These cause race conditions
+    # between the frontend and backend if left in place: the frontend
+    # reads parent's pre-existing movement files before the backend can
+    # overwrite them with fresh computations, causing agents to follow
+    # the parent's historical path and visually teleport.
+    for subfolder in ["environment", "movement"]:
+      cleanup_folder = f"{sim_folder}/{subfolder}"
+      if os.path.exists(cleanup_folder):
+        for fname in os.listdir(cleanup_folder):
+          if fname.endswith(".json"):
+            try:
+              file_step = int(fname.split(".")[0])
+              if file_step > self.step:
+                os.remove(os.path.join(cleanup_folder, fname))
+            except ValueError:
+              pass
+
     # SETTING UP PERSONAS IN REVERIE
     # <personas> is a dictionary that takes the persona's full name as its 
     # keys, and the actual persona instance as its values.
@@ -850,6 +868,12 @@ class ReverieServer:
           # current time moves by <sec_per_step> amount. 
           self.step += 1
           self.curr_time += datetime.timedelta(seconds=self.sec_per_step)
+
+          # Keep curr_step.json up to date so the frontend can re-initialize
+          # correctly on page refresh (instead of always starting from step 0).
+          curr_step = {"step": self.step}
+          with open(f"{fs_temp_storage}/curr_step.json", "w") as outfile:
+            outfile.write(json.dumps(curr_step, indent=2))
 
           int_counter -= 1
 

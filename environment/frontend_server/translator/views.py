@@ -117,7 +117,11 @@ def home(request):
   with open(f_curr_step) as json_file:  
     step = json.load(json_file)["step"]
 
-  os.remove(f_curr_step)
+  # NOTE: We intentionally do NOT delete curr_step.json here.
+  # The original Stanford code deleted it to enforce one-shot initialization,
+  # but that breaks page refreshes. Leaving it allows re-initialization from
+  # the latest known step on refresh. The backend (reverie.py) continuously
+  # overwrites it, so it always reflects the current step.
 
   persona_names = []
   persona_names_set = set()
@@ -128,20 +132,19 @@ def home(request):
       persona_names_set.add(x)
 
   persona_init_pos = []
-  file_count = []
-  for i in find_filenames(f"storage/{sim_code}/environment", ".json"):
-    x = i.split("/")[-1].strip()
-    if x[0] != ".": 
-      file_count += [int(x.split(".")[0])]
-  curr_json = f'storage/{sim_code}/environment/{str(max(file_count))}.json'
-  with open(curr_json) as json_file:  
+  # Load initial positions from the environment file matching the starting
+  # step, not the latest file. Using max(file_count) would load positions
+  # from a much later step after a fork, causing sprites to start at wrong
+  # locations and desync with the backend.
+  curr_json = f'storage/{sim_code}/environment/{str(step)}.json'
+  with open(curr_json) as json_file:
     persona_init_pos_dict = json.load(json_file)
-    for key, val in persona_init_pos_dict.items(): 
-      if key in persona_names_set: 
+    for key, val in persona_init_pos_dict.items():
+      if key in persona_names_set:
         persona_init_pos += [[key, val["x"], val["y"]]]
 
   context = {"sim_code": sim_code,
-             "step": step, 
+             "step": step,
              "persona_names": persona_names,
              "persona_init_pos": persona_init_pos,
              "mode": "simulate"}
@@ -162,22 +165,17 @@ def replay(request, sim_code, step):
       persona_names_set.add(x)
 
   persona_init_pos = []
-  file_count = []
-  for i in find_filenames(f"storage/{sim_code}/environment", ".json"):
-    x = i.split("/")[-1].strip()
-    if x[0] != ".": 
-      file_count += [int(x.split(".")[0])]
-  curr_json = f'storage/{sim_code}/environment/{str(max(file_count))}.json'
-  with open(curr_json) as json_file:  
+  curr_json = f'storage/{sim_code}/environment/{str(step)}.json'
+  with open(curr_json) as json_file:
     persona_init_pos_dict = json.load(json_file)
-    for key, val in persona_init_pos_dict.items(): 
-      if key in persona_names_set: 
+    for key, val in persona_init_pos_dict.items():
+      if key in persona_names_set:
         persona_init_pos += [[key, val["x"], val["y"]]]
 
   context = {"sim_code": sim_code,
              "step": step,
              "persona_names": persona_names,
-             "persona_init_pos": persona_init_pos, 
+             "persona_init_pos": persona_init_pos,
              "mode": "replay"}
   template = "home/home.html"
   return render(request, template, context)

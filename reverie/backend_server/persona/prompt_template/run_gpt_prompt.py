@@ -1016,8 +1016,13 @@ def run_gpt_prompt_event_triple(action_description, persona, verbose=False):
 
   def __func_clean_up(gpt_response, prompt=""):
     cr = gpt_response.strip()
-    cr = [i.strip() for i in cr.split(")")[0].split(",")]
-    return cr
+    cr = cr.split(")")[0].lstrip("(")
+    parts = [i.strip() for i in cr.split(",")]
+    if len(parts) >= 3:
+      return [parts[1], ", ".join(parts[2:])]
+    elif len(parts) == 2:
+      return parts
+    return parts
 
   def __func_validate(gpt_response, prompt=""):
     try:
@@ -1170,8 +1175,13 @@ def run_gpt_prompt_act_obj_event_triple(act_game_object, act_obj_desc, persona, 
 
   def __func_clean_up(gpt_response, prompt=""):
     cr = gpt_response.strip()
-    cr = [i.strip() for i in cr.split(")")[0].split(",")]
-    return cr
+    cr = cr.split(")")[0].lstrip("(")
+    parts = [i.strip() for i in cr.split(",")]
+    if len(parts) >= 3:
+      return [parts[1], ", ".join(parts[2:])]
+    elif len(parts) == 2:
+      return parts
+    return parts
 
   def __func_validate(gpt_response, prompt=""):
     try:

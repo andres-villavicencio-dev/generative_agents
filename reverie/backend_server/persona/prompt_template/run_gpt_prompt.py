@@ -145,22 +145,39 @@ def run_gpt_prompt_daily_plan(persona,
     return prompt_input
 
   def __func_clean_up(gpt_response, prompt=""):
+    import re
     cr = []
-    _cr = gpt_response.split(")")
-    for i in _cr:
-      if not i.strip():
-        continue
-      if i[-1].isdigit():
-        i = i[:-1].strip()
-        if i and (i[-1] == "." or i[-1] == ","):
-          cr += [i[:-1].strip()]
+    # Try newline-separated numbered list first (e.g., "1) wake up at 6:00 am\n2) ...")
+    lines = [l.strip() for l in gpt_response.strip().split("\n") if l.strip()]
+    for line in lines:
+      # Strip leading number + ) or . (e.g., "2) eat breakfast" or "2. eat breakfast")
+      m = re.match(r'^\d+\s*[).]\s*', line)
+      if m:
+        item = line[m.end():].strip()
+        if item:
+          # Strip LLM artifacts: (minutes left: X), (duration: X minutes, ...), etc.
+          item = re.sub(r'\s*\((?:minutes left|duration in minutes|duration)[^)]*\)', '', item).strip()
+          # Strip trailing period/comma
+          item = item.rstrip('.,').strip()
+          cr += [item]
+    # Fallback: try original inline format "...am, 2) ...am, 3)"
+    if not cr:
+      _cr = gpt_response.split(")")
+      for i in _cr:
+        if not i.strip():
+          continue
+        if i[-1].isdigit():
+          i = i[:-1].strip()
+          if i and (i[-1] == "." or i[-1] == ","):
+            cr += [i[:-1].strip()]
     return cr
 
   def __func_validate(gpt_response, prompt=""):
-    try: __func_clean_up(gpt_response, prompt="")
+    try:
+      result = __func_clean_up(gpt_response, prompt="")
+      return len(result) >= 2  # need at least 2 plan items
     except:
       return False
-    return True
 
   def get_fail_safe():
     fs = ['wake up and complete the morning routine at 6:00 am',
@@ -182,8 +199,11 @@ def run_gpt_prompt_daily_plan(persona,
   prompt = generate_prompt(prompt_input, prompt_template)
   fail_safe = get_fail_safe()
 
+  # FIX: free_form=True — daily plan needs multi-line numbered list output,
+  # not a single {"output": "..."} JSON string which truncates the plan.
   output = safe_generate_response(prompt, gpt_param, 5, fail_safe,
-                                   __func_validate, __func_clean_up)
+                                   __func_validate, __func_clean_up,
+                                   free_form=True)
   output = ([f"wake up and complete the morning routine at {wake_up_hour}:00 am"]
               + output)
 

@@ -18,7 +18,7 @@ Backstory: Raised by a single mother who was always working, Sam was often left 
 Personality: hard-edged, independent, loyal
 Location: Sam is in double studio that has the following areas: {kitchen, common room, dining, bedroom 2, balcony, piano lounge, bathroom, recreation, hallway}.
 Currently: Sam is a painter who is preparing for her first solo show. She mostly works from home. She is currently living alone in a two bedroom apartment.
-Daily plan requirement: Sam is planning to stay at home all day and never go out of her home.
+Daily plan requirement: Sam is planning to stay at home all day and never leave home.
 
 In 5 min increments, list the subtasks Sam does when Sam is working on her painting (total duration in minutes 270):
 1) Sam is setting up her easel and canvas (duration in minutes: 15, minutes left: 255)
@@ -61,9 +61,9 @@ In 5 min increments, list the subtasks Anthony does when Anthony is studying for
 1) Anthony is reviewing the lecture notes from the past few weeks. (duration in minutes: 15, minutes left: 105)
 2) Anthony is doing practice problems from the textbook. (duration in minutes: 30, minutes left: 75)
 3) Anthony is checking his answers in the back of the textbook. (duration in minutes: 10, minutes left: 65)
-4) Anthony makes a snack. (duration in minutes: 5, minutes left: 60)
+4) Anthony is making a snack. (duration in minutes: 5, minutes left: 60)
 5) Anthony is making a study guide. (duration in minutes: 15, minutes left: 45)
-6) Anthony is calls a friend to work through problems together. (duration in minutes: 45, minutes left: 0)
+6) Anthony is calling a friend to work through problems together. (duration in minutes: 45, minutes left: 0)
 ---
 !<INPUT 0>!
 

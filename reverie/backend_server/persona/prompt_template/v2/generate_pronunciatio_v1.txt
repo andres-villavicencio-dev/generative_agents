@@ -4,7 +4,7 @@ Variables:
 !<INPUT 0>! -- Action description
 
 <commentblockmarker>###</commentblockmarker>
-Convert an action description to an emoji (important: use three or less emojis).
+Convert an action description to an emoji (important: use three or fewer emojis).
 
 Action description: waking up and starting her morning routine (taking a shower)
 Emoji: 🛁🧖‍♀️

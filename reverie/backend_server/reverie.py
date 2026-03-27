@@ -35,6 +35,7 @@ from utils import *
 from maze import *
 from persona.persona import *
 from resource_manager import WorldResourceManager, ACTION_RESOURCE_MAPPINGS, PRODUCTION_MAPPINGS, get_persona_decay_multiplier
+from chronicle import chronicle_milestone
 
 ##############################################################################
 #                                  REVERIE                                   #
@@ -146,14 +147,37 @@ class ReverieServer:
       p_y = init_env[persona_name]["y"]
       curr_persona = Persona(persona_name, persona_folder)
 
+      curr_persona.scratch.sim_folder = sim_folder
       self.personas[persona_name] = curr_persona
       self.personas_tile[persona_name] = (p_x, p_y)
       self.maze.tiles[p_y][p_x]["events"].add(curr_persona.scratch
                                               .get_curr_event_and_desc())
 
-    # REVERIE SETTINGS PARAMETERS:  
+    # COMMUNITY BULLETIN BOARD
+    # Register a bulletin board object in Johnson Park for death notices
+    # and other community announcements.
+    self.bulletin_tile = None
+    park_address = "the Ville:Johnson Park:park"
+    if park_address in self.maze.address_tiles:
+      self.bulletin_tile = list(self.maze.address_tiles[park_address])[0]
+      bulletin_addr = f"{park_address}:community bulletin board"
+      self.maze.address_tiles[bulletin_addr] = {self.bulletin_tile}
+      bx, by = self.bulletin_tile
+      self.maze.tiles[by][bx]["events"].add(
+        ("community bulletin board", None, None, None))
+      # Add to all personas' spatial memory
+      for p in self.personas.values():
+        tree = p.s_mem.tree
+        if "the Ville" in tree:
+          if "Johnson Park" in tree["the Ville"]:
+            if "park" in tree["the Ville"]["Johnson Park"]:
+              arenas = tree["the Ville"]["Johnson Park"]["park"]
+              if "community bulletin board" not in arenas:
+                arenas.append("community bulletin board")
+
+    # REVERIE SETTINGS PARAMETERS:
     # <server_sleep> denotes the amount of time that our while loop rests each
-    # cycle; this is to not kill our machine. 
+    # cycle; this is to not kill our machine.
     self.server_sleep = 0.1
 
     # SIGNALING THE FRONTEND SERVER: 
@@ -818,7 +842,43 @@ class ReverieServer:
           # This is where the core brains of the personas are invoked.
           movements = {"persona": dict(),
                        "meta": dict()}
-          for persona_name, persona in self.personas.items():
+          for persona_name, persona in list(self.personas.items()):
+            # Skip deceased personas
+            if persona.scratch.is_deceased:
+              continue
+
+            # Death check: has this agent reached their lifespan?
+            if (persona.scratch.death_age is not None
+                and persona.scratch.current_age >= persona.scratch.death_age):
+              persona.scratch.is_deceased = True
+              # Remove agent from the world
+              curr_tile = self.personas_tile[persona_name]
+              self.maze.remove_subject_events_from_tile(persona.name, curr_tile)
+              del self.personas_tile[persona_name]
+              # Post death notice on community bulletin board
+              if self.bulletin_tile:
+                bx, by = self.bulletin_tile
+                death_notice = (
+                  "community bulletin board", "reports",
+                  f"{persona.name} passed away at age {persona.scratch.current_age}",
+                  f"{persona.name} passed away at age {persona.scratch.current_age}")
+                self.maze.tiles[by][bx]["events"].add(death_notice)
+              # Chronicle and save
+              chronicle_milestone(persona, "death",
+                f"{persona.name} passed away at age {persona.scratch.current_age}",
+                sim_folder, poignancy=9)
+              persona.save()
+              print(f"[Reverie] {persona.name} has passed away at age "
+                    f"{persona.scratch.current_age}")
+              continue
+
+            # Birthday check on day boundary
+            new_age = persona.scratch.current_age
+            if new_age != persona.scratch.age:
+              persona.scratch.age = new_age
+              chronicle_milestone(persona, "birthday",
+                f"{persona.name} turned {new_age}", sim_folder)
+
             # Track previous action to detect transitions
             prev_act_description = persona.scratch.act_description
 

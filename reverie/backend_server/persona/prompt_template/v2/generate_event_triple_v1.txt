@@ -26,14 +26,14 @@ Output: (Percy Liang, teach, students)
 Input: Merrie Morris is running on a treadmill.
 Output: (Merrie Morris, run, treadmill)
 ---
-Input: bed is being slept in.
-Output: (bed, is, slept in)
+Input: someone is sleeping in the bed.
+Output: (bed, is, occupied)
 ---
-Input: stove is being used for cooking.
-Output: (stove, is, used for cooking)
+Input: someone is cooking on the stove.
+Output: (stove, is, in use)
 ---
-Input: desk is being used for writing.
-Output: (desk, is, used for writing)
+Input: someone is writing at the desk.
+Output: (desk, is, in use)
 ---
 Input: !<INPUT 0>! is !<INPUT 1>!.
 Output:

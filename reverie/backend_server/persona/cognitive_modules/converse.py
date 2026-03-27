@@ -222,31 +222,30 @@ def generate_inner_thought(persona, whisper):
   inner_thought = run_gpt_prompt_generate_whisper_inner_thought(persona, whisper)[0]
   return inner_thought
 
-def generate_action_event_triple(act_desp, persona): 
-  """TODO 
-
-  INPUT: 
-    act_desp: the description of the action (e.g., "sleeping")
-    persona: The Persona class instance
-  OUTPUT: 
-    a string of emoji that translates action description.
-  EXAMPLE OUTPUT: 
-    "🧈🍞"
-  """
+def generate_action_event_triple(act_desp, persona):
   if debug: print ("GNS FUNCTION: <generate_action_event_triple>")
+  from persona.cognitive_modules.plan import _parse_event_triple
+  parsed = _parse_event_triple(act_desp, persona.name)
+  if parsed:
+    return parsed
   return run_gpt_prompt_event_triple(act_desp, persona)[0]
 
 
-def generate_poig_score(persona, event_type, description): 
+def generate_poig_score(persona, event_type, description):
   if debug: print ("GNS FUNCTION: <generate_poig_score>")
 
-  if "is idle" in description: 
+  if "is idle" in description:
     return 1
 
-  if event_type == "event" or event_type == "thought": 
+  from persona.cognitive_modules.perceive import _score_poignancy
+  score = _score_poignancy(description)
+  if score is not None:
+    return score
+
+  if event_type == "event" or event_type == "thought":
     return run_gpt_prompt_event_poignancy(persona, description)[0]
-  elif event_type == "chat": 
-    return run_gpt_prompt_chat_poignancy(persona, 
+  elif event_type == "chat":
+    return run_gpt_prompt_chat_poignancy(persona,
                            persona.scratch.act_description)[0]
 
 

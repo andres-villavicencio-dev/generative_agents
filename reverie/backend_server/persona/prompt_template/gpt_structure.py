@@ -187,8 +187,6 @@ def _ollama_generate(prompt, retries=5, free_form=False):
             "You are a simulation assistant. "
             "IMPORTANT: Respond in English only. "
             "Output valid JSON exactly matching the example format in the prompt. "
-            "The output value must be SHORT (1-5 words max) — a name, label, or emoji only. "
-            "Do NOT explain your reasoning. Do NOT output sentences. Just the value itself. "
             "Do not add any explanation, markdown, or extra keys."
         )
     else:
@@ -500,7 +498,7 @@ def get_embedding(text, model="text-embedding-ada-002"):
                 data=data,
                 headers={"Content-Type": "application/json"}
             )
-            with urllib.request.urlopen(req, timeout=60) as response:
+            with urllib.request.urlopen(req, timeout=None) as response:  # no timeout - local model
                 result = json.loads(response.read().decode('utf-8'))
                 embedding = result.get("embedding", [])
                 if embedding:

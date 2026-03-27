@@ -5,6 +5,23 @@ Modified: Local Ollama adaptation
 File: gpt_structure.py
 Description: Wrapper functions for calling local Ollama APIs instead of OpenAI.
 """
+# =============================================================================
+# LLM Backend Configuration
+# =============================================================================
+# This module supports two backends for text generation:
+#
+# 1. Ollama (default): Uses /api/generate endpoint with JSON schema constraints.
+#    Set USE_LLAMA_CPP = False (default).
+#
+# 2. llama.cpp server: Uses /completion endpoint with GBNF grammar constraints.
+#    Set USE_LLAMA_CPP = True and ensure llama.cpp server is running.
+#    See llama_cpp_server/README.md for setup instructions.
+#
+# TurboQuant Integration Note:
+#   The turboquant/ package provides KV cache quantization that can be used
+#   alongside either backend. The llama.cpp server also supports its own
+#   built-in KV cache quantization via --cache-type-k and --cache-type-v flags.
+# =============================================================================
 import json
 import time
 import urllib.request
@@ -14,8 +31,18 @@ from utils import *
 
 # Ollama configuration
 OLLAMA_BASE_URL = "http://localhost:11434"
-OLLAMA_CHAT_MODEL = "qwen3.5:9b"
+OLLAMA_CHAT_MODEL = "nemotron-cascade-2:30b-a3b-q4_K_M"
 OLLAMA_EMBED_MODEL = "embeddinggemma"
+
+# llama.cpp server configuration
+LLAMA_CPP_BASE_URL = "http://localhost:8080"
+USE_LLAMA_CPP = False  # Set True to use llama.cpp instead of Ollama
+
+# GBNF grammar for JSON schema constraint: {"output": "<string>"}
+_GBNF_JSON_OUTPUT = r'''root   ::= "{" ws "\"output\"" ws ":" ws string ws "}"
+string ::= "\"" char* "\""
+char   ::= [^"\\] | "\\" (["\\/bfnrt] | "u" [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F])
+ws     ::= [ \t\n]*'''
 
 
 def temp_sleep(seconds=0.1):
@@ -49,6 +76,87 @@ def _strip_markdown(text):
     return text.strip()
 
 
+def _llama_cpp_generate(prompt, retries=5, free_form=False):
+    """
+    Make a request to llama.cpp server's /completion endpoint.
+    Returns the response text or raises an exception after retries exhausted.
+
+    Uses GBNF grammar for JSON schema constraint (equivalent to Ollama's
+    format field). The /completion endpoint returns {"content": "..."}
+    instead of Ollama's {"response": "..."}.
+
+    free_form=True: skip grammar constraint, return raw text.
+    """
+    url = f"{LLAMA_CPP_BASE_URL}/completion"
+
+    system_msg = (
+        "You are a simulation assistant. "
+        "IMPORTANT: Respond in English only. "
+    )
+    if not free_form:
+        system_msg += (
+            "Output valid JSON exactly matching the example format in the prompt. "
+            "Do not add any explanation, markdown, or extra keys."
+        )
+    else:
+        system_msg += (
+            "Follow the output format shown in the prompt EXACTLY. "
+            "Use numbered lists like '1) task (duration in minutes: X, minutes left: Y)'. "
+            "Do NOT use markdown tables, headers, or any formatting. "
+            "Plain text numbered list only."
+        )
+
+    full_prompt = system_msg + "\n\n" + prompt
+
+    request_body = {
+        "prompt": full_prompt,
+        "stream": False,
+        "n_predict": 2048,
+        "temperature": 0.7,
+    }
+    if not free_form:
+        request_body["grammar"] = _GBNF_JSON_OUTPUT
+
+    data = json.dumps(request_body).encode('utf-8')
+
+    for attempt in range(retries):
+        try:
+            req = urllib.request.Request(
+                url,
+                data=data,
+                headers={"Content-Type": "application/json"}
+            )
+            with urllib.request.urlopen(req, timeout=None) as response:
+                result = json.loads(response.read().decode('utf-8'))
+                text = result.get("content", "")
+                text = _strip_markdown(text)
+                # Extract ["output"] from grammar-constrained JSON
+                if text.strip():
+                    try:
+                        parsed = json.loads(text)
+                        if isinstance(parsed, dict) and "output" in parsed:
+                            text = str(parsed["output"])
+                    except (json.JSONDecodeError, ValueError):
+                        pass
+                    return text
+                # Empty response — retry with backoff
+                wait = 2 ** attempt
+                print(f"[llama.cpp] Empty response on attempt {attempt+1}/{retries}, retrying in {wait}s...")
+                if attempt < retries - 1:
+                    time.sleep(wait)
+                    continue
+        except (urllib.error.URLError, urllib.error.HTTPError, json.JSONDecodeError) as e:
+            wait = 2 ** attempt
+            print(f"[llama.cpp] Error on attempt {attempt+1}/{retries}: {e}, retrying in {wait}s...")
+            if attempt < retries - 1:
+                time.sleep(wait)
+                continue
+            raise
+
+    print("[llama.cpp] WARNING: All retries exhausted, returning empty string")
+    return ""
+
+
 def _ollama_generate(prompt, retries=5, free_form=False):
     """
     Make a request to Ollama's generate endpoint.
@@ -60,6 +168,8 @@ def _ollama_generate(prompt, retries=5, free_form=False):
     free_form=True: skip schema constraint, return raw text (for multi-line prompts
     like task decomposition that need numbered list output, not a JSON string).
     """
+    if USE_LLAMA_CPP:
+        return _llama_cpp_generate(prompt, retries=retries, free_form=free_form)
     url = f"{OLLAMA_BASE_URL}/api/generate"
     request_body = {
         "model": OLLAMA_CHAT_MODEL,
@@ -77,6 +187,8 @@ def _ollama_generate(prompt, retries=5, free_form=False):
             "You are a simulation assistant. "
             "IMPORTANT: Respond in English only. "
             "Output valid JSON exactly matching the example format in the prompt. "
+            "The output value must be SHORT (1-5 words max) — a name, label, or emoji only. "
+            "Do NOT explain your reasoning. Do NOT output sentences. Just the value itself. "
             "Do not add any explanation, markdown, or extra keys."
         )
     else:

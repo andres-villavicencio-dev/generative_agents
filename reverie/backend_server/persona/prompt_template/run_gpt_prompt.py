@@ -657,10 +657,17 @@ def run_gpt_prompt_action_sector(action_description,
 
 
   def __func_clean_up(gpt_response, prompt=""):
+    import re
     # FIX: _ollama_generate already extracts value from {"output": "..."}, so
     # there's no "}" to split on. Just strip the value cleanly.
     cleaned_response = gpt_response.split("}")[0]  # harmless if no }
     cleaned_response = cleaned_response.strip().lstrip("{[(\"'").rstrip("}])\"'").strip()
+    # FIX: If model leaked verbose reasoning, extract last colon segment
+    if len(cleaned_response) > 50 or ("should go" in cleaned_response.lower() or "following" in cleaned_response.lower()):
+      if ":" in cleaned_response:
+        cleaned_response = cleaned_response.split(":")[-1].strip().rstrip("}])\"'").strip()
+      if len(cleaned_response) > 50:
+        cleaned_response = cleaned_response.split()[-1].strip()
     return cleaned_response
 
   def __func_validate(gpt_response, prompt=""):
@@ -669,6 +676,9 @@ def run_gpt_prompt_action_sector(action_description,
     # FIX: removed "}" requirement - schema JSON extraction already strips it.
     # Just check it's a non-empty single-token response with no commas.
     if "," in gpt_response:
+      return False
+    # FIX: Sector names are short — reject verbose reasoning leakage
+    if len(gpt_response.strip()) > 80:
       return False
     return True
 
@@ -722,8 +732,13 @@ def run_gpt_prompt_action_sector(action_description,
   y = f"{maze.access_tile(persona.scratch.curr_tile)['world']}"
   x = [i.strip() for i in persona.s_mem.get_str_accessible_sectors(y).split(",")]
   if output not in x:
-    # output = random.choice(x)
-    output = persona.scratch.living_area.split(":")[1]
+    x_lower = {i.lower(): i for i in x}
+    if output.lower() in x_lower:
+      output = x_lower[output.lower()]
+    elif x:
+      output = persona.scratch.living_area.split(":")[1]
+    else:
+      output = persona.scratch.living_area.split(":")[1]
 
   print ("DEBUG", random.choice(x), "------", output)
 
@@ -800,6 +815,21 @@ def run_gpt_prompt_action_arena(action_description,
       cr = cr.split("}")[0]
     # Strip stray JSON delimiters and quotes
     cr = cr.strip().lstrip("{[(\"'").rstrip("}])\"'").strip()
+    # FIX: If model leaked verbose reasoning (e.g. "X should go to Y: bedroom"),
+    # take the last segment after the final colon or "for sleeping:" style phrase.
+    if len(cr) > 50 or ("should go" in cr.lower() or "following area" in cr.lower()):
+      # Try to extract last colon-separated segment
+      if ":" in cr:
+        cr = cr.split(":")[-1].strip().rstrip("}])\"'").strip()
+      # If still long (e.g. model said a sentence), take last word-group
+      if len(cr) > 50:
+        # Take content after last preposition phrase like "for sleeping"
+        m = re.search(r'(?:for\s+\w+ing\s*[:\-,]?\s*)(.+)$', cr, re.IGNORECASE)
+        if m:
+          cr = m.group(1).strip().rstrip("}])\"'").strip()
+        else:
+          # last resort: take final word
+          cr = cr.split()[-1].strip()
     return cr
 
   def __func_validate(gpt_response, prompt=""):
@@ -812,6 +842,10 @@ def run_gpt_prompt_action_arena(action_description,
     if len(cr) < 1:
       return False
     if "," in cr:
+      return False
+    # FIX: Arena names are short — reject verbose reasoning leakage
+    # (will trigger retry, giving model another chance)
+    if len(cr) > 80:
       return False
     return True
 
@@ -830,10 +864,16 @@ def run_gpt_prompt_action_arena(action_description,
   output = safe_generate_response(prompt, gpt_param, 5, fail_safe,
                                    __func_validate, __func_clean_up)
   print (output)
-  # y = f"{act_world}:{act_sector}"
-  # x = [i.strip() for i in persona.s_mem.get_str_accessible_sector_arenas(y).split(",")]
-  # if output not in x:
-  #   output = random.choice(x)
+  y = f"{act_world}:{act_sector}"
+  x = [i.strip() for i in persona.s_mem.get_str_accessible_sector_arenas(y).split(",")]
+  if output not in x:
+    x_lower = {i.lower(): i for i in x}
+    if output.lower() in x_lower:
+      output = x_lower[output.lower()]
+    elif x:
+      output = random.choice(x)
+    else:
+      output = fail_safe
 
   if debug or verbose:
     print_run_prompts(prompt_template, persona, gpt_param,

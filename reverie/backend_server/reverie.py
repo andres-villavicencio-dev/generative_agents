@@ -35,6 +35,7 @@ from utils import *
 from maze import *
 from persona.persona import *
 from resource_manager import WorldResourceManager, ACTION_RESOURCE_MAPPINGS, PRODUCTION_MAPPINGS, get_persona_decay_multiplier
+from artifact_manager import ArtifactManager, ARTIFACT_EMOJI, ARTIFACT_TYPES, CREATION_ACTION_MAPPINGS
 from chronicle import chronicle_milestone
 
 ##############################################################################
@@ -201,6 +202,12 @@ class ReverieServer:
     # Attach to maze for easy access throughout the cognitive modules
     self.maze.resource_manager = self.resource_manager
 
+    # Initialize the artifact manager (Phase 6: Artifact Creation)
+    self.artifact_manager = ArtifactManager(sim_folder)
+    self.maze.artifact_manager = self.artifact_manager
+    # Restore artifact events on maze tiles from saved state
+    self._restore_artifact_tiles()
+
 
   def save(self): 
     """
@@ -240,8 +247,186 @@ class ReverieServer:
     except Exception as e:
       print(f"[Reverie] Warning: Could not save resource manager: {e}")
 
+    # Save artifact state (Phase 6)
+    try:
+      self.artifact_manager.save(sim_folder)
+    except Exception as e:
+      print(f"[Reverie] Warning: Could not save artifact manager: {e}")
 
-  def start_path_tester_server(self): 
+
+  def _restore_artifact_tiles(self):
+    """Re-place all active artifacts onto maze tiles after restart."""
+    for art in self.artifact_manager.get_all_active_artifacts():
+      location = art["location"]
+      if location in self.maze.address_tiles:
+        tile = list(self.maze.address_tiles[location])[0]
+        event_tuple = self.artifact_manager.get_artifact_event_tuple(art["id"])
+        if event_tuple:
+          tx, ty = tile
+          self.maze.tiles[ty][tx]["events"].add(event_tuple)
+
+  def try_create_artifact(self, persona, act_description):
+    """Check if an action creates an artifact and handle creation."""
+    # Dedup: don't create twice for same action
+    if (hasattr(persona.scratch, 'last_artifact_action') and
+        persona.scratch.last_artifact_action == act_description):
+      return None
+
+    mapping = self.artifact_manager.match_creation_action(act_description)
+    if not mapping:
+      return None
+
+    # Check duration meets minimum
+    if (persona.scratch.act_duration is not None and
+        persona.scratch.act_duration < mapping.get("duration_min", 0)):
+      return None
+
+    # Consume materials if required
+    materials = mapping.get("materials", {})
+    if materials and hasattr(self, 'resource_manager'):
+      for item, amount in materials.items():
+        # Try to consume from agent's current location
+        if persona.scratch.act_address:
+          self.resource_manager.consume(persona.scratch.act_address, item, amount)
+
+    # Generate artifact properties via LLM
+    from persona.prompt_template.run_gpt_prompt import run_gpt_prompt_create_artifact
+    artifact_props = run_gpt_prompt_create_artifact(
+      persona, mapping["type"], act_description)
+
+    # Create the artifact
+    created_time = self.curr_time.strftime("%B %d, %Y, %H:%M:%S")
+    location = persona.scratch.act_address or "unknown"
+
+    artifact = self.artifact_manager.create_artifact(
+      artifact_type=mapping["type"],
+      name=artifact_props["name"],
+      description=artifact_props["description"],
+      content_summary=artifact_props["content_summary"],
+      creator=persona.name,
+      created_time=created_time,
+      quality=artifact_props["quality"],
+      location=location,
+      materials_consumed=materials if materials else None,
+    )
+
+    # Generate full artifact content via LLM
+    try:
+      from artifact_generator import generate_artifact_content
+      persona_desc = persona.scratch.get_str_iss()
+      content_full, content_type = generate_artifact_content(
+        persona.name, act_description, persona_desc)
+      if content_full:
+        artifact["content_full"] = content_full
+        print(f"[Reverie] Generated {content_type} content for {artifact['name']} ({len(content_full)} chars)")
+    except Exception as e:
+      print(f"[Reverie] Warning: artifact content generation failed: {e}")
+
+    # Place artifact on maze tile
+    if location in self.maze.address_tiles:
+      tile = list(self.maze.address_tiles[location])[0]
+      event_tuple = self.artifact_manager.get_artifact_event_tuple(artifact["id"])
+      if event_tuple:
+        tx, ty = tile
+        self.maze.tiles[ty][tx]["events"].add(event_tuple)
+
+    # Add creation event to persona's memory
+    from persona.prompt_template.gpt_structure import get_embedding
+    desc = f"{persona.name} created {artifact['name']}, a {artifact['type']}"
+    keywords = set([artifact["type"], artifact["name"].lower(), "created"])
+    if desc in persona.a_mem.embeddings:
+      embedding = persona.a_mem.embeddings[desc]
+    else:
+      embedding = get_embedding(desc)
+    persona.a_mem.add_event(
+      persona.scratch.curr_time, None,
+      persona.name, "created", artifact["name"],
+      desc, keywords, 6, (desc, embedding), [])
+
+    # Mark dedup guard
+    persona.scratch.last_artifact_action = act_description
+
+    # Bulletin board announcement for high quality artifacts
+    if artifact["quality"] >= 7 and self.bulletin_tile:
+      bx, by = self.bulletin_tile
+      emoji = ARTIFACT_EMOJI.get(artifact["type"], "📦")
+      announcement = (
+        "community bulletin board", "announces",
+        f"New {artifact['type']}: '{artifact['name']}' by {persona.name}",
+        f"{emoji} New {artifact['type']}: '{artifact['name']}' by {persona.name}")
+      self.maze.tiles[by][bx]["events"].add(announcement)
+
+    print(f"[Reverie] {persona.name} created artifact: {artifact['name']} ({artifact['type']}, quality={artifact['quality']})")
+    return artifact
+
+  def process_artifact_interaction(self, persona, act_description):
+    """Check if an action involves interacting with an artifact."""
+    matching_types = self.artifact_manager.match_interaction(act_description)
+    if not matching_types:
+      return
+
+    # Find artifacts at the persona's current location
+    location = persona.scratch.act_address
+    if not location:
+      return
+
+    artifacts = self.artifact_manager.get_artifacts_at_location(location)
+    if not artifacts:
+      # Try parent address (without game object)
+      parts = location.split(":")
+      for i in range(len(parts) - 1, 0, -1):
+        parent = ":".join(parts[:i])
+        artifacts = self.artifact_manager.get_artifacts_at_location(parent)
+        if artifacts:
+          break
+
+    if not artifacts:
+      return
+
+    # Find the best matching artifact
+    target = None
+    for art in artifacts:
+      if art["type"] in matching_types:
+        target = art
+        break
+
+    if not target:
+      return
+
+    # Handle consumable artifacts (meals)
+    if target.get("is_consumable"):
+      self.artifact_manager.consume_artifact(target["id"], persona.name)
+      # Remove from maze tile
+      event_tuple = self.artifact_manager.get_artifact_event_tuple(target["id"])
+      if event_tuple and target["location"] in self.maze.address_tiles:
+        tile = list(self.maze.address_tiles[target["location"]])[0]
+        tx, ty = tile
+        self.maze.tiles[ty][tx]["events"].discard(event_tuple)
+
+    # Apply need effects
+    type_info = ARTIFACT_TYPES.get(target["type"], {})
+    need_effects = type_info.get("need_effect", {})
+    if hasattr(persona.scratch, "needs"):
+      for need, boost in need_effects.items():
+        if need in persona.scratch.needs:
+          persona.scratch.needs[need] = min(100, persona.scratch.needs[need] + boost)
+
+    # Generate thought reaction via LLM
+    from persona.prompt_template.run_gpt_prompt import run_gpt_prompt_artifact_reaction
+    from persona.prompt_template.gpt_structure import get_embedding
+    thought = run_gpt_prompt_artifact_reaction(persona, target)
+
+    keywords = set([target["type"], target["name"].lower(), target["creator"].lower()])
+    if thought in persona.a_mem.embeddings:
+      embedding = persona.a_mem.embeddings[thought]
+    else:
+      embedding = get_embedding(thought)
+    persona.a_mem.add_thought(
+      persona.scratch.curr_time, None,
+      persona.name, "thinks about", target["name"],
+      thought, keywords, 4, (thought, embedding), [])
+
+  def start_path_tester_server(self):
     """
     Starts the path tester server. This is for generating the spatial memory
     that we need for bootstrapping a persona's state. 
@@ -900,6 +1085,12 @@ class ReverieServer:
                 self.consume_resources_for_action(persona, curr_act_description)
               except Exception as e:
                 print(f"[Reverie] Warning: resource consumption failed: {e}")
+              # Artifact creation and interaction (Phase 6)
+              try:
+                self.try_create_artifact(persona, curr_act_description)
+                self.process_artifact_interaction(persona, curr_act_description)
+              except Exception as e:
+                print(f"[Reverie] Warning: artifact processing failed: {e}")
 
             movements["persona"][persona_name] = {}
             movements["persona"][persona_name]["movement"] = next_tile
@@ -908,7 +1099,26 @@ class ReverieServer:
             movements["persona"][persona_name]["chat"] = (persona
                                                           .scratch.chat)
 
-          # Include the meta information about the current stage in the 
+          # Add artifact data for frontend rendering
+          try:
+            artifact_data = {}
+            for art in self.artifact_manager.get_all_active_artifacts():
+              location = art["location"]
+              if location in self.maze.address_tiles:
+                tile = list(self.maze.address_tiles[location])[0]
+                emoji = ARTIFACT_EMOJI.get(art["type"], "📦")
+                artifact_data[art["id"]] = {
+                  "x": tile[0], "y": tile[1],
+                  "emoji": emoji,
+                  "label": art["name"],
+                  "creator": art["creator"],
+                  "type": art["type"],
+                }
+            movements["artifacts"] = artifact_data
+          except Exception as e:
+            movements["artifacts"] = {}
+
+          # Include the meta information about the current stage in the
           # movements dictionary. 
           movements["meta"]["curr_time"] = (self.curr_time 
                                              .strftime("%B %d, %Y, %H:%M:%S"))

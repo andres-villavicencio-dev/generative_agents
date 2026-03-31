@@ -175,6 +175,13 @@ def execute(persona, maze, personas, plan):
   description = f"{persona.scratch.act_description}"
   description += f" @ {persona.scratch.act_address}"
 
+  try:
+    from tool_registry import dispatch_tool
+    if not persona.scratch.planned_path:
+      dispatch_tool(persona, maze, personas)
+  except Exception as e:
+    print(f"[execute] Tool dispatch error: {e}")
+
   execution = ret, persona.scratch.act_pronunciatio, description
   return execution
 

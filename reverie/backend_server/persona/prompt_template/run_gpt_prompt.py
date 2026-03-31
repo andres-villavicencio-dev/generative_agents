@@ -16,6 +16,12 @@ from global_methods import *
 from persona.prompt_template.gpt_structure import *
 from persona.prompt_template.print_prompt import *
 
+TOOL_REGISTRY_AVAILABLE = True
+try:
+    from tool_registry import get_tool_locations_str, get_tool_for_action_context
+except ImportError:
+    TOOL_REGISTRY_AVAILABLE = False
+
 def get_random_alphanumeric(i=6, j=6):
   """
   Returns a random alpha numeric strength that has the length of somewhere
@@ -135,6 +141,15 @@ def run_gpt_prompt_daily_plan(persona,
           iss += f"\nAvailable resources: {resource_context}"
       except Exception as e:
         # Fail silently - resource context is optional
+        pass
+
+    # Append tool locations for tool-aware planning (COO-22)
+    if TOOL_REGISTRY_AVAILABLE:
+      try:
+        tool_locs = get_tool_locations_str(persona.s_mem)
+        if tool_locs:
+          iss += f"\n\n{tool_locs}"
+      except Exception as e:
         pass
 
     prompt_input += [iss]
@@ -666,7 +681,13 @@ def run_gpt_prompt_action_sector(action_description,
     prompt_input += [persona.scratch.get_str_name()]
     prompt_input += [action_description_1]
 
-    prompt_input += [action_description_2]
+    # COO-22: Include tool context for tool-aware planning
+    tool_context = ""
+    if TOOL_REGISTRY_AVAILABLE:
+      tool_info = get_tool_for_action_context(action_description)
+      if tool_info:
+        tool_context = f"\nTool hint: For '{action_description}', consider finding a '{tool_info['tile_keyword']}' ({tool_info['tool_description']})."
+    prompt_input += [action_description_2 + tool_context]
     prompt_input += [persona.scratch.get_str_name()]
     return prompt_input
 
@@ -809,7 +830,13 @@ def run_gpt_prompt_action_arena(action_description,
     prompt_input += [persona.scratch.get_str_name()]
     prompt_input += [action_description_1]
 
-    prompt_input += [action_description_2]
+    # COO-22: Include tool context for tool-aware planning
+    tool_context = ""
+    if TOOL_REGISTRY_AVAILABLE:
+      tool_info = get_tool_for_action_context(action_description)
+      if tool_info:
+        tool_context = f"\nTool hint: Consider finding a '{tool_info['tile_keyword']}' ({tool_info['tool_description']})."
+    prompt_input += [action_description_2 + tool_context]
     prompt_input += [persona.scratch.get_str_name()]
 
 
@@ -954,7 +981,6 @@ def run_gpt_prompt_action_game_object(action_description,
 
   x = [i.strip() for i in persona.s_mem.get_str_accessible_arena_game_objects(temp_address).split(",")]
   if output not in x:
-    # Try case-insensitive match before giving up
     x_lower = {i.lower(): i for i in x}
     if output.lower() in x_lower:
       output = x_lower[output.lower()]
@@ -962,6 +988,20 @@ def run_gpt_prompt_action_game_object(action_description,
       output = random.choice(x)
     else:
       output = fail_safe
+
+  # COO-22: If a tool matches the action, prefer tool game objects
+  if TOOL_REGISTRY_AVAILABLE:
+    try:
+      tool_info = get_tool_for_action_context(action_description)
+      if tool_info:
+        tile_keyword = tool_info['tile_keyword']
+        for obj in x:
+          if tile_keyword.lower() in obj.lower():
+            output = obj
+            print(f"[ToolAwareness] Preferring tool object '{obj}' for action '{action_description}'")
+            break
+    except Exception as e:
+      pass
 
   if debug or verbose:
     print_run_prompts(prompt_template, persona, gpt_param,
@@ -1410,14 +1450,8 @@ def run_gpt_prompt_new_decomp_schedule(persona,
   prompt = generate_prompt(prompt_input, prompt_template)
   fail_safe = get_fail_safe(main_act_dur, truncated_act_dur)
   output = safe_generate_response(prompt, gpt_param, 5, fail_safe,
-                                   __func_validate, __func_clean_up)
-
-  # print ("* * * * output")
-  # print (output)
-  # print ('* * * * fail_safe')
-  # print (fail_safe)
-
-
+                                   __func_validate, __func_clean_up,
+                                   free_form=True)
 
   if debug or verbose:
     print_run_prompts(prompt_template, persona, gpt_param,
@@ -3168,3 +3202,165 @@ def run_gpt_generate_iterative_chat_utt(maze, init_persona, target_persona, retr
 
 
 
+
+
+##############################################################################
+# ARTIFACT CREATION AND INTERACTION PROMPTS
+##############################################################################
+
+def run_gpt_prompt_create_artifact(persona, artifact_type, act_description,
+                                    verbose=False):
+  """
+  Given a persona creating an artifact, generate the artifact's properties.
+
+  INPUT:
+    persona: The Persona class instance
+    artifact_type: str like "book", "painting", "meal", etc.
+    act_description: str describing what the persona is doing
+  OUTPUT:
+    A dict with keys: name, description, content_summary, quality
+  """
+  iss = f"{persona.scratch.name} is {persona.scratch.age} years old."
+  iss += f" {persona.scratch.innate}"
+  iss += f" {persona.scratch.learned}"
+  iss += f" Currently: {persona.scratch.currently}"
+
+  prompt = f"""{iss}
+
+{persona.scratch.name} is currently {act_description}.
+
+This action results in creating a {artifact_type}. Based on {persona.scratch.name}'s personality, skills, and what they are doing, describe the {artifact_type} they create.
+
+Respond with exactly 4 lines, separated by |||:
+1. A creative name/title for the {artifact_type}
+2. A one-sentence description of the {artifact_type}
+3. A 1-2 sentence summary of the content or nature of the {artifact_type}
+4. A quality score from 1-10 (where 10 is masterpiece quality, consider the persona's relevant skills and traits)
+
+Example format:
+Sunrise Over the Valley|||A vibrant landscape painting capturing the morning light|||The painting uses warm oranges and golds to depict the valley at dawn, with careful attention to light and shadow|||7
+
+Your response:"""
+
+  try:
+    response = ChatGPT_request(prompt)
+    parts = [p.strip() for p in response.split("|||")]
+    if len(parts) >= 4:
+      quality = 5  # default
+      try:
+        quality = int(parts[3].strip().split()[0])
+        quality = max(1, min(10, quality))
+      except (ValueError, IndexError):
+        pass
+      return {
+        "name": parts[0][:100],  # cap length
+        "description": parts[1][:200],
+        "content_summary": parts[2][:300],
+        "quality": quality,
+      }
+  except Exception as e:
+    if verbose:
+      print(f"[run_gpt_prompt_create_artifact] Error: {e}")
+
+  # Fail safe
+  return {
+    "name": f"{persona.scratch.name}'s {artifact_type}",
+    "description": f"A {artifact_type} created by {persona.scratch.name}.",
+    "content_summary": f"{persona.scratch.name} made this {artifact_type} while {act_description}.",
+    "quality": 5,
+  }
+
+
+def run_gpt_prompt_artifact_reaction(persona, artifact, verbose=False):
+  """
+  Given a persona interacting with an artifact, generate their thought/reaction.
+
+  INPUT:
+    persona: The Persona class instance
+    artifact: dict with artifact properties (name, type, description, content_summary, creator)
+  OUTPUT:
+    A string thought/reaction (1-2 sentences)
+  """
+  iss = f"{persona.scratch.name} is {persona.scratch.age} years old."
+  iss += f" {persona.scratch.innate}"
+  iss += f" {persona.scratch.learned}"
+
+  interaction_verb = {
+    "book": "reading",
+    "painting": "looking at",
+    "meal": "eating",
+    "letter": "reading",
+    "song": "listening to",
+    "invention": "examining",
+  }.get(artifact.get("type", ""), "experiencing")
+
+  prompt = f"""{iss}
+
+{persona.scratch.name} is {interaction_verb} "{artifact['name']}", a {artifact['type']} created by {artifact['creator']}.
+
+About this {artifact['type']}: {artifact.get('description', '')}
+{artifact.get('content_summary', '')}
+
+What is {persona.scratch.name}'s honest reaction or thought about this {artifact['type']}? Write a single 1-2 sentence thought from {persona.scratch.name}'s perspective. Be specific and personal based on their personality.
+
+{persona.scratch.name}'s thought:"""
+
+  try:
+    response = ChatGPT_request(prompt)
+    if response and response.strip() and "ERROR" not in response:
+      thought = response.strip()
+      if len(thought) > 200:
+        thought = thought[:197] + "..."
+      return thought
+  except Exception as e:
+    if verbose:
+      print(f"[run_gpt_prompt_artifact_reaction] Error: {e}")
+
+  return (f"{persona.scratch.name} found {artifact['creator']}'s "
+          f"{artifact.get('type', 'creation')} interesting.")
+
+
+def run_gpt_prompt_typewriter(persona, act_description, verbose=False):
+  """
+  Generate formatted text document content for the Typewriter tool.
+
+  INPUT:
+    persona: The Persona class instance
+    act_description: The action description (e.g., "typing a letter")
+  OUTPUT:
+    A string containing the formatted document text
+  """
+  iss = persona.scratch.get_str_iss() if hasattr(persona.scratch, 'get_str_iss') else ""
+  name = persona.scratch.name
+
+  prompt = f"""{name} is {act_description}.
+
+About {name}: {iss}
+
+Write the complete text of the document {name} is typing.
+- If it's a letter: include proper salutation and signature
+- If it's a document: format appropriately for the document type
+- Write in {name}'s voice and personality
+- 150-300 words
+- No meta-commentary, just the document itself
+
+Document text:"""
+
+  try:
+    from gpt_structure import _llama_cpp_generate, USE_LLAMA_CPP, _ollama_generate
+    if USE_LLAMA_CPP:
+      response = _llama_cpp_generate(prompt, free_form=True)
+    else:
+      response = _ollama_generate(prompt, free_form=True)
+
+    if response and response.strip():
+      content = response.strip()
+      if len(content) > 1000:
+        content = content[:997] + "..."
+      return content
+  except Exception as e:
+    if verbose:
+      print(f"[run_gpt_prompt_typewriter] Error: {e}")
+
+  doc_type = "letter" if "letter" in act_description.lower() else "document"
+  return f"[{name}'s {doc_type} - content generation unavailable]"

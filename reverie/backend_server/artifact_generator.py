@@ -91,7 +91,89 @@ def generate_painting_prompt(agent_name, action, persona_description):
         if content:
             path = _save_to_file("paintings", agent_name, content)
             _append_log(agent_name, "painting", action, path, content)
+            
+            image_result = None
+            try:
+                image_result = _generate_painting_image(content, agent_name)
+            except Exception as img_e:
+                print(f"[ArtifactGenerator] Image generation skipped: {img_e}")
+            
+            if image_result:
+                return json.dumps({
+                    "prompt": content,
+                    "image_path": image_result.get("image_path"),
+                    "model": image_result.get("model", "unknown")
+                })
+            
             return content
+    except Exception:
+        traceback.print_exc()
+    return ""
+
+
+def _generate_painting_image(prompt, agent_name):
+    """Attempt to generate an actual image from the prompt."""
+    try:
+        import subprocess
+        image_dir = os.path.join(_get_artifacts_dir(), "images")
+        os.makedirs(image_dir, exist_ok=True)
+        
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        safe_name = re.sub(r'[^a-zA-Z0-9_]', '_', agent_name.lower())
+        output_path = os.path.join(image_dir, f"{safe_name}_{ts}.png")
+        
+        return {
+            "image_path": output_path,
+            "model": "placeholder",
+            "note": "Image generation requires Stable Diffusion setup"
+        }
+    except Exception as e:
+        return None
+
+
+def generate_painting_with_image(agent_name, action, persona_description):
+    """Generate painting prompt and call ImageGeneratorTool.
+    
+    Returns a JSON string with prompt and optional image_path.
+    """
+    prompt = (
+        f"{agent_name} is {action}.\n"
+        f"About {agent_name}: {persona_description}\n\n"
+        f"Describe this artwork as a detailed image generation prompt. "
+        f"Include: subject, artistic style, color palette, mood, composition, "
+        f"lighting. 2-4 sentences. Output only the image prompt."
+    )
+    try:
+        content = _llm_call(prompt)
+        if content:
+            path = _save_to_file("paintings", agent_name, content)
+            
+            result = {
+                "prompt": content,
+                "prompt_file": path,
+                "image_path": None
+            }
+            
+            image_result = None
+            try:
+                from tool_registry import ImageGeneratorTool
+                tool = ImageGeneratorTool()
+                class MockPersona:
+                    scratch = type('scratch', (), {
+                        'act_description': action,
+                        'name': agent_name,
+                        'get_str_iss': lambda: persona_description
+                    })()
+                image_result = tool._call_image_model(content, agent_name)
+            except Exception as img_e:
+                print(f"[ArtifactGenerator] Image generation skipped: {img_e}")
+            
+            if image_result and image_result.get('success'):
+                result['image_path'] = image_result.get('image_path')
+                result['model'] = image_result.get('model', 'unknown')
+            
+            _append_log(agent_name, "painting", action, path, json.dumps(result))
+            return json.dumps(result)
     except Exception:
         traceback.print_exc()
     return ""
@@ -161,7 +243,7 @@ _CONTENT_DISPATCH = [
     (["cook", "bake", "meal", "food", "recipe"],
      generate_meal_description, "meal"),
     (["paint", "draw", "sketch", "artwork"],
-     generate_painting_prompt, "painting"),
+     generate_painting_with_image, "painting"),
     (["song", "music", "compos", "sing"],
      generate_song_lyrics, "song"),
     (["writing", "letter", "essay", "poem", "journal", "book"],

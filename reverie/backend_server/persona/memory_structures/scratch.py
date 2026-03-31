@@ -195,6 +195,9 @@ class Scratch:
     # Resource goals: priority actions triggered by depletion events
     self.resource_goals = []  # e.g. ["go to Hobbs Cafe for breakfast"]
 
+    # ARTIFACT TRACKING
+    self.last_artifact_action = None  # dedup guard for artifact creation
+
     # ECONOMY LAYER (Phase 5)
     # Agent wallet and financial stress
     self.wallet = self._get_initial_wallet()
@@ -297,6 +300,7 @@ class Scratch:
         self.needs_danger = scratch_load["needs_danger"]
       if "resource_goals" in scratch_load:
         self.resource_goals = scratch_load["resource_goals"]
+      self.last_artifact_action = scratch_load.get("last_artifact_action", None)
 
       # Load economy layer (Phase 5) with backwards compatibility
       if "wallet" in scratch_load:
@@ -392,6 +396,7 @@ class Scratch:
     if hasattr(self, "needs_danger"):
       scratch["needs_danger"] = self.needs_danger
     scratch["resource_goals"] = self.resource_goals if hasattr(self, "resource_goals") else []
+    scratch["last_artifact_action"] = self.last_artifact_action if hasattr(self, "last_artifact_action") else None
 
     # Save economy layer (Phase 5)
     scratch["wallet"] = self.wallet if hasattr(self, "wallet") else 100.0
@@ -424,14 +429,7 @@ class Scratch:
     today_min_elapsed += self.curr_time.minute
     today_min_elapsed += advance
 
-    x = 0
-    for task, duration in self.f_daily_schedule: 
-      x += duration
-    x = 0
-    for task, duration in self.f_daily_schedule_hourly_org: 
-      x += duration
-
-    # We then calculate the current index based on that. 
+    # We then calculate the current index based on that.
     curr_index = 0
     elapsed = 0
     for task, duration in self.f_daily_schedule: 

@@ -201,14 +201,26 @@ def perceive(persona, maze):
   # <ret_events> is a list of <ConceptNode> instances from the persona's 
   # associative memory. 
   ret_events = []
-  for p_event in perceived_events: 
+  for p_event in perceived_events:
     s, p, o, desc = p_event
-    if not p: 
+    if not p:
       # If the object is not present, then we default the event to "idle".
       p = "is"
       o = "idle"
       desc = "idle"
-    desc = f"{s.split(':')[-1]} is {desc}"
+
+    # Artifact perception: enrich description for artifact events
+    poignancy_boost = 0
+    if s.startswith("artifact:"):
+      artifact_id = s.split(":", 1)[1]
+      if hasattr(maze, 'artifact_manager'):
+        art = maze.artifact_manager.get_artifact(artifact_id)
+        if art:
+          desc = (f"{persona.name} notices {art['name']}, a {art['type']} "
+                  f"by {art['creator']}. {art['description']}")
+          poignancy_boost = 2
+    else:
+      desc = f"{s.split(':')[-1]} is {desc}"
     p_event = (s, p, o)
 
     # We retrieve the latest persona.scratch.retention events. If there is  
@@ -243,6 +255,7 @@ def perceive(persona, maze):
       event_poignancy = generate_poig_score(persona,
                                             "event",
                                             desc_embedding_in)
+      event_poignancy = min(10, event_poignancy + poignancy_boost)
 
       # Chronicle high-poignancy events
       if event_poignancy >= 7 and hasattr(persona.scratch, 'sim_folder'):

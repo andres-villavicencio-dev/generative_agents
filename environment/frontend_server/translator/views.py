@@ -17,6 +17,8 @@ from global_methods import *
 from django.templatetags.static import static
 from .models import *
 
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
 def landing(request): 
   context = {}
   template = "landing/landing.html"
@@ -365,12 +367,6 @@ def get_agent_needs(request, sim_code, persona_name):
 
 
 def get_world_resources(request, sim_code):
-    """
-    API endpoint to get world resource state.
-    Returns JSON with resource levels for all tracked locations.
-
-    Works for both live simulations (storage/) and compressed demos (compressed_storage/).
-    """
     resource_paths = [
         f"storage/{sim_code}/resources/world_state.json",
         f"compressed_storage/{sim_code}/resources/world_state.json",
@@ -387,13 +383,10 @@ def get_world_resources(request, sim_code):
                 continue
 
     if not world_state:
-        # Return default empty state if file doesn't exist yet
         return JsonResponse({"resources": {}, "message": "No resource state found"})
 
-    # Process resources into frontend-friendly format
     resources = {}
     for address, items in world_state.items():
-        # Calculate percentage for resources with max values
         processed = {}
         for item, value in items.items():
             if item in ("max", "last_restocked", "last_delivery", "refill_rate"):
@@ -401,7 +394,6 @@ def get_world_resources(request, sim_code):
             if isinstance(value, (int, float)):
                 max_val = items.get("max", 100)
                 if item == "level":
-                    # Hot water level as percentage
                     processed["level_pct"] = int((value / max_val) * 100) if max_val > 0 else 0
                     processed["level"] = value
                 else:
@@ -411,6 +403,76 @@ def get_world_resources(request, sim_code):
             resources[address] = processed
 
     return JsonResponse({"resources": resources})
+
+
+def get_artifacts(request, sim_code):
+    artifact_paths = [
+        os.path.join(PROJECT_ROOT, f"storage/{sim_code}/artifacts/artifacts.json"),
+        os.path.join(PROJECT_ROOT, f"compressed_storage/{sim_code}/artifacts/artifacts.json"),
+    ]
+
+    artifacts_data = None
+    for path in artifact_paths:
+        if os.path.exists(path):
+            try:
+                with open(path) as f:
+                    artifacts_data = json.load(f)
+                break
+            except (json.JSONDecodeError, IOError):
+                continue
+
+    if not artifacts_data:
+        return JsonResponse({"artifacts": [], "message": "No artifacts found"})
+
+    artifacts_list = []
+    for artifact_id, artifact in artifacts_data.items():
+        artifacts_list.append({
+            "id": artifact_id,
+            "type": artifact.get("type", "unknown"),
+            "name": artifact.get("name", "Unnamed"),
+            "description": artifact.get("description", ""),
+            "content_summary": artifact.get("content_summary", ""),
+            "creator": artifact.get("creator", "Unknown"),
+            "created_time": artifact.get("created_time", ""),
+            "quality": artifact.get("quality", 0),
+            "location": artifact.get("location", ""),
+            "content_full": artifact.get("content_full", ""),
+        })
+
+    artifacts_list.sort(key=lambda x: x.get("created_time", ""), reverse=True)
+    return JsonResponse({"artifacts": artifacts_list})
+
+
+def get_artifact_content(request, sim_code, artifact_type, filename):
+    if artifact_type not in ("writings", "paintings", "songs", "meals", "inventions", "images"):
+        return JsonResponse({"error": "Invalid artifact type"}, status=400)
+
+    content_paths = [
+        os.path.join(PROJECT_ROOT, f"reverie/backend_server/artifacts/{artifact_type}/{filename}"),
+        os.path.join(PROJECT_ROOT, f"storage/{sim_code}/artifacts/{artifact_type}/{filename}"),
+        os.path.join(PROJECT_ROOT, f"compressed_storage/{sim_code}/artifacts/{artifact_type}/{filename}"),
+    ]
+
+    for path in content_paths:
+        if os.path.exists(path):
+            try:
+                if artifact_type == "images" or filename.endswith((".png", ".jpg", ".jpeg", ".gif")):
+                    with open(path, "rb") as f:
+                        return HttpResponse(f.read(), content_type="image/png")
+                else:
+                    with open(path) as f:
+                        content = f.read()
+                    return JsonResponse({"content": content, "filename": filename, "type": artifact_type})
+            except (IOError, OSError):
+                continue
+
+    return JsonResponse({"error": "Artifact content not found"}, status=404)
+
+
+def artifact_viewer(request, sim_code):
+    template = "artifacts/artifacts.html"
+    context = {"sim_code": sim_code}
+    return render(request, template, context)
 
 
 

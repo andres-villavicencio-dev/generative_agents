@@ -33,6 +33,12 @@
 		<hr style="border-color:#999999">
 		<br>
 
+		<div style="margin-bottom: 1em;">
+			<a href="{% url 'artifact_viewer' sim_code %}" class="btn btn-primary">
+				<i class="glyphicon glyphicon-picture"></i> View Artifacts Gallery
+			</a>
+		</div>
+
 		{% for p_name, p_name_os in persona_names %}
 			<div class="media" style="background-color:#EEEEEE; padding:1em; padding-left:3.5em; padding-right:2em; border-radius:10px">
 			  <div class="media-left media-middle">

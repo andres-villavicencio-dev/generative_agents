@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container" style="padding-top: 2em;">
+  <div class="row">
+    <div class="col-md-12">
+      <h1>Artifacts Gallery</h1>
+      <p class="text-muted">Simulation: {{ sim_code }}</p>
+      <hr>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-md-12">
+      <div id="artifacts-loading">Loading artifacts...</div>
+      <div id="artifacts-list" style="display:none;"></div>
+      <div id="artifacts-empty" style="display:none;">
+        <p class="text-muted">No artifacts created yet in this simulation.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="artifact-modal" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="modal-title">Artifact Details</h4>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.artifact-card {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1em;
+  margin-bottom: 1em;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+}
+.artifact-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.artifact-type {
+  font-size: 2em;
+  margin-right: 0.5em;
+}
+.artifact-title {
+  font-weight: bold;
+  font-size: 1.2em;
+}
+.artifact-creator {
+  color: #666;
+}
+.artifact-summary {
+  margin-top: 0.5em;
+  color: #444;
+}
+.content-full {
+  white-space: pre-wrap;
+  font-family: inherit;
+  line-height: 1.6;
+}
+.image-container {
+  text-align: center;
+  margin: 1em 0;
+}
+.image-container img {
+  max-width: 100%;
+  border-radius: 4px;
+}
+</style>
+
+<script>
+(function() {
+  var simCode = "{{ sim_code }}";
+  
+  function typeEmoji(type) {
+    var emojis = {
+      "book": "📖",
+      "painting": "🎨",
+      "meal": "🍳",
+      "letter": "✉️",
+      "song": "🎵",
+      "invention": "💡"
+    };
+    return emojis[type] || "📦";
+  }
+  
+  function formatDate(dateStr) {
+    if (!dateStr) return "";
+    try {
+      var d = new Date(dateStr);
+      return d.toLocaleString();
+    } catch(e) {
+      return dateStr;
+    }
+  }
+  
+  function renderContentFull(contentFull, type) {
+    if (!contentFull) return "<p class='text-muted'>No detailed content available.</p>";
+    
+    try {
+      var data = JSON.parse(contentFull);
+      var html = "";
+      
+      if (data.prompt) {
+        html += "<p><strong>Prompt:</strong></p><p>" + data.prompt + "</p>";
+      }
+      
+      if (data.image_path) {
+        var filename = data.image_path.split("/").pop();
+        html += "<div class='image-container'><img src='/api/artifacts/" + simCode + "/images/" + filename + "' alt='Generated artwork'></div>";
+      }
+      
+      if (data.lyrics) {
+        html += "<p><strong>Lyrics:</strong></p><div class='content-full'>" + data.lyrics + "</div>";
+      }
+      
+      return html || "<div class='content-full'>" + contentFull + "</div>";
+    } catch(e) {
+      return "<div class='content-full'>" + contentFull + "</div>";
+    }
+  }
+  
+  function loadArtifacts() {
+    fetch("/api/artifacts/" + simCode + "/")
+      .then(function(response) { return response.json(); })
+      .then(function(data) {
+        document.getElementById("artifacts-loading").style.display = "none";
+        
+        if (!data.artifacts || data.artifacts.length === 0) {
+          document.getElementById("artifacts-empty").style.display = "block";
+          return;
+        }
+        
+        var list = document.getElementById("artifacts-list");
+        list.style.display = "block";
+        
+        data.artifacts.forEach(function(artifact) {
+          var card = document.createElement("div");
+          card.className = "artifact-card";
+          card.innerHTML = 
+            "<span class='artifact-type'>" + typeEmoji(artifact.type) + "</span>" +
+            "<span class='artifact-title'>" + artifact.name + "</span>" +
+            "<span class='artifact-creator'> by " + artifact.creator + "</span>" +
+            "<div class='artifact-summary'>" + (artifact.content_summary || artifact.description || "") + "</div>";
+          
+          card.addEventListener("click", function() {
+            showArtifactDetail(artifact);
+          });
+          
+          list.appendChild(card);
+        });
+      })
+      .catch(function(err) {
+        document.getElementById("artifacts-loading").innerHTML = "<p class='text-danger'>Error loading artifacts: " + err.message + "</p>";
+      });
+  }
+  
+  function showArtifactDetail(artifact) {
+    document.getElementById("modal-title").innerHTML = typeEmoji(artifact.type) + " " + artifact.name;
+    
+    var body = "<p><strong>Type:</strong> " + artifact.type + "</p>";
+    body += "<p><strong>Creator:</strong> " + artifact.creator + "</p>";
+    body += "<p><strong>Created:</strong> " + formatDate(artifact.created_time) + "</p>";
+    body += "<p><strong>Location:</strong> " + artifact.location + "</p>";
+    
+    if (artifact.description) {
+      body += "<p><strong>Description:</strong> " + artifact.description + "</p>";
+    }
+    
+    body += "<hr>";
+    body += "<h4>Content</h4>";
+    body += renderContentFull(artifact.content_full, artifact.type);
+    
+    document.getElementById("modal-body").innerHTML = body;
+    $("#artifact-modal").modal("show");
+  }
+  
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", loadArtifacts);
+  } else {
+    loadArtifacts();
+  }
+})();
+</script>
+{% endblock content %}

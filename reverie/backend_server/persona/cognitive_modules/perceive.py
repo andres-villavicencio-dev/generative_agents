@@ -12,9 +12,43 @@ from global_methods import *
 from persona.prompt_template.gpt_structure import *
 from persona.prompt_template.run_gpt_prompt import *
 
+POIGNANCY_KEYWORDS = {
+  1: ["idle", "sleeping", "napping", "resting", "sitting", "standing",
+      "waiting", "brushing teeth", "making bed", "getting dressed",
+      "waking up", "morning routine"],
+  2: ["eating", "breakfast", "lunch", "dinner", "cooking", "drinking",
+      "coffee", "tea", "walking", "showering", "bathing", "cleaning",
+      "reading", "watching", "browsing", "listening"],
+  3: ["working", "studying", "writing", "typing", "organizing",
+      "shopping", "exercising", "gardening", "painting"],
+  5: ["conversation", "discussing", "talking about", "meeting",
+      "helping", "teaching", "planning", "creating"],
+  6: ["arguing", "disagreeing", "apologizing", "confessing",
+      "surprising", "celebrating"],
+  8: ["love", "heartbreak", "fired", "hired", "promoted",
+      "emergency", "accident", "illness"],
+  9: ["break up", "proposal", "death", "birth", "college acceptance",
+      "betrayal", "major fight"],
+}
+
+def _score_poignancy(description):
+  """Rate event poignancy 1-10 via keyword matching.
+  Returns int score or None if no match."""
+  desc = description.lower()
+  for score in sorted(POIGNANCY_KEYWORDS.keys(), reverse=True):
+    for keyword in POIGNANCY_KEYWORDS[score]:
+      if keyword in desc:
+        return score
+  return None
+
+
 def generate_poig_score(persona, event_type, description):
   if "is idle" in description:
     return 1
+
+  score = _score_poignancy(description)
+  if score is not None:
+    return score
 
   if event_type == "event":
     return run_gpt_prompt_event_poignancy(persona, description)[0]
@@ -167,14 +201,26 @@ def perceive(persona, maze):
   # <ret_events> is a list of <ConceptNode> instances from the persona's 
   # associative memory. 
   ret_events = []
-  for p_event in perceived_events: 
+  for p_event in perceived_events:
     s, p, o, desc = p_event
-    if not p: 
+    if not p:
       # If the object is not present, then we default the event to "idle".
       p = "is"
       o = "idle"
       desc = "idle"
-    desc = f"{s.split(':')[-1]} is {desc}"
+
+    # Artifact perception: enrich description for artifact events
+    poignancy_boost = 0
+    if s.startswith("artifact:"):
+      artifact_id = s.split(":", 1)[1]
+      if hasattr(maze, 'artifact_manager'):
+        art = maze.artifact_manager.get_artifact(artifact_id)
+        if art:
+          desc = (f"{persona.name} notices {art['name']}, a {art['type']} "
+                  f"by {art['creator']}. {art['description']}")
+          poignancy_boost = 2
+    else:
+      desc = f"{s.split(':')[-1]} is {desc}"
     p_event = (s, p, o)
 
     # We retrieve the latest persona.scratch.retention events. If there is  
@@ -205,10 +251,21 @@ def perceive(persona, maze):
         event_embedding = get_embedding(desc_embedding_in)
       event_embedding_pair = (desc_embedding_in, event_embedding)
       
-      # Get event poignancy. 
-      event_poignancy = generate_poig_score(persona, 
-                                            "event", 
+      # Get event poignancy.
+      event_poignancy = generate_poig_score(persona,
+                                            "event",
                                             desc_embedding_in)
+      event_poignancy = min(10, event_poignancy + poignancy_boost)
+
+      # Chronicle high-poignancy events
+      if event_poignancy >= 7 and hasattr(persona.scratch, 'sim_folder'):
+        try:
+          from chronicle import chronicle_milestone
+          chronicle_milestone(persona, "event", desc_embedding_in,
+                              persona.scratch.sim_folder,
+                              poignancy=event_poignancy)
+        except Exception:
+          pass  # Chronicle is non-critical
 
       # If we observe the persona's self chat, we include that in the memory
       # of the persona here. 

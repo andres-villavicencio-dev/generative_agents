@@ -101,19 +101,64 @@ def generate_hourly_schedule(persona, wake_up_hour):
   # waking hour too. The daily_req list has explicit times ("at 8:00 am") that are
   # authoritative. We use those directly and skip 54+ redundant LLM calls on day 1.
   def _build_req_time_map(daily_req):
-    """Parse daily_req list → sorted [(start_hour, activity_text)] pairs."""
+    """Parse daily_req list → sorted [(start_hour, activity_text)] pairs.
+
+    Handles multiple time patterns:
+      - "at 8:00 am" → start at that hour
+      - "from 8:00 am to 8:00 pm" → start at first hour
+      - "until 8:00 pm" → this is an END time, not a start; skip it
+        (the activity before it should forward-fill to cover this range)
+
+    Uses position in daily_req as tiebreaker so later items override
+    earlier ones at the same hour (preserving the plan's narrative order).
+    """
     import re
+
+    def _parse_hour(hour_str, ampm):
+      h = int(hour_str); ampm = ampm.lower()
+      if ampm == 'pm' and h != 12: h += 12
+      elif ampm == 'am' and h == 12: h = 0
+      return h
+
     pairs = []
-    for req in daily_req:
-      m = re.search(r'\bat\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b', req, re.IGNORECASE)
+    last_h = None
+    for idx, req in enumerate(daily_req):
+      h = None
+      # Pattern 1: "from X am to Y pm" — use start time
+      m = re.search(r'\bfrom\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)\s+to\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b', req, re.IGNORECASE)
       if m:
-        h = int(m.group(1)); ampm = m.group(3).lower()
-        if ampm == 'pm' and h != 12: h += 12
-        elif ampm == 'am' and h == 12: h = 0
-        act = re.sub(r'\bat\s+\d{1,2}(?::\d{2})?\s*(?:am|pm)\b.*', '', req, flags=re.IGNORECASE).strip().rstrip(',').strip()
+        h = _parse_hour(m.group(1), m.group(3))
+      # Pattern 2: "at X:XX am/pm"
+      if h is None:
+        m = re.search(r'\bat\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b', req, re.IGNORECASE)
+        if m:
+          h = _parse_hour(m.group(1), m.group(3))
+      # Pattern 3: "until X pm" — activity runs UNTIL this time, infer start
+      # from the previous item's hour + 1
+      if h is None:
+        m = re.search(r'\buntil\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b', req, re.IGNORECASE)
+        if m:
+          # Use next hour after last known anchor as start
+          h = (last_h + 1) if last_h is not None else None
+
+      # Items with no time at all: assign next hour after previous
+      if h is None and last_h is not None:
+        h = last_h + 1
+
+      if h is not None:
+        # Strip all time expressions from the activity text
+        act = re.sub(r'\b(?:at|from|until|to)\s+\d{1,2}(?::\d{2})?\s*(?:am|pm)\b', '', req, flags=re.IGNORECASE).strip()
+        act = re.sub(r'\s+', ' ', act).strip().rstrip('.,').strip()
         if act:
-          pairs.append((h, act))
-    return sorted(pairs)
+          pairs.append((h, idx, act))
+          last_h = h
+    # Sort by hour, then by position in daily plan (later items override earlier at same hour)
+    pairs.sort(key=lambda x: (x[0], x[1]))
+    # Deduplicate: at each hour, keep only the last item (by plan order)
+    seen = {}
+    for h, idx, act in pairs:
+      seen[h] = act  # last one wins
+    return sorted(seen.items())
 
   def _build_schedule_from_req(daily_req, wake_up_hour):
     """Build 24-slot hourly activity list directly from daily_req + wake_up_hour.
@@ -298,44 +343,125 @@ def generate_action_game_object(act_desp, act_address, persona, maze):
   return run_gpt_prompt_action_game_object(act_desp, persona, maze, act_address)[0]
 
 
-def generate_action_pronunciatio(act_desp, persona): 
-  """TODO 
-  Given an action description, creates an emoji string description via a few
-  shot prompt. 
+EMOJI_LOOKUP = {
+  "sleep": "😴", "sleeping": "😴", "nap": "😴", "napping": "😴",
+  "eat": "🍽️", "eating": "🍽️", "breakfast": "🍳", "lunch": "🥪", "dinner": "🍽️",
+  "cook": "🧑‍🍳", "cooking": "🧑‍🍳", "preparing meal": "🧑‍🍳",
+  "work": "💼", "working": "💼", "study": "📚", "studying": "📚",
+  "read": "📖", "reading": "📖", "write": "✍️", "writing": "✍️",
+  "walk": "🚶", "walking": "🚶",
+  "talk": "💬", "talking": "💬", "chat": "💬", "chatting": "💬", "conversation": "💬",
+  "shower": "🚿", "showering": "🚿", "bath": "🛁",
+  "brush": "🪥", "brushing teeth": "🪥",
+  "dress": "👔", "getting dressed": "👔", "changing clothes": "👔",
+  "coffee": "☕", "drinking coffee": "☕", "tea": "🍵",
+  "exercise": "🏃", "exercising": "🏃", "workout": "💪",
+  "paint": "🎨", "painting": "🎨", "draw": "✏️", "drawing": "✏️",
+  "music": "🎵", "listen": "🎧", "listening": "🎧", "play piano": "🎹",
+  "garden": "🌱", "gardening": "🌱", "water plant": "🌱",
+  "clean": "🧹", "cleaning": "🧹",
+  "shop": "🛒", "shopping": "🛒", "buy": "🛒",
+  "rest": "😌", "resting": "😌", "relax": "😌", "relaxing": "😌",
+  "sit": "🪑", "sitting": "🪑",
+  "think": "🤔", "thinking": "🤔", "contemplate": "🤔",
+  "phone": "📱", "call": "📞",
+  "computer": "💻", "laptop": "💻", "browse": "💻",
+  "watch": "📺", "watching": "📺", "tv": "📺",
+  "wait": "⌛", "waiting": "⌛", "idle": "⌛",
+  "wake up": "⏰", "waking up": "⏰",
+  "get ready": "🧑", "morning routine": "🧑",
+}
 
-  Does not really need any information from persona. 
 
-  INPUT: 
+def _lookup_pronunciatio(description):
+  """Try to match action description to emoji via lookup table.
+  Returns emoji string or None if no match found."""
+  desc = description.lower().strip()
+  if "(" in desc:
+    desc = desc.split("(")[-1].split(")")[0].strip()
+  if desc in EMOJI_LOOKUP:
+    return EMOJI_LOOKUP[desc]
+  for keyword, emoji in EMOJI_LOOKUP.items():
+    if keyword in desc:
+      return emoji
+  return None
+
+
+def generate_action_pronunciatio(act_desp, persona):
+  """Given an action description, creates an emoji string description.
+  Uses a lookup table for common actions, falling back to LLM for novel ones.
+
+  INPUT:
     act_desp: the description of the action (e.g., "sleeping")
     persona: The Persona class instance
-  OUTPUT: 
+  OUTPUT:
     a string of emoji that translates action description.
-  EXAMPLE OUTPUT: 
+  EXAMPLE OUTPUT:
     "🧈🍞"
   """
   if debug: print ("GNS FUNCTION: <generate_action_pronunciatio>")
-  try: 
+
+  lookup = _lookup_pronunciatio(act_desp)
+  if lookup:
+    return lookup
+
+  try:
     x = run_gpt_prompt_pronunciatio(act_desp, persona)[0]
-  except: 
+  except:
     x = "🙂"
 
-  if not x: 
+  if not x:
     return "🙂"
   return x
 
 
-def generate_action_event_triple(act_desp, persona): 
-  """TODO 
+def _parse_event_triple(action_description, persona_name):
+  """Parse (subject, predicate, object) from action description via regex.
+  Returns tuple or None if parsing fails."""
+  import re
+  desc = action_description.strip()
+  if "(" in desc:
+    desc = desc.split("(")[-1].split(")")[0]
 
-  INPUT: 
-    act_desp: the description of the action (e.g., "sleeping")
-    persona: The Persona class instance
-  OUTPUT: 
-    a string of emoji that translates action description.
-  EXAMPLE OUTPUT: 
-    "🧈🍞"
-  """
+  # Common verb stems to avoid bad stemming
+  VERB_MAP = {
+    "cooking": "cook", "eating": "eat", "sleeping": "sleeping",
+    "reading": "read", "writing": "write", "working": "work",
+    "studying": "study", "walking": "walk", "running": "run",
+    "shopping": "shop", "cleaning": "clean", "painting": "paint",
+    "drawing": "draw", "listening": "listen", "watching": "watch",
+    "drinking": "drink", "brewing": "brew", "teaching": "teach",
+    "playing": "play", "sitting": "sit", "standing": "stand",
+    "waiting": "wait", "talking": "talk", "chatting": "chat",
+    "showering": "shower", "bathing": "bathe", "exercising": "exercise",
+    "gardening": "garden", "organizing": "organize", "typing": "type",
+    "browsing": "browse", "preparing": "prepare", "making": "make",
+  }
+
+  # Pattern: "<Name> is <verb>ing <rest>"
+  m = re.match(r'^(.+?)\s+is\s+(\w+ing)\b\s*(.*?)\.?$', desc, re.IGNORECASE)
+  if m:
+    subject = m.group(1).strip()
+    verb_ing = m.group(2).strip().lower()
+    obj = m.group(3).strip()
+    verb = VERB_MAP.get(verb_ing, verb_ing)
+    if not obj:
+      return (subject, "is", verb_ing)
+    return (subject, verb, obj)
+
+  # Pattern: "<Name> is <adjective/state>"
+  m = re.match(r'^(.+?)\s+is\s+(\w+)\.?$', desc, re.IGNORECASE)
+  if m:
+    return (m.group(1).strip(), "is", m.group(2).strip())
+
+  return None
+
+
+def generate_action_event_triple(act_desp, persona):
   if debug: print ("GNS FUNCTION: <generate_action_event_triple>")
+  parsed = _parse_event_triple(act_desp, persona.name)
+  if parsed:
+    return parsed
   return run_gpt_prompt_event_triple(act_desp, persona)[0]
 
 

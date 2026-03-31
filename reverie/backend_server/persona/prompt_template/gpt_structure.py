@@ -5,7 +5,25 @@ Modified: Local Ollama adaptation
 File: gpt_structure.py
 Description: Wrapper functions for calling local Ollama APIs instead of OpenAI.
 """
+# =============================================================================
+# LLM Backend Configuration
+# =============================================================================
+# This module supports two backends for text generation:
+#
+# 1. Ollama (default): Uses /api/generate endpoint with JSON schema constraints.
+#    Set USE_LLAMA_CPP = False (default).
+#
+# 2. llama.cpp server: Uses /completion endpoint with GBNF grammar constraints.
+#    Set USE_LLAMA_CPP = True and ensure llama.cpp server is running.
+#    See llama_cpp_server/README.md for setup instructions.
+#
+# TurboQuant Integration Note:
+#   The turboquant/ package provides KV cache quantization that can be used
+#   alongside either backend. The llama.cpp server also supports its own
+#   built-in KV cache quantization via --cache-type-k and --cache-type-v flags.
+# =============================================================================
 import json
+import os
 import time
 import urllib.request
 import urllib.error
@@ -14,8 +32,18 @@ from utils import *
 
 # Ollama configuration
 OLLAMA_BASE_URL = "http://localhost:11434"
-OLLAMA_CHAT_MODEL = "qwen3.5:9b"
-OLLAMA_EMBED_MODEL = "embeddinggemma"
+OLLAMA_CHAT_MODEL = "nemotron-cascade-2:30b-a3b-q4_K_M"
+OLLAMA_EMBED_MODEL = "embeddinggemma:latest"
+
+# llama.cpp server configuration
+LLAMA_CPP_BASE_URL = "http://localhost:8080"
+USE_LLAMA_CPP = True  # Set True to use llama.cpp instead of Ollama
+
+# GBNF grammar for JSON schema constraint: {"output": "<string>"}
+_GBNF_JSON_OUTPUT = r'''root   ::= "{" ws "\"output\"" ws ":" ws string ws "}"
+string ::= "\"" char* "\""
+char   ::= [^"\\] | "\\" (["\\/bfnrt] | "u" [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F])
+ws     ::= [ \t\n]*'''
 
 
 def temp_sleep(seconds=0.1):
@@ -49,6 +77,87 @@ def _strip_markdown(text):
     return text.strip()
 
 
+def _llama_cpp_generate(prompt, retries=5, free_form=False):
+    """
+    Make a request to llama.cpp server's /completion endpoint.
+    Returns the response text or raises an exception after retries exhausted.
+
+    Uses GBNF grammar for JSON schema constraint (equivalent to Ollama's
+    format field). The /completion endpoint returns {"content": "..."}
+    instead of Ollama's {"response": "..."}.
+
+    free_form=True: skip grammar constraint, return raw text.
+    """
+    url = f"{LLAMA_CPP_BASE_URL}/completion"
+
+    system_msg = (
+        "You are a simulation assistant. "
+        "IMPORTANT: Respond in English only. "
+    )
+    if not free_form:
+        system_msg += (
+            "Output valid JSON exactly matching the example format in the prompt. "
+            "Do not add any explanation, markdown, or extra keys."
+        )
+    else:
+        system_msg += (
+            "Follow the output format shown in the prompt EXACTLY. "
+            "Use numbered lists like '1) task (duration in minutes: X, minutes left: Y)'. "
+            "Do NOT use markdown tables, headers, or any formatting. "
+            "Plain text numbered list only."
+        )
+
+    full_prompt = system_msg + "\n\n" + prompt
+
+    request_body = {
+        "prompt": full_prompt,
+        "stream": False,
+        "n_predict": 2048,
+        "temperature": 0.7,
+    }
+    if not free_form:
+        request_body["grammar"] = _GBNF_JSON_OUTPUT
+
+    data = json.dumps(request_body).encode('utf-8')
+
+    for attempt in range(retries):
+        try:
+            req = urllib.request.Request(
+                url,
+                data=data,
+                headers={"Content-Type": "application/json"}
+            )
+            with urllib.request.urlopen(req, timeout=None) as response:
+                result = json.loads(response.read().decode('utf-8'))
+                text = result.get("content", "")
+                text = _strip_markdown(text)
+                # Extract ["output"] from grammar-constrained JSON
+                if text.strip():
+                    try:
+                        parsed = json.loads(text)
+                        if isinstance(parsed, dict) and "output" in parsed:
+                            text = str(parsed["output"])
+                    except (json.JSONDecodeError, ValueError):
+                        pass
+                    return text
+                # Empty response — retry with backoff
+                wait = 2 ** attempt
+                print(f"[llama.cpp] Empty response on attempt {attempt+1}/{retries}, retrying in {wait}s...")
+                if attempt < retries - 1:
+                    time.sleep(wait)
+                    continue
+        except (urllib.error.URLError, urllib.error.HTTPError, json.JSONDecodeError) as e:
+            wait = 2 ** attempt
+            print(f"[llama.cpp] Error on attempt {attempt+1}/{retries}: {e}, retrying in {wait}s...")
+            if attempt < retries - 1:
+                time.sleep(wait)
+                continue
+            raise
+
+    print("[llama.cpp] WARNING: All retries exhausted, returning empty string")
+    return ""
+
+
 def _ollama_generate(prompt, retries=5, free_form=False):
     """
     Make a request to Ollama's generate endpoint.
@@ -60,19 +169,20 @@ def _ollama_generate(prompt, retries=5, free_form=False):
     free_form=True: skip schema constraint, return raw text (for multi-line prompts
     like task decomposition that need numbered list output, not a JSON string).
     """
+    if USE_LLAMA_CPP:
+        return _llama_cpp_generate(prompt, retries=retries, free_form=free_form)
     url = f"{OLLAMA_BASE_URL}/api/generate"
     request_body = {
         "model": OLLAMA_CHAT_MODEL,
         "prompt": prompt,
         "stream": False,
-        "think": False,
         "options": {
             "num_ctx": 8192,
             "temperature": 0.7,
         }
     }
     if not free_form:
-        request_body["format"] = {"type": "object", "properties": {"output": {"type": "string"}}, "required": ["output"]}  # schema-constrained: always produces {"output": "..."}
+        request_body["format"] = "json"  # Ollama 0.18 only supports "json" string, not schema objects
         request_body["system"] = (
             "You are a simulation assistant. "
             "IMPORTANT: Respond in English only. "
@@ -137,8 +247,10 @@ def _ollama_generate(prompt, retries=5, free_form=False):
 
 
 def ChatGPT_single_request(prompt):
-    """Single request to Ollama (replaces ChatGPT single request)."""
+    """Single request to backend (llama.cpp or Ollama)."""
     temp_sleep()
+    if USE_LLAMA_CPP:
+        return _llama_cpp_generate(prompt)
     return _ollama_generate(prompt)
 
 
@@ -158,10 +270,12 @@ def GPT4_request(prompt):
     """
     temp_sleep()
     try:
+        if USE_LLAMA_CPP:
+            return _llama_cpp_generate(prompt)
         return _ollama_generate(prompt)
     except Exception as e:
-        print(f"Ollama ERROR: {e}")
-        return "Ollama ERROR"
+        print(f"LLM ERROR: {e}")
+        return "LLM ERROR"
 
 
 def ChatGPT_request(prompt):
@@ -175,10 +289,12 @@ def ChatGPT_request(prompt):
       a str of Ollama's response.
     """
     try:
+        if USE_LLAMA_CPP:
+            return _llama_cpp_generate(prompt)
         return _ollama_generate(prompt)
     except Exception as e:
-        print(f"Ollama ERROR: {e}")
-        return "Ollama ERROR"
+        print(f"LLM ERROR: {e}")
+        return "LLM ERROR"
 
 
 def GPT4_safe_generate_response(prompt,
@@ -302,6 +418,8 @@ def GPT_request(prompt, gpt_parameter, free_form=False):
     """
     temp_sleep()
     try:
+        if USE_LLAMA_CPP:
+            return _llama_cpp_generate(prompt, free_form=free_form)
         return _ollama_generate(prompt, free_form=free_form)
     except Exception as e:
         print(f"TOKEN LIMIT EXCEEDED: {e}")
@@ -361,51 +479,165 @@ def safe_generate_response(prompt,
     return fail_safe_response
 
 
+def _find_llama_cpp_pid():
+    """Find the PID of the running llama-server process."""
+    import subprocess
+    try:
+        result = subprocess.run(
+            ["pgrep", "-f", "llama-server.*--port"],
+            capture_output=True, text=True
+        )
+        pids = result.stdout.strip().split("\n")
+        return int(pids[0]) if pids and pids[0] else None
+    except (ValueError, IndexError):
+        return None
+
+
+def _is_llama_cpp_running():
+    """Check if llama.cpp server is reachable."""
+    try:
+        req = urllib.request.Request(f"{LLAMA_CPP_BASE_URL}/health")
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            return resp.status == 200
+    except Exception:
+        return False
+
+
+def _stop_llama_cpp():
+    """Stop llama.cpp server and wait for VRAM to free."""
+    import signal, subprocess
+    pid = _find_llama_cpp_pid()
+    if pid:
+        print(f"[embedding] Stopping llama.cpp (PID {pid}) to free VRAM...")
+        try:
+            os.kill(pid, signal.SIGTERM)
+            # Wait for process to exit and VRAM to free
+            for _ in range(30):
+                time.sleep(0.5)
+                try:
+                    os.kill(pid, 0)  # check if still alive
+                except OSError:
+                    break
+            time.sleep(2)  # extra wait for VRAM release
+            return True
+        except OSError:
+            pass
+    return False
+
+
+def _start_llama_cpp():
+    """Restart llama.cpp server in background."""
+    import subprocess
+    script = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(
+            os.path.abspath(__file__))))),
+        "llama_cpp_server", "start_server.sh"
+    )
+    if not os.path.exists(script):
+        print("[embedding] Warning: start_server.sh not found, cannot restart llama.cpp")
+        return False
+
+    # Find the model path from /proc before we killed it, or use nohup.out
+    # Use the GGUF path from environment or a known default
+    model_path = os.environ.get("LLAMA_GGUF_PATH", "")
+    if not model_path:
+        # Try to find from nohup.out or recent process args
+        try:
+            nohup = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(
+                    os.path.abspath(__file__))))),
+                "nohup.out"
+            )
+            if os.path.exists(nohup):
+                with open(nohup) as f:
+                    for line in f:
+                        if "Model:" in line and ".gguf" in line:
+                            model_path = line.split("Model:")[-1].strip()
+                            break
+        except Exception:
+            pass
+
+    if not model_path:
+        print("[embedding] Warning: cannot determine GGUF model path, set LLAMA_GGUF_PATH env var")
+        return False
+
+    print(f"[embedding] Restarting llama.cpp server with model: {model_path}")
+    subprocess.Popen(
+        ["bash", script, model_path],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True
+    )
+    # Wait for server to become healthy
+    for _ in range(60):
+        time.sleep(1)
+        if _is_llama_cpp_running():
+            print("[embedding] llama.cpp server is back up")
+            return True
+    print("[embedding] Warning: llama.cpp server did not come back up within 60s")
+    return False
+
+
 def get_embedding(text, model="text-embedding-ada-002"):
     """
-    Get embedding vector for text using Ollama's nomic-embed-text model.
-
-    ARGS:
-      text: the text to embed
-      model: ignored (we always use nomic-embed-text)
-    RETURNS:
-      a list of floats representing the embedding vector
+    Get embedding vector for text.
+    If USE_LLAMA_CPP=True: uses llama.cpp /embedding endpoint (no Ollama needed).
+    Otherwise: uses Ollama embeddinggemma.
     """
-    text = text.replace("\n", " ")
+    text = text.replace("\n", " ").strip()
     if not text:
         text = "this is blank"
 
+    if USE_LLAMA_CPP:
+        # Use llama.cpp /embedding endpoint directly — no Ollama required
+        url = f"{LLAMA_CPP_BASE_URL}/embedding"
+        data = json.dumps({"content": text}).encode("utf-8")
+        for attempt in range(3):
+            try:
+                req = urllib.request.Request(
+                    url, data=data,
+                    headers={"Content-Type": "application/json"}
+                )
+                with urllib.request.urlopen(req, timeout=60) as response:
+                    result = json.loads(response.read().decode("utf-8"))
+                    # Response: [{"index": 0, "embedding": [[...2688 floats...]]}]
+                    if isinstance(result, list) and result:
+                        emb = result[0].get("embedding", [])
+                        # emb is [[floats]] — take the first token vector
+                        if emb and isinstance(emb[0], list):
+                            return emb[0]
+                        return emb
+            except Exception as e:
+                print(f"[embedding] llama.cpp error (attempt {attempt+1}): {e}")
+                if attempt < 2:
+                    time.sleep(1)
+        return []
+
+    # Ollama fallback
     url = f"{OLLAMA_BASE_URL}/api/embeddings"
     data = json.dumps({
         "model": OLLAMA_EMBED_MODEL,
         "prompt": text
-    }).encode('utf-8')
-
+    }).encode("utf-8")
     for attempt in range(3):
         try:
             req = urllib.request.Request(
-                url,
-                data=data,
+                url, data=data,
                 headers={"Content-Type": "application/json"}
             )
-            with urllib.request.urlopen(req, timeout=60) as response:
-                result = json.loads(response.read().decode('utf-8'))
+            with urllib.request.urlopen(req, timeout=None) as response:
+                result = json.loads(response.read().decode("utf-8"))
                 embedding = result.get("embedding", [])
                 if embedding:
                     return embedding
-                # Empty response, retry
                 if attempt < 2:
                     time.sleep(1)
-                    continue
-        except (urllib.error.URLError, urllib.error.HTTPError, json.JSONDecodeError) as e:
+        except (urllib.error.URLError, json.JSONDecodeError) as e:
             if attempt < 2:
                 time.sleep(1)
                 continue
             raise
-
-    # Return empty list if all retries fail
     return []
-
 
 if __name__ == '__main__':
     gpt_parameter = {"engine": "text-davinci-003", "max_tokens": 50,

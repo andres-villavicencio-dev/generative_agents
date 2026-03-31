@@ -1,0 +1,1704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smallville: How AI Agents Come Alive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --color-bg: #F7F9F8;
+  --color-bg-warm: #EFF5F3;
+  --color-bg-code: #1E1E2E;
+  --color-text: #1C2B26;
+  --color-text-secondary: #4A6259;
+  --color-text-muted: #8BA89E;
+  --color-border: #D4E4DE;
+  --color-border-light: #E8F0ED;
+  --color-surface: #FFFFFF;
+  --color-surface-warm: #F4FAF7;
+  --color-accent: #1F7A60;
+  --color-accent-hover: #176650;
+  --color-accent-light: #E3F5EE;
+  --color-accent-muted: #5BA88D;
+  --color-success: #2D8B55;
+  --color-success-light: #E8F5EE;
+  --color-error: #C93B3B;
+  --color-error-light: #FDE8E8;
+  --color-info: #2A7B9B;
+  --color-info-light: #E4F2F7;
+  --color-actor-1: #1F7A60;
+  --color-actor-2: #C4632A;
+  --color-actor-3: #7B6DAA;
+  --color-actor-4: #D4A843;
+  --color-actor-5: #2A7B9B;
+  --color-actor-6: #B5445A;
+  --font-display: 'Bricolage Grotesque', Georgia, serif;
+  --font-body: 'DM Sans', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
+  --text-6xl: 3.75rem;
+  --leading-tight: 1.15;
+  --leading-snug: 1.3;
+  --leading-normal: 1.6;
+  --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem;
+  --space-4: 1rem; --space-5: 1.25rem; --space-6: 1.5rem;
+  --space-8: 2rem; --space-10: 2.5rem; --space-12: 3rem;
+  --space-16: 4rem; --space-20: 5rem; --space-24: 6rem;
+  --content-width: 820px;
+  --nav-height: 52px;
+  --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px rgba(28,43,38,0.05);
+  --shadow-md: 0 4px 12px rgba(28,43,38,0.08);
+  --shadow-lg: 0 8px 24px rgba(28,43,38,0.1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+  --stagger-delay: 100ms;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-snap-type: y proximity; scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background: var(--color-bg);
+  background-image: radial-gradient(ellipse at 15% 40%, rgba(31,122,96,0.04) 0%, transparent 55%);
+  line-height: var(--leading-normal);
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: var(--radius-full); }
+
+/* NAV */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: var(--nav-height);
+  background: rgba(247,249,248,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border-light);
+  z-index: 1000;
+}
+.progress-bar {
+  position: absolute; top: 0; left: 0; height: 3px;
+  background: var(--color-accent);
+  width: 0%; transition: width 0.1s linear;
+  border-radius: 0 var(--radius-full) var(--radius-full) 0;
+}
+.nav-inner {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-6);
+}
+.nav-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  color: var(--color-accent);
+  letter-spacing: -0.01em;
+}
+.nav-dots { display: flex; gap: var(--space-3); align-items: center; }
+.nav-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  border: 2px solid var(--color-text-muted);
+  background: transparent;
+  cursor: pointer;
+  transition: all var(--duration-fast);
+  position: relative;
+}
+.nav-dot:hover { border-color: var(--color-accent-muted); transform: scale(1.2); }
+.nav-dot.active { border-color: var(--color-accent); box-shadow: 0 0 0 3px var(--color-accent-light); }
+.nav-dot.visited { background: var(--color-accent); border-color: var(--color-accent); }
+.nav-dot::after {
+  content: attr(data-label);
+  position: absolute; bottom: 18px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-bg-code);
+  color: #CDD6F4;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--duration-fast);
+}
+.nav-dot:hover::after { opacity: 1; }
+
+/* MODULES */
+.module {
+  min-height: 100dvh;
+  min-height: 100vh;
+  scroll-snap-align: start;
+  padding: calc(var(--nav-height) + var(--space-16)) var(--space-6) var(--space-20);
+  position: relative;
+}
+.module:nth-child(odd) { background: var(--color-bg); }
+.module:nth-child(even) { background: var(--color-bg-warm); }
+.module-content { max-width: var(--content-width); margin: 0 auto; }
+.module-header { margin-bottom: var(--space-12); }
+.module-number {
+  font-family: var(--font-display);
+  font-size: var(--text-6xl);
+  font-weight: 800;
+  color: var(--color-accent);
+  opacity: 0.12;
+  line-height: 1;
+  display: block;
+  margin-bottom: var(--space-2);
+}
+.module-title {
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  font-weight: 700;
+  line-height: var(--leading-tight);
+  color: var(--color-text);
+  margin-bottom: var(--space-3);
+}
+.module-subtitle {
+  font-size: var(--text-lg);
+  color: var(--color-text-secondary);
+  max-width: 600px;
+  line-height: var(--leading-snug);
+}
+
+.screen { margin-bottom: var(--space-16); }
+.screen-heading {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  margin-bottom: var(--space-4);
+  color: var(--color-text);
+}
+p { margin-bottom: var(--space-4); font-size: var(--text-base); line-height: var(--leading-normal); }
+p:last-child { margin-bottom: 0; }
+
+/* ANIMATIONS */
+.animate-in {
+  opacity: 0; transform: translateY(18px);
+  transition: opacity var(--duration-slow) var(--ease-out), transform var(--duration-slow) var(--ease-out);
+}
+.animate-in.visible { opacity: 1; transform: translateY(0); }
+.stagger-children > .animate-in { transition-delay: calc(var(--stagger-index, 0) * var(--stagger-delay)); }
+
+/* TRANSLATION BLOCKS */
+.translation-block {
+  display: grid; grid-template-columns: 1fr 1fr;
+  border-radius: var(--radius-md); overflow: hidden;
+  box-shadow: var(--shadow-md); margin: var(--space-8) 0;
+}
+.translation-code {
+  background: var(--color-bg-code);
+  color: #CDD6F4;
+  padding: var(--space-6);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  line-height: 1.75;
+  position: relative;
+  overflow: hidden;
+}
+.translation-code pre, .translation-code code {
+  white-space: pre-wrap; word-break: break-word; overflow-x: hidden;
+}
+.translation-code::-webkit-scrollbar, .translation-code pre::-webkit-scrollbar { display: none; }
+.translation-english {
+  background: var(--color-surface-warm);
+  padding: var(--space-6);
+  font-size: var(--text-sm);
+  line-height: 1.75;
+  border-left: 3px solid var(--color-accent);
+}
+.t-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-3);
+}
+.tl { margin-bottom: var(--space-3); color: var(--color-text-secondary); }
+.tl strong { color: var(--color-accent); }
+.tl:last-child { margin-bottom: 0; }
+.code-keyword { color: #CBA6F7; }
+.code-string { color: #A6E3A1; }
+.code-function { color: #89B4FA; }
+.code-comment { color: #6C7086; font-style: italic; }
+.code-number { color: #FAB387; }
+.code-property { color: #F9E2AF; }
+.code-operator { color: #94E2D5; }
+.code-class { color: #F38BA8; }
+@media (max-width: 768px) {
+  .translation-block { grid-template-columns: 1fr; }
+  .translation-english { border-left: none; border-top: 3px solid var(--color-accent); }
+}
+
+/* ICON ROWS */
+.icon-rows { display: flex; flex-direction: column; gap: var(--space-3); margin: var(--space-6) 0; }
+.icon-row {
+  display: flex; align-items: flex-start; gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--duration-normal) var(--ease-out), box-shadow var(--duration-normal);
+}
+.icon-row:hover { transform: translateX(4px); box-shadow: var(--shadow-md); }
+.icon-circle {
+  width: 42px; height: 42px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; flex-shrink: 0; color: white;
+  font-family: var(--font-display); font-weight: 700;
+}
+.icon-row-body strong { display: block; font-weight: 600; margin-bottom: 2px; font-size: var(--text-base); }
+.icon-row-body p { margin: 0; color: var(--color-text-secondary); font-size: var(--text-sm); }
+
+/* STEP CARDS */
+.step-cards { display: flex; flex-direction: column; gap: var(--space-3); margin: var(--space-6) 0; }
+.step-card {
+  display: flex; align-items: flex-start; gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--color-accent);
+  box-shadow: var(--shadow-sm);
+}
+.step-num {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--color-accent); color: white; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-size: var(--text-sm); flex-shrink: 0;
+}
+.step-body strong { display: block; font-weight: 600; margin-bottom: 2px; }
+.step-body p { margin: 0; color: var(--color-text-secondary); font-size: var(--text-sm); }
+
+/* PATTERN CARDS */
+.pattern-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-4); margin: var(--space-6) 0;
+}
+.pattern-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--duration-normal) var(--ease-out), box-shadow var(--duration-normal);
+}
+.pattern-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.pattern-icon {
+  width: 36px; height: 36px; border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; margin-bottom: var(--space-3); color: white;
+}
+.pattern-title { font-weight: 700; font-size: var(--text-base); margin-bottom: var(--space-2); font-family: var(--font-display); }
+.pattern-desc { font-size: var(--text-sm); color: var(--color-text-secondary); line-height: 1.5; }
+
+/* CALLOUT */
+.callout {
+  display: flex; gap: var(--space-4);
+  padding: var(--space-5) var(--space-5);
+  border-radius: var(--radius-md);
+  margin: var(--space-8) 0;
+}
+.callout-accent { background: var(--color-accent-light); border-left: 4px solid var(--color-accent); }
+.callout-info { background: var(--color-info-light); border-left: 4px solid var(--color-info); }
+.callout-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 2px; }
+.callout-title { font-weight: 700; font-family: var(--font-display); display: block; margin-bottom: var(--space-2); }
+.callout-content p { margin: 0; font-size: var(--text-sm); line-height: var(--leading-normal); }
+
+/* FLOW DIAGRAM */
+.flow-steps {
+  display: flex; align-items: center; gap: var(--space-3);
+  margin: var(--space-6) 0; flex-wrap: wrap;
+}
+.flow-step {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border-light);
+  text-align: center; flex: 1; min-width: 100px;
+}
+.flow-step-num {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--color-accent); color: white; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  font-size: var(--text-xs); margin: 0 auto var(--space-2);
+}
+.flow-step p { font-size: var(--text-xs); color: var(--color-text-secondary); margin: 0; font-weight: 500; }
+.flow-arrow { color: var(--color-accent-muted); font-size: 1.2rem; flex-shrink: 0; }
+@media (max-width: 600px) {
+  .flow-steps { flex-direction: column; }
+  .flow-arrow { transform: rotate(90deg); }
+}
+
+/* QUIZ */
+.quiz-container { margin-top: var(--space-8); }
+.quiz-q { margin-bottom: var(--space-8); }
+.quiz-question { font-family: var(--font-display); font-weight: 700; font-size: var(--text-lg); margin-bottom: var(--space-4); }
+.quiz-options { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-3); }
+.quiz-option {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  cursor: pointer; width: 100%; text-align: left;
+  font-family: var(--font-body); font-size: var(--text-sm);
+  transition: border-color var(--duration-fast), background var(--duration-fast);
+}
+.quiz-option:hover:not(:disabled) { border-color: var(--color-accent-muted); background: var(--color-accent-light); }
+.quiz-option.selected { border-color: var(--color-accent); background: var(--color-accent-light); }
+.quiz-option.correct { border-color: var(--color-success); background: var(--color-success-light); }
+.quiz-option.incorrect { border-color: var(--color-error); background: var(--color-error-light); }
+.quiz-radio {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid var(--color-border); flex-shrink: 0;
+  transition: all var(--duration-fast);
+}
+.quiz-option.selected .quiz-radio { border-color: var(--color-accent); background: var(--color-accent); box-shadow: inset 0 0 0 3px white; }
+.quiz-option.correct .quiz-radio { border-color: var(--color-success); background: var(--color-success); box-shadow: inset 0 0 0 3px white; }
+.quiz-feedback {
+  font-size: var(--text-sm); padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm); margin-top: var(--space-2);
+  display: none; line-height: var(--leading-normal);
+}
+.quiz-feedback.show { display: block; }
+.quiz-feedback.success { background: var(--color-success-light); color: var(--color-success); }
+.quiz-feedback.error { background: var(--color-error-light); color: var(--color-error); }
+.quiz-btn {
+  padding: var(--space-3) var(--space-6);
+  background: var(--color-accent); color: white;
+  border: none; border-radius: var(--radius-sm);
+  font-family: var(--font-display); font-weight: 700; font-size: var(--text-sm);
+  cursor: pointer; margin-top: var(--space-4); margin-right: var(--space-3);
+  transition: background var(--duration-fast);
+}
+.quiz-btn:hover { background: var(--color-accent-hover); }
+.quiz-btn.secondary { background: transparent; color: var(--color-text-secondary); border: 2px solid var(--color-border); }
+.quiz-btn.secondary:hover { border-color: var(--color-accent); color: var(--color-accent); }
+
+/* CHAT ANIMATION */
+.chat-window {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  margin: var(--space-6) 0;
+  border: 1px solid var(--color-border-light);
+}
+.chat-header {
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-code);
+  color: #CDD6F4;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  display: flex; align-items: center; gap: var(--space-2);
+}
+.chat-dot { width: 10px; height: 10px; border-radius: 50%; }
+.chat-messages { padding: var(--space-4); min-height: 200px; display: flex; flex-direction: column; gap: var(--space-3); }
+.chat-message { display: flex; gap: var(--space-3); align-items: flex-start; }
+.chat-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; font-size: var(--text-xs);
+  font-family: var(--font-display); flex-shrink: 0;
+}
+.chat-bubble-wrap { display: flex; flex-direction: column; gap: 2px; }
+.chat-sender { font-size: var(--text-xs); font-weight: 700; margin-bottom: 2px; }
+.chat-bubble {
+  background: var(--color-bg);
+  border-radius: 4px var(--radius-md) var(--radius-md) var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border-light);
+  max-width: 360px;
+}
+.chat-typing { display: none; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-4); }
+.chat-typing-dots { display: flex; gap: 4px; align-items: center; }
+.typing-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--color-text-muted);
+  animation: typingBounce 1.4s infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-5px); }
+}
+.chat-controls {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-border-light);
+  display: flex; gap: var(--space-2); align-items: center;
+  background: var(--color-surface-warm);
+}
+.chat-ctrl-btn {
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-accent); color: white;
+  border: none; border-radius: var(--radius-sm);
+  font-size: var(--text-xs); font-weight: 600; cursor: pointer;
+  font-family: var(--font-body);
+  transition: background var(--duration-fast);
+}
+.chat-ctrl-btn:hover { background: var(--color-accent-hover); }
+.chat-ctrl-btn.reset { background: transparent; color: var(--color-text-secondary); border: 1px solid var(--color-border); }
+.chat-progress { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-text-muted); margin-left: auto; }
+
+/* FILE TREE */
+.file-tree {
+  background: var(--color-bg-code);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  margin: var(--space-6) 0;
+  box-shadow: var(--shadow-md);
+}
+.ft-row { display: flex; align-items: baseline; gap: var(--space-3); padding: var(--space-1) 0; }
+.ft-indent { margin-left: var(--space-6); border-left: 1px solid #3D4566; padding-left: var(--space-3); }
+.ft-name { color: #89B4FA; }
+.ft-folder > .ft-row > .ft-name { color: #F9E2AF; }
+.ft-desc { color: #6C7086; font-size: var(--text-xs); }
+
+/* MEMORY VIZ */
+.memory-node {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+  box-shadow: var(--shadow-md);
+  margin: var(--space-4) 0;
+  border-left: 4px solid var(--color-actor-3);
+  position: relative;
+}
+.memory-node-type {
+  font-family: var(--font-mono); font-size: var(--text-xs);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  background: var(--color-bg-code); color: #CBA6F7;
+  padding: 2px 8px; border-radius: var(--radius-full);
+  display: inline-block; margin-bottom: var(--space-2);
+}
+.memory-node-text { font-size: var(--text-sm); color: var(--color-text); margin-bottom: var(--space-2); font-weight: 500; }
+.memory-node-meta { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-text-muted); }
+.memory-score {
+  position: absolute; top: var(--space-3); right: var(--space-4);
+  font-family: var(--font-mono); font-size: var(--text-xs);
+}
+.score-bar {
+  display: flex; gap: var(--space-2); align-items: center; margin-bottom: 2px;
+}
+.score-label { color: var(--color-text-muted); width: 60px; }
+.score-fill {
+  height: 4px; border-radius: 2px; background: var(--color-accent);
+  transition: width 0.8s var(--ease-out);
+}
+.score-bg { width: 60px; height: 4px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
+
+/* NEEDS BARS */
+.needs-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: var(--space-4); margin: var(--space-6) 0;
+}
+.need-item {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+}
+.need-label { display: flex; justify-content: space-between; margin-bottom: var(--space-2); font-size: var(--text-sm); font-weight: 600; }
+.need-value { color: var(--color-text-muted); font-family: var(--font-mono); }
+.need-bar-bg { height: 8px; background: var(--color-border); border-radius: var(--radius-full); overflow: hidden; }
+.need-bar-fill { height: 100%; border-radius: var(--radius-full); transition: width 1s var(--ease-out); }
+
+/* TERM TOOLTIPS */
+.term {
+  border-bottom: 1.5px dashed var(--color-accent-muted);
+  cursor: pointer;
+}
+.term:hover, .term.active {
+  border-bottom-color: var(--color-accent);
+  color: var(--color-accent);
+}
+.term-tooltip {
+  position: fixed;
+  background: var(--color-bg-code);
+  color: #CDD6F4;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-family: var(--font-body);
+  line-height: var(--leading-normal);
+  width: max(200px, min(300px, 80vw));
+  box-shadow: var(--shadow-lg);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--duration-fast);
+  z-index: 10000;
+}
+.term-tooltip::after {
+  content: ''; position: absolute; top: 100%; left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--color-bg-code);
+}
+.term-tooltip.visible { opacity: 1; }
+.term-tooltip.flip::after {
+  top: auto; bottom: 100%;
+  border-top-color: transparent;
+  border-bottom-color: var(--color-bg-code);
+}
+
+/* SIM LOOP VIZ */
+.loop-viz {
+  margin: var(--space-6) 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-surface);
+}
+.loop-phases { display: flex; }
+.loop-phase {
+  flex: 1; padding: var(--space-4) var(--space-3);
+  text-align: center;
+  border-right: 1px solid var(--color-border-light);
+  cursor: pointer;
+  transition: background var(--duration-fast);
+  position: relative;
+}
+.loop-phase:last-child { border-right: none; }
+.loop-phase:hover, .loop-phase.active { background: var(--color-accent-light); }
+.loop-phase.active::after {
+  content: ''; position: absolute; bottom: -1px; left: 0; right: 0;
+  height: 3px; background: var(--color-accent);
+}
+.loop-phase-icon { font-size: 1.4rem; display: block; margin-bottom: var(--space-1); }
+.loop-phase-name { font-family: var(--font-display); font-weight: 700; font-size: var(--text-xs); color: var(--color-text); }
+.loop-phase-file { font-family: var(--font-mono); font-size: 0.65rem; color: var(--color-text-muted); margin-top: 2px; }
+.loop-detail {
+  padding: var(--space-5); border-top: 1px solid var(--color-border-light);
+  font-size: var(--text-sm); color: var(--color-text-secondary);
+  line-height: var(--leading-normal);
+  display: none;
+}
+.loop-detail.show { display: block; }
+.loop-detail strong { color: var(--color-text); }
+@media (max-width: 600px) { .loop-phases { flex-direction: column; } .loop-phase { border-right: none; border-bottom: 1px solid var(--color-border-light); } }
+
+/* DIVIDER */
+.divider { height: 1px; background: var(--color-border-light); margin: var(--space-12) 0; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .module-title { font-size: var(--text-3xl); }
+  .module-number { font-size: var(--text-5xl); }
+  .pattern-cards { grid-template-columns: 1fr 1fr; }
+  .needs-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .module { padding-left: var(--space-4); padding-right: var(--space-4); }
+  .module-title { font-size: var(--text-2xl); }
+  .pattern-cards { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="progress-bar" id="progress-bar"></div>
+  <div class="nav-inner">
+    <span class="nav-title">🏘️ Smallville</span>
+    <div class="nav-dots">
+      <button class="nav-dot" data-target="module-1" data-label="Welcome" aria-label="Module 1"></button>
+      <button class="nav-dot" data-target="module-2" data-label="The Cast" aria-label="Module 2"></button>
+      <button class="nav-dot" data-target="module-3" data-label="Memory" aria-label="Module 3"></button>
+      <button class="nav-dot" data-target="module-4" data-label="The Tick" aria-label="Module 4"></button>
+      <button class="nav-dot" data-target="module-5" data-label="Planning" aria-label="Module 5"></button>
+      <button class="nav-dot" data-target="module-6" data-label="Quiz" aria-label="Module 6"></button>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- MODULE 1: WELCOME TO SMALLVILLE                           -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section class="module" id="module-1">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">01</span>
+      <h1 class="module-title">Welcome to Smallville</h1>
+      <p class="module-subtitle">A simulated town full of AI characters who remember, plan, gossip — and have opinions about your Valentine's Day party.</p>
+    </header>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">What is this, exactly?</h2>
+      <p>This codebase is a <span class="term" data-definition="A reproduction of the Stanford research paper 'Generative Agents: Interactive Simulacra of Human Behavior' (arXiv:2304.03442) by Park et al. The paper demonstrated that AI agents with memory, planning, and reflection could exhibit surprisingly human-like social behavior.">Stanford research project</span> that answers a simple question: what if AI characters actually <em>remembered things</em>?</p>
+      <p>The town is called <strong>Smallville</strong>. It has a cafe, homes, a school, a park. Up to 25 characters live there — Isabella Rodriguez, Klaus Mueller, Maria Lopez. They wake up, plan their day, go to work, eat lunch, bump into neighbours, gossip about the Valentine's Day party someone's planning at Hobbs Cafe.</p>
+      <p>None of this is scripted. The characters decide what to do based on their memories, personalities, and the LLM processing their thoughts.</p>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">What you actually see when you run it</h2>
+      <div class="step-cards">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <strong>A 2D pixel-art map of Smallville opens in your browser</strong>
+            <p>Built with Phaser.js and a Django server. Characters are little sprite icons you can watch move around.</p>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <strong>You type <code>run 100</code> in the terminal</strong>
+            <p>The simulation takes 100 steps. Each step = 10 seconds of in-game time. So 100 steps is about 16 game-minutes.</p>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <strong>Characters start moving — and talking</strong>
+            <p>When two characters walk close enough, they have a conversation. Both generated in real-time by the LLM. Both stored in memory afterward.</p>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <strong>You save, exit, reload — and they remember</strong>
+            <p>Tomorrow's Isabella remembers what happened yesterday. That's what makes this different from normal AI chatbots.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">What happens when Isabella wakes up</h2>
+      <p>Let's trace exactly what the code does the moment Isabella's alarm goes off at 7 AM. This is the core loop you'll understand by the end of this course.</p>
+
+      <div class="chat-window">
+        <div class="chat-header">
+          <div class="chat-dot" style="background:#FF5F57"></div>
+          <div class="chat-dot" style="background:#FFBD2E"></div>
+          <div class="chat-dot" style="background:#28C840"></div>
+          &nbsp;Smallville — 7:00 AM, June 25, 2022
+        </div>
+        <div class="chat-messages" id="wake-chat">
+          <!-- Messages injected by JS -->
+        </div>
+        <div class="chat-typing" id="wake-typing">
+          <div class="chat-avatar" id="wake-typing-avatar" style="background: var(--color-actor-1)">IS</div>
+          <div class="chat-typing-dots">
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+          </div>
+        </div>
+        <div class="chat-controls">
+          <button class="chat-ctrl-btn" onclick="wakeNext()">Next →</button>
+          <button class="chat-ctrl-btn" onclick="wakePlayAll()">Play All</button>
+          <button class="chat-ctrl-btn reset" onclick="wakeReset()">↺ Replay</button>
+          <span class="chat-progress" id="wake-progress">0 / 5</span>
+        </div>
+      </div>
+
+      <div class="callout callout-accent animate-in">
+        <div class="callout-icon">💡</div>
+        <div class="callout-content">
+          <strong class="callout-title">The core insight of this project</strong>
+          <p>Regular <span class="term" data-definition="Large Language Model — the type of AI that powers ChatGPT, Claude, etc. They take text in and produce text out, but they have no persistent memory between conversations by default.">LLMs</span> have no memory between conversations. Generative Agents solves this by keeping a diary — a database of every event, thought, and conversation — and selectively injecting the most relevant memories into each prompt. Isabella doesn't just know her name. She knows what she did yesterday.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- MODULE 2: THE CAST OF CHARACTERS                          -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section class="module" id="module-2">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">02</span>
+      <h1 class="module-title">The Cast</h1>
+      <p class="module-subtitle">Nine components, each doing one job. Like a theatre company — everyone has a role.</p>
+    </header>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">The folder structure tells the story</h2>
+
+      <div class="file-tree">
+        <div class="ft-folder">
+          <div class="ft-row"><span class="ft-name">📁 reverie/backend_server/</span></div>
+          <div class="ft-indent">
+            <div class="ft-row"><span class="ft-name">reverie.py</span><span class="ft-desc">— The simulation engine. Runs the main loop.</span></div>
+            <div class="ft-row"><span class="ft-name">maze.py</span><span class="ft-desc">— The 2D world map and tile grid.</span></div>
+            <div class="ft-row"><span class="ft-name">path_finder.py</span><span class="ft-desc">— A* pathfinding so agents don't walk through walls.</span></div>
+            <div class="ft-row"><span class="ft-name">resource_manager.py</span><span class="ft-desc">— Tracks world resources (food, coffee, etc.) + agent needs.</span></div>
+            <div class="ft-folder">
+              <div class="ft-row"><span class="ft-name">📁 persona/</span></div>
+              <div class="ft-indent">
+                <div class="ft-row"><span class="ft-name">persona.py</span><span class="ft-desc">— Each agent (Isabella, Klaus, Maria).</span></div>
+                <div class="ft-folder">
+                  <div class="ft-row"><span class="ft-name">📁 memory_structures/</span></div>
+                  <div class="ft-indent">
+                    <div class="ft-row"><span class="ft-name">associative_memory.py</span><span class="ft-desc">— The long-term diary (events, thoughts, chats).</span></div>
+                    <div class="ft-row"><span class="ft-name">scratch.py</span><span class="ft-desc">— Short-term working memory (current action, plan).</span></div>
+                    <div class="ft-row"><span class="ft-name">spatial_memory.py</span><span class="ft-desc">— Mental map of the town.</span></div>
+                  </div>
+                </div>
+                <div class="ft-folder">
+                  <div class="ft-row"><span class="ft-name">📁 cognitive_modules/</span></div>
+                  <div class="ft-indent">
+                    <div class="ft-row"><span class="ft-name">perceive.py</span><span class="ft-desc">— What the agent notices around them.</span></div>
+                    <div class="ft-row"><span class="ft-name">retrieve.py</span><span class="ft-desc">— Which memories are relevant right now.</span></div>
+                    <div class="ft-row"><span class="ft-name">plan.py</span><span class="ft-desc">— What to do today / next hour / right now.</span></div>
+                    <div class="ft-row"><span class="ft-name">reflect.py</span><span class="ft-desc">— Synthesise memories into insights.</span></div>
+                    <div class="ft-row"><span class="ft-name">execute.py</span><span class="ft-desc">— Pathfind to target, handle conversations.</span></div>
+                    <div class="ft-row"><span class="ft-name">converse.py</span><span class="ft-desc">— Generate dialogue between two agents.</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">What each component actually does</h2>
+      <div class="icon-rows stagger-children">
+        <div class="icon-row animate-in">
+          <div class="icon-circle" style="background: var(--color-actor-1)">⚙️</div>
+          <div class="icon-row-body">
+            <strong>ReverieServer — The conductor</strong>
+            <p>Runs the main while loop. Reads the environment file from the frontend, tells each persona to think, writes the movement file back. It's the thing you talk to when you type <code>run 100</code>.</p>
+          </div>
+        </div>
+        <div class="icon-row animate-in">
+          <div class="icon-circle" style="background: var(--color-actor-2)">🗺️</div>
+          <div class="icon-row-body">
+            <strong>Maze — The world</strong>
+            <p>A 140×100 grid of tiles. Each tile knows its location (sector, arena, game object) and what events are happening there. Isabella standing at the piano = the piano tile has an event "Isabella is playing piano".</p>
+          </div>
+        </div>
+        <div class="icon-row animate-in">
+          <div class="icon-circle" style="background: var(--color-actor-3)">🧠</div>
+          <div class="icon-row-body">
+            <strong>Persona — The agent</strong>
+            <p>Holds three memory systems (long-term, short-term, spatial) and delegates all thinking to the cognitive modules. It's a coordinator, not a thinker.</p>
+          </div>
+        </div>
+        <div class="icon-row animate-in">
+          <div class="icon-circle" style="background: var(--color-actor-4)">📔</div>
+          <div class="icon-row-body">
+            <strong>AssociativeMemory — The diary</strong>
+            <p>Stores every event, thought, and conversation as a node with an <span class="term" data-definition="A list of ~1500 numbers that capture the meaning of a piece of text. Two sentences with similar meanings will have similar embeddings. This lets you find memories that are semantically related to a query.">embedding</span>. When Isabella needs to decide something, retrieval searches this diary using cosine similarity.</p>
+          </div>
+        </div>
+        <div class="icon-row animate-in">
+          <div class="icon-circle" style="background: var(--color-actor-5)">📋</div>
+          <div class="icon-row-body">
+            <strong>Scratch — The sticky note</strong>
+            <p>The agent's current working state: what am I doing right now? Where am I going? Who am I talking to? Resets or updates every tick. If AssociativeMemory is the diary, Scratch is the note on the fridge.</p>
+          </div>
+        </div>
+        <div class="icon-row animate-in">
+          <div class="icon-circle" style="background: var(--color-actor-6)">🌳</div>
+          <div class="icon-row-body">
+            <strong>SpatialMemory — The mental map</strong>
+            <p>A JSON tree of what the agent knows about the town's layout: world → sector → arena → game objects. Isabella knows her house has a bedroom with a bed. She doesn't need to explore to find it.</p>
+          </div>
+        </div>
+        <div class="icon-row animate-in">
+          <div class="icon-circle" style="background: #6C5CE7">🍎</div>
+          <div class="icon-row-body">
+            <strong>WorldResourceManager — The world's pantry</strong>
+            <p>Andus's addition to the original paper. Tracks real-world resources like food in fridges and coffee at the cafe. Agents develop needs (hunger, energy, social) that decay over time and influence their plans.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">Frontend ↔ Backend: two servers, one JSON handshake</h2>
+      <p>The system has two servers that never directly call each other. Instead, they talk through files on disk.</p>
+
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-step-num">1</div>
+          <p>Frontend moves agents</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-step-num">2</div>
+          <p>Writes <code>environment/N.json</code></p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-step-num">3</div>
+          <p>Backend reads it</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-step-num">4</div>
+          <p>Computes next moves</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-step-num">5</div>
+          <p>Writes <code>movement/N.json</code></p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-step-num">6</div>
+          <p>Frontend reads, animates</p>
+        </div>
+      </div>
+
+      <div class="callout callout-info animate-in">
+        <div class="callout-icon">🔄</div>
+        <div class="callout-content">
+          <strong class="callout-title">Why files instead of an API call?</strong>
+          <p>The simulation can be paused, resumed, or replayed by inspecting those JSON files. Every step is permanently recorded on disk. That's also why the replay feature works — just play back the saved <code>movement/</code> files.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- MODULE 3: THE MEMORY STREAM                               -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section class="module" id="module-3">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">03</span>
+      <h1 class="module-title">The Memory That Makes Isabella, Isabella</h1>
+      <p class="module-subtitle">How the code stores and retrieves memories — and why it's more like a detective than a database.</p>
+    </header>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">Every memory is a ConceptNode</h2>
+      <p>The <code>AssociativeMemory</code> class stores memories as <code>ConceptNode</code> objects. Think of each node as an index card in a detective's evidence board.</p>
+
+      <div class="translation-block animate-in">
+        <div class="translation-code">
+          <span class="t-label">associative_memory.py</span>
+          <pre><code><span class="code-keyword">class</span> <span class="code-class">ConceptNode</span>:
+  <span class="code-keyword">def</span> <span class="code-function">__init__</span>(<span class="code-keyword">self</span>, node_id, ...):
+    <span class="code-keyword">self</span>.type = node_type  <span class="code-comment"># event/thought/chat</span>
+    <span class="code-keyword">self</span>.subject = s
+    <span class="code-keyword">self</span>.predicate = p
+    <span class="code-keyword">self</span>.object = o
+    <span class="code-keyword">self</span>.description = description
+    <span class="code-keyword">self</span>.poignancy = poignancy
+    <span class="code-keyword">self</span>.embedding_key = embedding_key
+    <span class="code-keyword">self</span>.last_accessed = <span class="code-keyword">self</span>.created</code></pre>
+        </div>
+        <div class="translation-english">
+          <span class="t-label">Plain English</span>
+          <p class="tl">Each memory has a <strong>type</strong> — it's either something that happened (event), a thought the agent formed, or a conversation.</p>
+          <p class="tl">Every memory is stored as a triplet: <strong>Subject → Predicate → Object</strong>. Like "Isabella → is planning → a Valentine's party."</p>
+          <p class="tl"><strong>Poignancy</strong> is how emotionally significant this memory was, scored 1–10 by the LLM.</p>
+          <p class="tl">The <strong>embedding_key</strong> is the sentence that got turned into a vector — used for semantic search later.</p>
+          <p class="tl"><strong>last_accessed</strong> tracks when this memory was last retrieved. Recent access = more likely to surface again.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">What a real memory looks like</h2>
+      <p>Here's a sample from the <code>nodes.json</code> file after a simulation run:</p>
+
+      <div class="memory-node animate-in">
+        <div class="memory-node-type">event</div>
+        <div class="memory-node-text">"Isabella Rodriguez is planning a Valentine's Day party"</div>
+        <div class="memory-node-meta">Subject: Isabella Rodriguez &nbsp;·&nbsp; Predicate: is planning &nbsp;·&nbsp; Object: a Valentine's Day party</div>
+        <div class="memory-score">
+          <div class="score-bar"><span class="score-label">poignancy</span><div class="score-bg"><div class="score-fill" style="width:80%"></div></div></div>
+          <div class="score-bar"><span class="score-label">recency</span><div class="score-bg"><div class="score-fill" style="width:90%"></div></div></div>
+          <div class="score-bar"><span class="score-label">relevance</span><div class="score-bg"><div class="score-fill relevance-bar" style="width:0%"></div></div></div>
+        </div>
+      </div>
+
+      <div class="memory-node animate-in" style="border-left-color: var(--color-actor-2);">
+        <div class="memory-node-type" style="color:#FAB387">thought</div>
+        <div class="memory-node-text">"Klaus Mueller is interested in attending the Valentine's Day party"</div>
+        <div class="memory-node-meta">Depth: 1 (synthesised from event memories)</div>
+      </div>
+
+      <div class="memory-node animate-in" style="border-left-color: var(--color-actor-5);">
+        <div class="memory-node-type" style="color:#89B4FA">chat</div>
+        <div class="memory-node-text">"Isabella Rodriguez and Klaus Mueller discuss the party plans over coffee"</div>
+        <div class="memory-node-meta">Depth: 0 (direct conversation record)</div>
+      </div>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">The retrieval score: a three-way competition</h2>
+      <p>When Isabella needs to make a decision, the code searches her entire memory diary. Not by keyword — by <em>meaning</em>. The retrieval score combines three factors:</p>
+
+      <div class="pattern-cards stagger-children">
+        <div class="pattern-card animate-in" style="border-top: 3px solid var(--color-actor-3)">
+          <div class="pattern-icon" style="background: var(--color-actor-3)">⏰</div>
+          <div class="pattern-title">Recency</div>
+          <div class="pattern-desc">Memories accessed more recently score higher. Fades exponentially — yesterday gets 0.99×, last week gets 0.90×.</div>
+        </div>
+        <div class="pattern-card animate-in" style="border-top: 3px solid var(--color-actor-4)">
+          <div class="pattern-icon" style="background: var(--color-actor-4)">❤️</div>
+          <div class="pattern-title">Poignancy</div>
+          <div class="pattern-desc">How emotionally significant the memory was. Scored 1–10 by the LLM when first stored. Big events surface faster.</div>
+        </div>
+        <div class="pattern-card animate-in" style="border-top: 3px solid var(--color-actor-1)">
+          <div class="pattern-icon" style="background: var(--color-actor-1)">🔍</div>
+          <div class="pattern-title">Relevance</div>
+          <div class="pattern-desc">Cosine similarity between the current event's embedding and the memory's embedding. Semantically similar = high score.</div>
+        </div>
+      </div>
+
+      <div class="translation-block animate-in">
+        <div class="translation-code">
+          <span class="t-label">retrieve.py — cosine similarity</span>
+          <pre><code><span class="code-keyword">def</span> <span class="code-function">cos_sim</span>(a, b):
+  <span class="code-keyword">return</span> dot(a, b) / (norm(a) * norm(b))
+
+
+<span class="code-keyword">def</span> <span class="code-function">retrieve</span>(persona, perceived):
+  retrieved = dict()
+  <span class="code-keyword">for</span> event <span class="code-keyword">in</span> perceived:
+    relevant_events = persona.a_mem.<span class="code-function">retrieve_relevant_events</span>(
+      event.subject, event.predicate, event.object)
+    relevant_thoughts = persona.a_mem.<span class="code-function">retrieve_relevant_thoughts</span>(
+      event.subject, event.predicate, event.object)
+    retrieved[event.description] = {
+      <span class="code-string">"curr_event"</span>: event,
+      <span class="code-string">"events"</span>: list(relevant_events),
+      <span class="code-string">"thoughts"</span>: list(relevant_thoughts)
+    }
+  <span class="code-keyword">return</span> retrieved</code></pre>
+        </div>
+        <div class="translation-english">
+          <span class="t-label">Plain English</span>
+          <p class="tl"><code>cos_sim</code> measures how similar two vectors are by the angle between them. Score of 1.0 = identical meaning. Score of 0.0 = completely unrelated.</p>
+          <p class="tl"><code>retrieve</code> loops over what Isabella currently perceives (what's near her on the map).</p>
+          <p class="tl">For each perceived event, it searches the memory diary for the most semantically relevant past events AND thoughts.</p>
+          <p class="tl">Returns a dictionary: current event → what memories are related. This bundle goes into the LLM prompt for decision-making.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">Reflection: when memories become wisdom</h2>
+      <p>Occasionally, the agent stops and <em>reflects</em>. It takes its most recent high-poignancy memories and asks the LLM: "What insights can I draw from all this?" The result becomes a new memory node of type <strong>thought</strong>, at depth 1 (one level above raw events).</p>
+
+      <div class="callout callout-accent animate-in">
+        <div class="callout-icon">💡</div>
+        <div class="callout-content">
+          <strong class="callout-title">This is why agents develop opinions</strong>
+          <p>If Klaus saw Isabella working late three times this week, a reflection might produce: "Klaus Mueller believes Isabella Rodriguez is a very dedicated person." This thought then influences how Klaus talks about Isabella in future conversations — even if he hasn't spoken to her recently. The agent is genuinely building a model of the world.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- MODULE 4: THE HEARTBEAT                                   -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section class="module" id="module-4">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">04</span>
+      <h1 class="module-title">The Heartbeat</h1>
+      <p class="module-subtitle">Every 10 game-seconds, the world ticks forward. Here's every step inside that tick.</p>
+    </header>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">Click each phase to see what it does</h2>
+      <p>This is the main loop inside <code>start_server()</code> in <code>reverie.py</code>. For each agent, every tick:</p>
+
+      <div class="loop-viz animate-in">
+        <div class="loop-phases" id="loop-phases">
+          <div class="loop-phase active" onclick="showPhase('perceive')">
+            <span class="loop-phase-icon">👁️</span>
+            <div class="loop-phase-name">Perceive</div>
+            <div class="loop-phase-file">perceive.py</div>
+          </div>
+          <div class="loop-phase" onclick="showPhase('retrieve')">
+            <span class="loop-phase-icon">🔍</span>
+            <div class="loop-phase-name">Retrieve</div>
+            <div class="loop-phase-file">retrieve.py</div>
+          </div>
+          <div class="loop-phase" onclick="showPhase('plan')">
+            <span class="loop-phase-icon">📋</span>
+            <div class="loop-phase-name">Plan</div>
+            <div class="loop-phase-file">plan.py</div>
+          </div>
+          <div class="loop-phase" onclick="showPhase('reflect')">
+            <span class="loop-phase-icon">🪞</span>
+            <div class="loop-phase-name">Reflect</div>
+            <div class="loop-phase-file">reflect.py</div>
+          </div>
+          <div class="loop-phase" onclick="showPhase('execute')">
+            <span class="loop-phase-icon">🚶</span>
+            <div class="loop-phase-name">Execute</div>
+            <div class="loop-phase-file">execute.py</div>
+          </div>
+        </div>
+        <div class="loop-detail show" id="detail-perceive">
+          <strong>What the agent notices</strong> — The code scans nearby tiles within the agent's vision radius (8 tiles). Any event on those tiles that passes the attention filter gets added to a list of perceived events. For example: Klaus Mueller standing at the piano, or an unmade bed in the bedroom. Unimportant things are filtered out by the <span class="term" data-definition="A parameter (0-1) that determines whether an event is worth paying attention to. High-poignancy events always get noticed. Low-importance background events may be filtered.">attention bandwidth</span> setting.
+        </div>
+        <div class="loop-detail" id="detail-retrieve">
+          <strong>Which memories are relevant</strong> — For each perceived event, the code searches AssociativeMemory using <span class="term" data-definition="A math operation that measures the angle between two vectors. Two vectors pointing in the same direction have cosine similarity of 1.0. Two pointing opposite directions have -1.0. Used here to find memories whose meaning is similar to the current event.">cosine similarity</span> to find the most relevant past events and thoughts. The result is a bundle of context that goes into the LLM prompt.
+        </div>
+        <div class="loop-detail" id="detail-plan">
+          <strong>What to do next</strong> — The plan module checks if the current action is still valid. If not (or if it's time to plan the next task), it calls the LLM with the agent's personality, the retrieved memories, and the current game time to decide what to do next. Plans cascade: day plan → hourly plan → current task.
+        </div>
+        <div class="loop-detail" id="detail-reflect">
+          <strong>Forming insights</strong> — Reflection only triggers when the sum of poignancy scores for recent memories exceeds a threshold (default: 150). When it fires, the LLM synthesises the most important recent memories into higher-level thoughts, which get stored back in memory at depth+1.
+        </div>
+        <div class="loop-detail" id="detail-execute">
+          <strong>Actually moving</strong> — Given the planned action's target address (e.g., "the_ville:Hobbs Cafe:cafe:espresso machine"), the code uses <span class="term" data-definition="An algorithm for finding the shortest path between two points on a grid, avoiding obstacles. The 'A*' part means it uses a heuristic (estimated distance to goal) to find the path faster than brute-force search.">A* pathfinding</span> through the collision maze to find the route. The next tile coordinate gets written to the movement file.
+        </div>
+      </div>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">The main loop in code</h2>
+
+      <div class="translation-block animate-in">
+        <div class="translation-code">
+          <span class="t-label">reverie.py — start_server() main loop</span>
+          <pre><code><span class="code-keyword">while</span> (True):
+  <span class="code-keyword">if</span> int_counter == <span class="code-number">0</span>: <span class="code-keyword">break</span>
+
+  curr_env_file = <span class="code-string">f"{sim_folder}/environment/{self.step}.json"</span>
+  <span class="code-keyword">if</span> check_if_file_exists(curr_env_file):
+    <span class="code-comment"># Read new agent positions from frontend</span>
+    new_env = json.load(open(curr_env_file))
+
+    <span class="code-comment"># Each persona perceives, retrieves, plans, executes</span>
+    <span class="code-keyword">for</span> persona_name, persona <span class="code-keyword">in</span> self.personas.items():
+      persona.<span class="code-function">move</span>(self.maze, self.personas,
+                        self.curr_time, new_env)
+
+    <span class="code-comment"># Tick needs (hunger, energy, etc.)</span>
+    self.<span class="code-function">tick_needs</span>()
+
+    <span class="code-comment"># Write movement decisions for frontend</span>
+    <span class="code-keyword">with</span> open(<span class="code-string">f"{sim_folder}/movement/{self.step}.json"</span>, <span class="code-string">"w"</span>) <span class="code-keyword">as</span> f:
+      f.write(json.dumps(movements, indent=<span class="code-number">2</span>))
+
+    self.step += <span class="code-number">1</span>
+    self.curr_time += timedelta(seconds=self.sec_per_step)</code></pre>
+        </div>
+        <div class="translation-english">
+          <span class="t-label">Plain English</span>
+          <p class="tl">Keep looping until we've taken the requested number of steps.</p>
+          <p class="tl">Wait for the frontend to drop a new <code>environment/{step}.json</code> file — this is the frontend saying "I've moved everyone, it's your turn."</p>
+          <p class="tl">For each agent, call their <code>move()</code> function — that's the perceive→retrieve→plan→execute pipeline.</p>
+          <p class="tl"><strong>tick_needs()</strong> is Andus's addition — decay hunger, energy, social, etc. for every agent.</p>
+          <p class="tl">Write <code>movement/{step}.json</code> — the backend saying "here's where everyone should go next and what they're doing."</p>
+          <p class="tl">Advance the game clock by 10 seconds and increment the step counter.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">The needs system Andus added</h2>
+      <p>The original Stanford paper didn't have physical needs. Andus extended it so agents track hunger, energy, social drive, and more — and their plans react when those needs get low.</p>
+
+      <div class="needs-grid" id="needs-display">
+        <div class="need-item">
+          <div class="need-label"><span>🍔 Hunger</span><span class="need-value" id="hunger-val">72%</span></div>
+          <div class="need-bar-bg"><div class="need-bar-fill" id="hunger-bar" style="width:72%; background: var(--color-actor-2)"></div></div>
+        </div>
+        <div class="need-item">
+          <div class="need-label"><span>⚡ Energy</span><span class="need-value" id="energy-val">55%</span></div>
+          <div class="need-bar-bg"><div class="need-bar-fill" id="energy-bar" style="width:55%; background: var(--color-actor-4)"></div></div>
+        </div>
+        <div class="need-item">
+          <div class="need-label"><span>👥 Social</span><span class="need-value" id="social-val">40%</span></div>
+          <div class="need-bar-bg"><div class="need-bar-fill" id="social-bar" style="width:40%; background: var(--color-actor-3)"></div></div>
+        </div>
+        <div class="need-item">
+          <div class="need-label"><span>💧 Hydration</span><span class="need-value" id="hydration-val">88%</span></div>
+          <div class="need-bar-bg"><div class="need-bar-fill" id="hydration-bar" style="width:88%; background: var(--color-actor-5)"></div></div>
+        </div>
+      </div>
+
+      <div class="translation-block animate-in">
+        <div class="translation-code">
+          <span class="t-label">reverie.py — tick_needs()</span>
+          <pre><code><span class="code-keyword">for</span> need, base_rate <span class="code-keyword">in</span> s.needs_decay_rates.items():
+  multiplier = <span class="code-function">get_persona_decay_multiplier</span>(
+    persona_name, need)
+  rate = base_rate * multiplier
+
+  <span class="code-keyword">if</span> need == <span class="code-string">"energy"</span>:
+    <span class="code-keyword">if</span> is_sleeping:
+      current_val += <span class="code-number">1</span>/<span class="code-number">60</span>  <span class="code-comment"># Restore during sleep</span>
+    <span class="code-keyword">else</span>:
+      current_val -= rate
+  <span class="code-keyword">elif</span> need == <span class="code-string">"social"</span>:
+    <span class="code-keyword">if not</span> is_chatting:  <span class="code-comment"># Only decays alone</span>
+      current_val -= rate
+
+  s.needs[need] = max(<span class="code-number">0</span>, min(<span class="code-number">100</span>, current_val))</code></pre>
+        </div>
+        <div class="translation-english">
+          <span class="t-label">Plain English</span>
+          <p class="tl">Every tick, loop through each need (hunger, energy, social, hydration, etc.).</p>
+          <p class="tl">Get a persona-specific multiplier — Maria might get hungry faster than Klaus.</p>
+          <p class="tl"><strong>Energy is special:</strong> it restores during sleep instead of decaying. The +1/60 means full recovery after 60 sleep ticks (~10 game minutes).</p>
+          <p class="tl"><strong>Social is also special:</strong> it only decays when the agent is alone. Having a conversation satisfies the need.</p>
+          <p class="tl">Clamp everything between 0 and 100 — needs can't go negative or exceed full.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- MODULE 5: HOW AGENTS PLAN THEIR DAY                       -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section class="module" id="module-5">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">05</span>
+      <h1 class="module-title">How Agents Plan Their Day</h1>
+      <p class="module-subtitle">From "wake up at 7am" to "walk to tile (58, 39)" — a three-layer planning system.</p>
+    </header>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">Planning happens in three layers</h2>
+      <p>Think of it like a project manager breaking down a goal. The LLM is called separately at each layer — from broad strokes to specific actions.</p>
+
+      <div class="pattern-cards stagger-children">
+        <div class="pattern-card animate-in" style="border-top: 3px solid var(--color-actor-4)">
+          <div class="pattern-icon" style="background: var(--color-actor-4)">📅</div>
+          <div class="pattern-title">Layer 1: Daily Plan</div>
+          <div class="pattern-desc">"Wake up at 7am, eat breakfast, head to Oak Hill College by 9am, teach a philosophy lecture, have lunch at the diner at noon..."<br><br>Generated once per game day. ~5–8 broad events.</div>
+        </div>
+        <div class="pattern-card animate-in" style="border-top: 3px solid var(--color-actor-2)">
+          <div class="pattern-icon" style="background: var(--color-actor-2)">🕐</div>
+          <div class="pattern-title">Layer 2: Hourly Plan</div>
+          <div class="pattern-desc">"9:00–9:10: walk to classroom. 9:10–10:00: lecture on epistemology. 10:00–10:15: answer student questions..."<br><br>Decomposed when the hour begins.</div>
+        </div>
+        <div class="pattern-card animate-in" style="border-top: 3px solid var(--color-actor-1)">
+          <div class="pattern-icon" style="background: var(--color-actor-1)">📍</div>
+          <div class="pattern-title">Layer 3: Current Action</div>
+          <div class="pattern-desc">"the_ville:Oak Hill College:classroom:blackboard"<br><br>A specific address in the Maze. This is what gets passed to A* pathfinding.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">The daily planning chain in code</h2>
+
+      <div class="translation-block animate-in">
+        <div class="translation-code">
+          <span class="t-label">plan.py — generate_first_daily_plan()</span>
+          <pre><code><span class="code-keyword">def</span> <span class="code-function">generate_first_daily_plan</span>(persona,
+    wake_up_hour, resource_manager=None):
+  <span class="code-string">"""
+  Returns a list like:
+  ['wake up and complete morning routine at 6am',
+   'eat breakfast at 7am',
+   'head to the cafe to work at 8am', ...]
+  """</span>
+
+  <span class="code-comment"># Build context from persona's identity + lifestyle</span>
+  <span class="code-keyword">return</span> <span class="code-function">run_gpt_prompt_daily_plan</span>(
+    persona, wake_up_hour, resource_manager)[<span class="code-number">0</span>]</code></pre>
+        </div>
+        <div class="translation-english">
+          <span class="t-label">Plain English</span>
+          <p class="tl">The function takes the persona (which carries their identity: name, traits, lifestyle, relationships) and their wake-up hour.</p>
+          <p class="tl">It also accepts the <code>resource_manager</code> — Andus's addition — so if the cafe is low on coffee, that context influences the plan.</p>
+          <p class="tl">It calls <code>run_gpt_prompt_daily_plan()</code> which builds a prompt with the persona's full identity and asks the LLM to write out their day.</p>
+          <p class="tl">Returns a list of broad string actions. This is the skeleton of the entire day.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">What's in a prompt?</h2>
+      <p>Every LLM call in this codebase follows the same pattern: build a string prompt from templates, call the API, parse the response. The prompts live in <code>persona/prompt_template/</code>. A typical planning prompt looks like:</p>
+
+      <div class="callout callout-info animate-in">
+        <div class="callout-icon">📝</div>
+        <div class="callout-content">
+          <strong class="callout-title">What the planning prompt actually contains</strong>
+          <p>Name: Isabella Rodriguez<br>
+          Traits: friendly, outgoing, passionate about art<br>
+          Lifestyle: Isabella goes to Hobbs Cafe in the morning, heads to Oak Hill College at 10am...<br>
+          Current date: Monday June 25, 2022<br>
+          Recent memories: [top-k retrieved memories]<br>
+          <br>
+          In broad strokes, write out Isabella's schedule for today.</p>
+        </div>
+      </div>
+
+      <p>The LLM doesn't "know" Isabella. It's given Isabella as context every single time. The memory system is what creates the illusion of continuity.</p>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">What happens when a plan changes</h2>
+      <p>Agents can replan mid-day. If Isabella's hunger drops below 40, the needs system injects a perception event: "Isabella feels hungry and notices the kitchen nearby." This triggers a replanning check.</p>
+
+      <div class="step-cards">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <strong>Need drops below threshold (e.g., hunger &lt; 40%)</strong>
+            <p><code>perceive_resource_context()</code> generates a natural-language perception string.</p>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <strong>Event injected into memory</strong>
+            <p>The perception becomes a new event in AssociativeMemory with high poignancy — guaranteed to surface in retrieval.</p>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <strong>LLM decides whether to replan</strong>
+            <p>The plan module checks: "Given this new event, does Isabella need to change what she was doing?" If yes, generates new hourly plan.</p>
+          </div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <strong>New address → new path</strong>
+            <p>A* pathfinding recalculates the route to the kitchen/cafe. The old plan is discarded.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-accent animate-in">
+        <div class="callout-icon">💡</div>
+        <div class="callout-content">
+          <strong class="callout-title">Why this matters for AI development</strong>
+          <p>This is the pattern for all reactive AI systems: perception → memory injection → retrieval → LLM decision. The difference between a basic chatbot and a sophisticated agent is this feedback loop. Once you understand it here, you'll see it everywhere in agentic AI.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- MODULE 6: QUIZ                                            -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section class="module" id="module-6">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">06</span>
+      <h1 class="module-title">Apply What You Learned</h1>
+      <p class="module-subtitle">Not what you memorised — what you can actually do with it.</p>
+    </header>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">5 real scenarios</h2>
+      <div class="quiz-container" id="main-quiz">
+
+        <div class="quiz-q" data-correct="b">
+          <div class="quiz-question">1. You want to add a "favourite places" feature so agents remember spots they like. Which file would you primarily edit?</div>
+          <div class="quiz-options">
+            <button class="quiz-option" data-val="a" onclick="selectOpt(this)"><div class="quiz-radio"></div><span>scratch.py — because it tracks the current state</span></button>
+            <button class="quiz-option" data-val="b" onclick="selectOpt(this)"><div class="quiz-radio"></div><span>associative_memory.py — because preferences are long-term memories</span></button>
+            <button class="quiz-option" data-val="c" onclick="selectOpt(this)"><div class="quiz-radio"></div><span>maze.py — because locations live in the map</span></button>
+            <button class="quiz-option" data-val="d" onclick="selectOpt(this)"><div class="quiz-radio"></div><span>plan.py — because it decides where to go</span></button>
+          </div>
+          <div class="quiz-feedback" id="qfb-1"></div>
+        </div>
+
+        <div class="quiz-q" data-correct="c">
+          <div class="quiz-question">2. Isabella says something weird that seems unrelated to what she's doing. A developer suspects she's retrieving irrelevant memories. Where would you look to debug this?</div>
+          <div class="quiz-options">
+            <button class="quiz-option" data-val="a" onclick="selectOpt(this)"><div class="quiz-radio"></div><span>maze.py — to check the tile events near her</span></button>
+            <button class="quiz-option" data-val="b" onclick="selectOpt(this)"><div class="quiz-radio"></div><span>plan.py — to check her current hourly plan</span></button>
+            <button class="quiz-option" data-val="c" onclick="selectOpt(this)"><div class="quiz-radio"></div><span>retrieve.py — to check which memories are being scored highest</span></button>
+            <button class="quiz-option" data-val="d" onclick="selectOpt(this)"><div class="quiz-radio"></div><span>converse.py — to check the dialogue generation</span></button>
+          </div>
+          <div class="quiz-feedback" id="qfb-2"></div>
+        </div>
+
+        <div class="quiz-q" data-correct="a">
+          <div class="quiz-question">3. You restart the simulation and notice agents instantly teleport to their old positions from the previous run before computing new moves. What's happening?</div>
+          <div class="quiz-options">
+            <button class="quiz-option" data-val="a" onclick="selectOpt(this)"><div class="quiz-radio"></div><span>Stale environment/movement files from the parent simulation are still on disk and the frontend reads them first</span></button>
+            <button class="quiz-option" data-val="b" onclick="selectOpt(this)"><div class="quiz-radio"></div><span>The LLM is returning cached responses</span></button>
+            <button class="quiz-option" data-val="c" onclick="selectOpt(this)"><div class="quiz-radio"></div><span>Scratch.py is loading old position data</span></button>
+            <button class="quiz-option" data-val="d" onclick="selectOpt(this)"><div class="quiz-radio"></div><span>The maze collision grid is outdated</span></button>
+          </div>
+          <div class="quiz-feedback" id="qfb-3"></div>
+        </div>
+
+        <div class="quiz-q" data-correct="d">
+          <div class="quiz-question">4. Klaus never goes to get food even when his hunger drops to 5%. What's the most likely reason?</div>
+          <div class="quiz-options">
+            <button class="quiz-option" data-val="a" onclick="selectOpt(this)"><div class="quiz-radio"></div><span>The cafe doesn't have food in the resource_manager</span></button>
+            <button class="quiz-option" data-val="b" onclick="selectOpt(this)"><div class="quiz-radio"></div><span>Klaus's spatial memory doesn't include the cafe</span></button>
+            <button class="quiz-option" data-val="c" onclick="selectOpt(this)"><div class="quiz-radio"></div><span>The path_finder can't find a route to the cafe</span></button>
+            <button class="quiz-option" data-val="d" onclick="selectOpt(this)"><div class="quiz-radio"></div><span>perceive_resource_context() isn't injecting the hunger perception, so it never reaches retrieval or planning</span></button>
+          </div>
+          <div class="quiz-feedback" id="qfb-4"></div>
+        </div>
+
+        <div class="quiz-q" data-correct="b">
+          <div class="quiz-question">5. You want agents to form opinions about world events (not just personal events). For example, Klaus should be able to reflect on "the economy is struggling" and form a belief. Which module would you extend?</div>
+          <div class="quiz-options">
+            <button class="quiz-option" data-val="a" onclick="selectOpt(this)"><div class="quiz-radio"></div><span>perceive.py — so agents notice world events as tiles</span></button>
+            <button class="quiz-option" data-val="b" onclick="selectOpt(this)"><div class="quiz-radio"></div><span>reflect.py — so synthesised thoughts can reference world-state events</span></button>
+            <button class="quiz-option" data-val="c" onclick="selectOpt(this)"><div class="quiz-radio"></div><span>plan.py — so world context influences daily scheduling</span></button>
+            <button class="quiz-option" data-val="d" onclick="selectOpt(this)"><div class="quiz-radio"></div><span>scratch.py — to add a world_beliefs field</span></button>
+          </div>
+          <div class="quiz-feedback" id="qfb-5"></div>
+        </div>
+
+        <button class="quiz-btn" onclick="checkAll()">Check Answers</button>
+        <button class="quiz-btn secondary" onclick="resetAll()">Try Again</button>
+      </div>
+    </div>
+
+    <div class="screen animate-in">
+      <div class="divider"></div>
+      <h2 class="screen-heading">You now understand the full loop</h2>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-step-num">👁️</div>
+          <p>Perceive<br>nearby tiles</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-step-num">🔍</div>
+          <p>Retrieve<br>relevant memories</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-step-num">📋</div>
+          <p>Plan<br>next action</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-step-num">🚶</div>
+          <p>Execute<br>pathfind + move</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-step-num">💾</div>
+          <p>Save to<br>disk</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="flow-step-num">🔁</div>
+          <p>Tick needs,<br>repeat</p>
+        </div>
+      </div>
+
+      <div class="callout callout-accent animate-in" style="margin-top: var(--space-8)">
+        <div class="callout-icon">🏘️</div>
+        <div class="callout-content">
+          <strong class="callout-title">What to explore next</strong>
+          <p>The most interesting files to read next: <code>prompt_template/run_gpt_prompt.py</code> (every LLM call), <code>resource_manager.py</code> (the full needs system Andus built), and the saved simulation data in <code>environment/frontend_server/storage/</code> — real JSON logs of a running simulation.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+(function() {
+  // ── PROGRESS BAR ──
+  const bar = document.getElementById('progress-bar');
+  function updateProgress() {
+    const pct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight) * 100;
+    bar.style.width = pct + '%';
+  }
+  window.addEventListener('scroll', () => requestAnimationFrame(updateProgress), { passive: true });
+
+  // ── NAV DOTS ──
+  const dots = document.querySelectorAll('.nav-dot');
+  const modules = document.querySelectorAll('.module');
+  dots.forEach(dot => {
+    dot.addEventListener('click', () => {
+      const t = document.getElementById(dot.dataset.target);
+      if (t) t.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+  function updateDots() {
+    const mid = window.innerHeight / 2;
+    modules.forEach((mod, i) => {
+      const r = mod.getBoundingClientRect();
+      if (r.top <= mid && r.bottom >= mid) {
+        dots.forEach(d => d.classList.remove('active'));
+        if (dots[i]) dots[i].classList.add('active');
+      }
+      if (r.bottom < 0 && dots[i]) dots[i].classList.add('visited');
+    });
+  }
+  window.addEventListener('scroll', () => requestAnimationFrame(updateDots), { passive: true });
+  updateDots();
+
+  // ── KEYBOARD NAV ──
+  let currMod = 0;
+  document.addEventListener('keydown', e => {
+    if (['INPUT','TEXTAREA','BUTTON'].includes(e.target.tagName)) return;
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+      currMod = Math.min(currMod + 1, modules.length - 1);
+      modules[currMod].scrollIntoView({ behavior: 'smooth' });
+      e.preventDefault();
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+      currMod = Math.max(currMod - 1, 0);
+      modules[currMod].scrollIntoView({ behavior: 'smooth' });
+      e.preventDefault();
+    }
+  });
+
+  // ── INTERSECTION OBSERVER ──
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+  document.querySelectorAll('.animate-in').forEach((el, i) => {
+    observer.observe(el);
+  });
+
+  // Stagger indices
+  document.querySelectorAll('.stagger-children').forEach(parent => {
+    Array.from(parent.children).forEach((child, i) => {
+      child.style.setProperty('--stagger-index', i);
+    });
+  });
+
+  // ── WAKE UP CHAT ──
+  const wakeMessages = [
+    { sender: 'IS', name: 'Isabella', color: 'var(--color-actor-1)', text: 'It\'s 7am. ReverieServer reads environment/0.json — Isabella\'s tile position from the frontend.' },
+    { sender: 'IS', name: 'perceive.py', color: 'var(--color-actor-3)', text: 'Scanning 8-tile radius... notices "unmade bed", "alarm clock ringing", "empty coffee maker nearby." Adds these to perceived events.' },
+    { sender: 'IS', name: 'retrieve.py', color: 'var(--color-actor-5)', text: 'Searching AssociativeMemory for related memories... finds "Isabella hosted a party last night" (poignancy 8) and "Isabella likes to make coffee in the morning" (recency: high).' },
+    { sender: 'IS', name: 'plan.py', color: 'var(--color-actor-4)', text: '→ LLM call with context → "7:00–7:30: wake up and do morning routine. Make coffee." → Decomposed to current task: walk to kitchen counter.' },
+    { sender: 'IS', name: 'execute.py', color: 'var(--color-actor-2)', text: 'A* pathfinding from tile (58,39) to "Isabella\'s house:kitchen:coffee maker". Writes next tile to movement/0.json. Frontend animates Isabella walking.' },
+  ];
+  let wakeIdx = 0;
+  const wakeContainer = document.getElementById('wake-chat');
+  const wakeTyping = document.getElementById('wake-typing');
+  const wakeProg = document.getElementById('wake-progress');
+
+  window.wakeNext = function() {
+    if (wakeIdx >= wakeMessages.length) return;
+    const msg = wakeMessages[wakeIdx];
+    wakeTyping.style.display = 'flex';
+    document.getElementById('wake-typing-avatar').style.background = msg.color;
+    setTimeout(() => {
+      wakeTyping.style.display = 'none';
+      const el = document.createElement('div');
+      el.className = 'chat-message';
+      el.innerHTML = `<div class="chat-avatar" style="background:${msg.color};font-size:0.55rem">${msg.sender}</div>
+        <div class="chat-bubble-wrap">
+          <div class="chat-sender" style="color:${msg.color}">${msg.name}</div>
+          <div class="chat-bubble">${msg.text}</div>
+        </div>`;
+      wakeContainer.appendChild(el);
+      wakeIdx++;
+      wakeProg.textContent = wakeIdx + ' / ' + wakeMessages.length;
+      wakeContainer.scrollTop = wakeContainer.scrollHeight;
+    }, 700);
+  };
+  window.wakePlayAll = function() {
+    const iv = setInterval(() => {
+      if (wakeIdx >= wakeMessages.length) { clearInterval(iv); return; }
+      wakeNext();
+    }, 1100);
+  };
+  window.wakeReset = function() {
+    wakeIdx = 0;
+    wakeContainer.innerHTML = '';
+    wakeTyping.style.display = 'none';
+    wakeProg.textContent = '0 / ' + wakeMessages.length;
+  };
+
+  // ── LOOP PHASES ──
+  window.showPhase = function(phase) {
+    document.querySelectorAll('.loop-phase').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.loop-detail').forEach(d => { d.classList.remove('show'); });
+    event.currentTarget.classList.add('active');
+    const detail = document.getElementById('detail-' + phase);
+    if (detail) detail.classList.add('show');
+  };
+
+  // ── NEEDS ANIMATION ──
+  const needsData = { hunger: 72, energy: 55, social: 40, hydration: 88 };
+  function animateNeeds() {
+    const rect = document.getElementById('needs-display')?.getBoundingClientRect();
+    if (!rect || rect.top > window.innerHeight) return;
+    Object.entries(needsData).forEach(([need, val]) => {
+      const bar = document.getElementById(need + '-bar');
+      const label = document.getElementById(need + '-val');
+      if (bar && label) {
+        bar.style.width = val + '%';
+        label.textContent = val + '%';
+      }
+    });
+    window.removeEventListener('scroll', needsScrollHandler);
+  }
+  function needsScrollHandler() { animateNeeds(); }
+  window.addEventListener('scroll', needsScrollHandler, { passive: true });
+
+  // ── QUIZ ──
+  window.selectOpt = function(btn) {
+    const block = btn.closest('.quiz-q');
+    block.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
+    btn.classList.add('selected');
+  };
+
+  const feedback = {
+    1: {
+      b: "Exactly! Long-term preferences should live in AssociativeMemory as thought nodes — that way they influence retrieval when the agent is deciding where to go.",
+      a: "Not quite. Scratch only holds current-tick state. It doesn't persist between sessions. Preferences need to survive saves.",
+      c: "The maze knows about locations, but not who likes them. That relationship belongs in memory.",
+      d: "Plan.py asks 'what should I do?' but it decides based on what memory returns. The preference needs to be in memory first."
+    },
+    2: {
+      c: "Exactly! The retrieve module scores and selects which memories feed the LLM. If irrelevant memories keep surfacing, it's likely a poignancy, recency, or similarity scoring issue.",
+      a: "Tile events tell us what's nearby, not what memory is being retrieved.",
+      b: "The plan might be fine — the weird speech could come from bad memory context feeding into converse.py.",
+      d: "Converse.py generates dialogue but it uses whatever context retrieve.py passed in. Fix the source, not the symptom."
+    },
+    3: {
+      a: "Exactly! This is a real bug the code explicitly handles. In ReverieServer.__init__(), there's a cleanup loop that deletes stale environment/movement files beyond the current step — that's exactly what was happening here.",
+      b: "LLMs don't cache that way. The issue is deterministic — it's file-based.",
+      c: "Scratch loads the current action, not position history.",
+      d: "Collision maze doesn't store historical positions."
+    },
+    4: {
+      d: "Exactly! The pipeline starts with perception. If perceive_resource_context() isn't generating the hunger perception string (maybe needs hasn't been initialized on Klaus's scratch), the signal never reaches retrieval or planning.",
+      a: "Even if the cafe has no food, Klaus should still try to go — and get an empty-fridge event. The issue is earlier in the pipeline.",
+      b: "If Klaus's spatial memory doesn't include the cafe, he'd wander randomly. But the question implies he just stays put.",
+      c: "If pathfinding failed, you'd see the agent trying to move and getting stuck, not silently ignoring hunger."
+    },
+    5: {
+      b: "Exactly! Reflect.py synthesises memories into higher-level thoughts (depth+1). Adding world-state events to the context it considers would let agents form opinions about external events, not just personal ones.",
+      a: "Perceive.py sees the immediate tile environment. World events aren't tile-based — they need to enter through memory injection.",
+      c: "Plan.py consults memory to decide what to do. The belief formation happens in reflect.py first.",
+      d: "Scratch stores current state, not beliefs. Beliefs need to persist and be searchable — they need to live in AssociativeMemory."
+    }
+  };
+
+  window.checkAll = function() {
+    const qs = document.querySelectorAll('.quiz-q');
+    qs.forEach((q, i) => {
+      const n = i + 1;
+      const correct = q.dataset.correct;
+      const selected = q.querySelector('.quiz-option.selected');
+      const fb = document.getElementById('qfb-' + n);
+      if (!selected) { fb.textContent = 'Pick an answer first!'; fb.className = 'quiz-feedback show error'; return; }
+      const val = selected.dataset.val;
+      q.querySelectorAll('.quiz-option').forEach(o => o.disabled = true);
+      if (val === correct) {
+        selected.classList.add('correct');
+        fb.innerHTML = '<strong>✓ Exactly!</strong> ' + feedback[n][val];
+        fb.className = 'quiz-feedback show success';
+      } else {
+        selected.classList.add('incorrect');
+        q.querySelector(`[data-val="${correct}"]`).classList.add('correct');
+        fb.innerHTML = '<strong>Not quite.</strong> ' + feedback[n][val];
+        fb.className = 'quiz-feedback show error';
+      }
+    });
+  };
+
+  window.resetAll = function() {
+    document.querySelectorAll('.quiz-q').forEach((q, i) => {
+      q.querySelectorAll('.quiz-option').forEach(o => {
+        o.classList.remove('selected','correct','incorrect');
+        o.disabled = false;
+      });
+      const fb = document.getElementById('qfb-' + (i+1));
+      if (fb) { fb.textContent = ''; fb.className = 'quiz-feedback'; }
+    });
+  };
+
+  // ── TOOLTIPS ──
+  let activeTip = null;
+  function posTip(term, tip) {
+    const rect = term.getBoundingClientRect();
+    const w = 280;
+    let left = rect.left + rect.width / 2 - w / 2;
+    left = Math.max(8, Math.min(left, window.innerWidth - w - 8));
+    tip.style.left = left + 'px';
+    tip.style.width = w + 'px';
+    document.body.appendChild(tip);
+    const h = tip.offsetHeight;
+    if (rect.top - h - 8 < 0) {
+      tip.style.top = (rect.bottom + 8) + 'px';
+      tip.classList.add('flip');
+    } else {
+      tip.style.top = (rect.top - h - 8) + 'px';
+      tip.classList.remove('flip');
+    }
+  }
+  document.querySelectorAll('.term').forEach(term => {
+    const tip = document.createElement('span');
+    tip.className = 'term-tooltip';
+    tip.textContent = term.dataset.definition;
+    term.addEventListener('mouseenter', () => {
+      if (activeTip && activeTip !== tip) { activeTip.classList.remove('visible'); activeTip.remove(); }
+      posTip(term, tip);
+      requestAnimationFrame(() => tip.classList.add('visible'));
+      activeTip = tip;
+    });
+    term.addEventListener('mouseleave', () => {
+      tip.classList.remove('visible');
+      setTimeout(() => { if (!tip.classList.contains('visible')) tip.remove(); }, 150);
+      activeTip = null;
+    });
+    term.addEventListener('click', e => {
+      e.stopPropagation();
+      if (activeTip && activeTip !== tip) { activeTip.classList.remove('visible'); activeTip.remove(); }
+      if (tip.classList.contains('visible')) { tip.classList.remove('visible'); tip.remove(); activeTip = null; }
+      else { posTip(term, tip); requestAnimationFrame(() => tip.classList.add('visible')); activeTip = tip; }
+    });
+  });
+  document.addEventListener('click', () => {
+    if (activeTip) { activeTip.classList.remove('visible'); activeTip.remove(); activeTip = null; }
+  });
+
+})();
+</script>
+</body>
+</html>

@@ -28,8 +28,19 @@ def generate_focal_points(persona, n=3):
   nodes = sorted(nodes, key=lambda x: x[0])
   nodes = [i for created, i in nodes]
 
+  # Deduplicate by embedding_key, keeping last (most recent) occurrence.
+  seen = set()
+  unique_nodes = []
+  for node in reversed(nodes[-1*persona.scratch.importance_ele_n:]):
+    if node.embedding_key not in seen:
+      seen.add(node.embedding_key)
+      unique_nodes.append(node)
+  unique_nodes.reverse()
+  # Cap to prevent prompt bloat on long-running sims.
+  unique_nodes = unique_nodes[-100:]
+
   statements = ""
-  for node in nodes[-1*persona.scratch.importance_ele_n:]: 
+  for node in unique_nodes:
     statements += node.embedding_key + "\n"
 
   return run_gpt_prompt_focal_pt(persona, statements, n)[0]
@@ -55,31 +66,58 @@ def generate_insights_and_evidence(persona, nodes, n=5):
     return {"this is blank": "node_1"} 
 
 
-def generate_action_event_triple(act_desp, persona): 
-  """TODO 
-
-  INPUT: 
-    act_desp: the description of the action (e.g., "sleeping")
-    persona: The Persona class instance
-  OUTPUT: 
-    a string of emoji that translates action description.
-  EXAMPLE OUTPUT: 
-    "🧈🍞"
-  """
+def generate_action_event_triple(act_desp, persona):
   if debug: print ("GNS FUNCTION: <generate_action_event_triple>")
+  # Reuse the regex parser from plan module
+  from persona.cognitive_modules.plan import _parse_event_triple
+  parsed = _parse_event_triple(act_desp, persona.name)
+  if parsed:
+    return parsed
   return run_gpt_prompt_event_triple(act_desp, persona)[0]
 
 
-def generate_poig_score(persona, event_type, description): 
+POIGNANCY_KEYWORDS = {
+  1: ["idle", "sleeping", "napping", "resting", "sitting", "standing",
+      "waiting", "brushing teeth", "making bed", "getting dressed",
+      "waking up", "morning routine"],
+  2: ["eating", "breakfast", "lunch", "dinner", "cooking", "drinking",
+      "coffee", "tea", "walking", "showering", "bathing", "cleaning",
+      "reading", "watching", "browsing", "listening"],
+  3: ["working", "studying", "writing", "typing", "organizing",
+      "shopping", "exercising", "gardening", "painting"],
+  5: ["conversation", "discussing", "talking about", "meeting",
+      "helping", "teaching", "planning", "creating"],
+  6: ["arguing", "disagreeing", "apologizing", "confessing",
+      "surprising", "celebrating"],
+  8: ["love", "heartbreak", "fired", "hired", "promoted",
+      "emergency", "accident", "illness"],
+  9: ["break up", "proposal", "death", "birth", "college acceptance",
+      "betrayal", "major fight"],
+}
+
+def _score_poignancy(description):
+  desc = description.lower()
+  for score in sorted(POIGNANCY_KEYWORDS.keys(), reverse=True):
+    for keyword in POIGNANCY_KEYWORDS[score]:
+      if keyword in desc:
+        return score
+  return None
+
+
+def generate_poig_score(persona, event_type, description):
   if debug: print ("GNS FUNCTION: <generate_poig_score>")
 
-  if "is idle" in description: 
+  if "is idle" in description:
     return 1
 
-  if event_type == "event" or event_type == "thought": 
+  score = _score_poignancy(description)
+  if score is not None:
+    return score
+
+  if event_type == "event" or event_type == "thought":
     return run_gpt_prompt_event_poignancy(persona, description)[0]
-  elif event_type == "chat": 
-    return run_gpt_prompt_chat_poignancy(persona, 
+  elif event_type == "chat":
+    return run_gpt_prompt_chat_poignancy(persona,
                            persona.scratch.act_description)[0]
 
 

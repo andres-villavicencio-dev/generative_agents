@@ -95,6 +95,7 @@
 
 	var personas = {};
 	var pronunciatios = {};
+	var artifact_sprites = {};
 	let anims_direction;
 	let pre_anims_direction;
 	let pre_anims_direction_dict = {};
@@ -599,7 +600,32 @@
 	        document.getElementById("target_address__"+curr_persona_name_os).innerHTML = description_content.split("@")[1];
 	        document.getElementById("chat__"+curr_persona_name_os).innerHTML = chat_content;
 	      }
-	      
+
+	    }
+
+	    // Render artifact sprites on the map
+	    if (execute_movement["artifacts"] && execute_count == execute_count_max) {
+	      // Add new artifact sprites
+	      for (let art_id in execute_movement["artifacts"]) {
+	        let art = execute_movement["artifacts"][art_id];
+	        if (!artifact_sprites[art_id]) {
+	          artifact_sprites[art_id] = game.scene.scenes[0].add.text(
+	            art.x * tile_width + 20,
+	            art.y * tile_width + 20,
+	            art.emoji,
+	            { font: "16px monospace",
+	              padding: { x: 2, y: 2 },
+	              backgroundColor: "#ffffffcc" }
+	          ).setDepth(1);
+	        }
+	      }
+	      // Remove consumed/deleted artifacts
+	      for (let art_id in artifact_sprites) {
+	        if (!execute_movement["artifacts"][art_id]) {
+	          artifact_sprites[art_id].destroy();
+	          delete artifact_sprites[art_id];
+	        }
+	      }
 	    }
 
 	    execute_count = execute_count - 1;

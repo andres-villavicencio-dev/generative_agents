@@ -8,6 +8,7 @@ import datetime
 import json
 import random as _random
 import sys
+from dateutil.relativedelta import relativedelta
 sys.path.append('../../')
 
 from global_methods import *
@@ -21,7 +22,7 @@ class Scratch:
     # <att_bandwidth> TODO 
     self.att_bandwidth = 3
     # <retention> TODO 
-    self.retention = 5
+    self.retention = 8
 
     # WORLD INFORMATION
     # Perceived world time. 
@@ -37,6 +38,10 @@ class Scratch:
     self.first_name = None
     self.last_name = None
     self.age = None
+    self.birth_date = None       # datetime, derived from age on first init
+    self.death_age = None        # int, randomized lifespan
+    self.is_deceased = False
+    self.sim_folder = None       # set by reverie.py at startup
     # L0 permanent core traits.  
     self.innate = None
     # L1 stable traits.
@@ -190,6 +195,9 @@ class Scratch:
     # Resource goals: priority actions triggered by depletion events
     self.resource_goals = []  # e.g. ["go to Hobbs Cafe for breakfast"]
 
+    # ARTIFACT TRACKING
+    self.last_artifact_action = None  # dedup guard for artifact creation
+
     # ECONOMY LAYER (Phase 5)
     # Agent wallet and financial stress
     self.wallet = self._get_initial_wallet()
@@ -215,6 +223,17 @@ class Scratch:
       self.first_name = scratch_load["first_name"]
       self.last_name = scratch_load["last_name"]
       self.age = scratch_load["age"]
+      # Aging & lifecycle
+      if scratch_load.get("birth_date"):
+        self.birth_date = datetime.datetime.strptime(
+          scratch_load["birth_date"], "%B %d, %Y, %H:%M:%S")
+      self.death_age = scratch_load.get("death_age")
+      self.is_deceased = scratch_load.get("is_deceased", False)
+      # First-time init: derive birth_date from static age
+      if not self.birth_date and self.curr_time:
+        self.birth_date = self.curr_time - relativedelta(years=self.age)
+        self.death_age = _random.randint(75, 95)
+
       self.innate = scratch_load["innate"]
       self.learned = scratch_load["learned"]
       self.currently = scratch_load["currently"]
@@ -281,6 +300,7 @@ class Scratch:
         self.needs_danger = scratch_load["needs_danger"]
       if "resource_goals" in scratch_load:
         self.resource_goals = scratch_load["resource_goals"]
+      self.last_artifact_action = scratch_load.get("last_artifact_action", None)
 
       # Load economy layer (Phase 5) with backwards compatibility
       if "wallet" in scratch_load:
@@ -312,6 +332,10 @@ class Scratch:
     scratch["first_name"] = self.first_name
     scratch["last_name"] = self.last_name
     scratch["age"] = self.age
+    scratch["birth_date"] = (self.birth_date.strftime("%B %d, %Y, %H:%M:%S")
+                             if self.birth_date else None)
+    scratch["death_age"] = self.death_age
+    scratch["is_deceased"] = self.is_deceased
     scratch["innate"] = self.innate
     scratch["learned"] = self.learned
     scratch["currently"] = self.currently
@@ -372,6 +396,7 @@ class Scratch:
     if hasattr(self, "needs_danger"):
       scratch["needs_danger"] = self.needs_danger
     scratch["resource_goals"] = self.resource_goals if hasattr(self, "resource_goals") else []
+    scratch["last_artifact_action"] = self.last_artifact_action if hasattr(self, "last_artifact_action") else None
 
     # Save economy layer (Phase 5)
     scratch["wallet"] = self.wallet if hasattr(self, "wallet") else 100.0
@@ -404,14 +429,7 @@ class Scratch:
     today_min_elapsed += self.curr_time.minute
     today_min_elapsed += advance
 
-    x = 0
-    for task, duration in self.f_daily_schedule: 
-      x += duration
-    x = 0
-    for task, duration in self.f_daily_schedule_hourly_org: 
-      x += duration
-
-    # We then calculate the current index based on that. 
+    # We then calculate the current index based on that.
     curr_index = 0
     elapsed = 0
     for task, duration in self.f_daily_schedule: 
@@ -475,7 +493,7 @@ class Scratch:
     """
     commonset = ""
     commonset += f"Name: {self.name}\n"
-    commonset += f"Age: {self.age}\n"
+    commonset += f"Age: {self.current_age}\n"
     commonset += f"Innate traits: {self.innate}\n"
     commonset += f"Learned traits: {self.learned}\n"
     commonset += f"Currently: {self.currently}\n"
@@ -485,7 +503,14 @@ class Scratch:
     return commonset
 
 
-  def get_str_name(self): 
+  @property
+  def current_age(self):
+    """Age in years. 1:1 sim time = real time."""
+    if not self.birth_date or not self.curr_time:
+      return self.age
+    return relativedelta(self.curr_time, self.birth_date).years
+
+  def get_str_name(self):
     return self.name
 
 

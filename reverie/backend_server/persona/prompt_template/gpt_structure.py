@@ -137,9 +137,17 @@ def _llama_cpp_generate(prompt, retries=5, free_form=False):
                         parsed = json.loads(text)
                         if isinstance(parsed, dict) and "output" in parsed:
                             text = str(parsed["output"])
+                            return text
+                        # JSON parsed but no "output" key - malformed response, retry
                     except (json.JSONDecodeError, ValueError):
+                        # Malformed JSON - retry instead of returning garbage
                         pass
-                    return text
+                    # Failed to extract valid output - retry with backoff
+                    wait = 2 ** attempt
+                    print(f"[llama.cpp] Invalid JSON response on attempt {attempt+1}/{retries}, retrying in {wait}s...")
+                    if attempt < retries - 1:
+                        time.sleep(wait)
+                        continue
                 # Empty response — retry with backoff
                 wait = 2 ** attempt
                 print(f"[llama.cpp] Empty response on attempt {attempt+1}/{retries}, retrying in {wait}s...")
@@ -225,9 +233,17 @@ def _ollama_generate(prompt, retries=5, free_form=False):
                         parsed = json.loads(text)
                         if isinstance(parsed, dict) and "output" in parsed:
                             text = str(parsed["output"])
+                            return text
+                        # JSON parsed but no "output" key - malformed response, retry
                     except (json.JSONDecodeError, ValueError):
-                        pass  # not JSON — use as-is
-                    return text
+                        # Malformed JSON - retry instead of returning garbage
+                        pass
+                    # Failed to extract valid output - retry with backoff
+                    wait = 2 ** attempt
+                    print(f"[Ollama] Invalid JSON response on attempt {attempt+1}/{retries}, retrying in {wait}s...")
+                    if attempt < retries - 1:
+                        time.sleep(wait)
+                        continue
                 # Empty response — wait and retry with backoff
                 wait = 2 ** attempt
                 print(f"[Ollama] Empty response on attempt {attempt+1}/{retries}, retrying in {wait}s...")

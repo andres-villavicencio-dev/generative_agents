@@ -22,12 +22,14 @@ Description: Wrapper functions for calling local Ollama APIs instead of OpenAI.
 #   alongside either backend. The llama.cpp server also supports its own
 #   built-in KV cache quantization via --cache-type-k and --cache-type-v flags.
 # =============================================================================
+import sys
 import json
 import os
 import time
 import urllib.request
 import urllib.error
 
+sys.path.append('../../')
 from utils import *
 
 # Ollama configuration
@@ -284,14 +286,15 @@ def GPT4_request(prompt):
     RETURNS:
       a str of Ollama's response.
     """
-    temp_sleep()
-    try:
-        if USE_LLAMA_CPP:
-            return _llama_cpp_generate(prompt)
-        return _ollama_generate(prompt)
-    except Exception as e:
-        print(f"LLM ERROR: {e}")
-        return "LLM ERROR"
+    with trace_span("llm.request", module="llm", attributes={"backend": "llama_cpp" if USE_LLAMA_CPP else "ollama"}):
+        temp_sleep()
+        try:
+            if USE_LLAMA_CPP:
+                return _llama_cpp_generate(prompt)
+            return _ollama_generate(prompt)
+        except Exception as e:
+            print(f"LLM ERROR: {e}")
+            return "LLM ERROR"
 
 
 def ChatGPT_request(prompt):
@@ -305,9 +308,10 @@ def ChatGPT_request(prompt):
       a str of Ollama's response.
     """
     try:
-        if USE_LLAMA_CPP:
-            return _llama_cpp_generate(prompt)
-        return _ollama_generate(prompt)
+        with trace_span("llm.request", module="llm", attributes={"backend": "llama_cpp" if USE_LLAMA_CPP else "ollama"}):
+            if USE_LLAMA_CPP:
+                return _llama_cpp_generate(prompt)
+            return _ollama_generate(prompt)
     except Exception as e:
         print(f"LLM ERROR: {e}")
         return "LLM ERROR"
@@ -332,21 +336,22 @@ def GPT4_safe_generate_response(prompt,
 
     for i in range(repeat):
         try:
-            curr_gpt_response = GPT4_request(prompt).strip()
-            end_index = curr_gpt_response.rfind('}') + 1
-            curr_gpt_response = curr_gpt_response[:end_index]
-            curr_gpt_response = json.loads(curr_gpt_response)["output"]
+            with trace_span("llm.safe_generate", module="llm", attributes={"attempt": i, "repeat": repeat}):
+                curr_gpt_response = GPT4_request(prompt).strip()
+                end_index = curr_gpt_response.rfind('}') + 1
+                curr_gpt_response = curr_gpt_response[:end_index]
+                curr_gpt_response = json.loads(curr_gpt_response)["output"]
 
-            if func_validate(curr_gpt_response, prompt=prompt):
-                return func_clean_up(curr_gpt_response, prompt=prompt)
+                if func_validate(curr_gpt_response, prompt=prompt):
+                    return func_clean_up(curr_gpt_response, prompt=prompt)
 
-            if verbose:
-                print("---- repeat count: \n", i, curr_gpt_response)
-                print(curr_gpt_response)
-                print("~~~~")
+                if verbose:
+                    print("---- repeat count: \n", i, curr_gpt_response)
+                    print(curr_gpt_response)
+                    print("~~~~")
 
-        except:
-            pass
+        except Exception as e:
+            log_trace(f"GPT4_safe_generate_response attempt {i} failed: {e}", level=LogLevel.WARNING, module="llm")
 
     return False
 

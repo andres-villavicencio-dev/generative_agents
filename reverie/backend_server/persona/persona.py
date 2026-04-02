@@ -15,6 +15,7 @@ import random
 sys.path.append('../')
 
 from global_methods import *
+from tracing import trace_span, log_trace, log_trace_event, get_current_trace_id, generate_trace_id
 
 from persona.memory_structures.spatial_memory import *
 from persona.memory_structures.associative_memory import *
@@ -217,18 +218,28 @@ class Persona:
     self.scratch.curr_time = curr_time
 
     # Main cognitive sequence begins here. 
-    perceived = self.perceive(maze)
-    retrieved = self.retrieve(perceived)
-    plan = self.plan(maze, personas, new_day, retrieved)
-    self.reflect()
+    trace_id = get_current_trace_id() or generate_trace_id()
 
-    # <execution> is a triple set that contains the following components: 
-    # <next_tile> is a x,y coordinate. e.g., (58, 9)
-    # <pronunciatio> is an emoji. e.g., "\ud83d\udca4"
-    # <description> is a string description of the movement. e.g., 
-    #   writing her next novel (editing her novel) 
-    #   @ double studio:double studio:common room:sofa
-    return self.execute(maze, personas, plan)
+    with trace_span("perceive", module="cognitive", persona_name=self.name):
+      perceived = self.perceive(maze)
+
+    with trace_span("retrieve", module="cognitive", persona_name=self.name):
+      retrieved = self.retrieve(perceived)
+
+    with trace_span("plan", module="cognitive", persona_name=self.name):
+      plan = self.plan(maze, personas, new_day, retrieved)
+
+    with trace_span("reflect", module="cognitive", persona_name=self.name):
+      self.reflect()
+
+    with trace_span("execute", module="cognitive", persona_name=self.name):
+      # <execution> is a triple set that contains the following components:
+      # <next_tile> is a x,y coordinate. e.g., (58, 9)
+      # <pronunciatio> is an emoji. e.g., "\ud83d\udca4"
+      # <description> is a string description of the movement. e.g.,
+      #   writing her next novel (editing her novel)
+      #   @ double studio:double studio:common room:sofa
+      return self.execute(maze, personas, plan)
 
 
   def open_convo_session(self, convo_mode): 

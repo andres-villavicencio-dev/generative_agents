@@ -42,6 +42,7 @@ def alive(proc):
 def main():
     sim = sys.argv[1]
     total_steps = int(sys.argv[2])
+    fork = sys.argv[3] if len(sys.argv) > 3 else "base_the_ville_isabella_maria_klaus"
     log_path = os.path.join(BASE, f"logs/{sim}.log")
     os.makedirs(os.path.dirname(log_path), exist_ok=True)
     log = open(log_path, "a")
@@ -52,10 +53,10 @@ def main():
         log.write(line + "\n")
         log.flush()
 
-    say(f"=== supervisor start: sim={sim} total_steps={total_steps} ===")
+    say(f"=== supervisor start: sim={sim} total_steps={total_steps} fork={fork} ===")
 
     # -- backend ------------------------------------------------------------
-    inputs = f"base_the_ville_isabella_maria_klaus\n{sim}\nrun {total_steps}\n"
+    inputs = f"{fork}\n{sim}\nrun {total_steps}\n"
     backend_log = open(f"/tmp/{sim}_backend.log", "w")
     rev = subprocess.Popen(
         [PYTHON, "reverie.py"],

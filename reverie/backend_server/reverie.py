@@ -1142,8 +1142,18 @@ class ReverieServer:
           # Keep curr_step.json up to date so the frontend can re-initialize
           # correctly on page refresh (instead of always starting from step 0).
           curr_step = {"step": self.step}
-          with open(f"{fs_temp_storage}/curr_step.json", "w") as outfile:
+          with open(f"{fs_temp_storage}/curr_step.json", "w") as outfile: 
             outfile.write(json.dumps(curr_step, indent=2))
+
+          # Periodic checkpoint every 360 steps (1 sim-hour): persist
+          # persona memories + meta so a crashed run can be resumed by
+          # forking from this sim without losing more than an hour of state.
+          if self.step % 360 == 0:
+            try:
+              self.save()
+              print(f"[Reverie] Checkpoint saved at step {self.step}")
+            except Exception as e:
+              print(f"[Reverie] Warning: periodic checkpoint failed: {e}")
 
           int_counter -= 1
 

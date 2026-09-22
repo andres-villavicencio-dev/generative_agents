@@ -108,8 +108,11 @@
 
 	// Phaser 3.0 global settings. 
 	// Configuration meant to be passed to the main Phaser game instance. 
+	// renderer=canvas query param forces Canvas-2D (faster than software WebGL
+	// on GPU-less/mobile devices); default is AUTO (WebGL when available).
 	const config = {
-	  type: Phaser.AUTO,
+	  type: (new URLSearchParams(location.search).get('renderer') === 'canvas')
+	        ? Phaser.CANVAS : Phaser.AUTO,
 	  width: 1500,
 	  height: 800,
 	  parent: "game-container",
@@ -381,16 +384,16 @@
 	                         .setSize(30, 40)
 	                         .setOffset(0, 0);
 	    // Scale up the sprite
-      new_sprite.displayWidth = 40;
-      new_sprite.scaleY = new_sprite.scaleX;
+	      new_sprite.displayWidth = 40;
+	      new_sprite.scaleY = new_sprite.scaleX;
 
 	    // Here, we are creating the persona and its pronunciatio sprites.
 	    personas[persona_name] = new_sprite;
 	    speech_bubbles[persona_name] = this.add.image(new_sprite.body.x - 0,
-	    																						  new_sprite.body.y - 30,
-	    																						  'speech_bubble').setDepth(3);
-      speech_bubbles[persona_name].displayWidth = 130;
-      speech_bubbles[persona_name].displayHeight = 58;
+	    										  new_sprite.body.y - 30,
+	    										  'speech_bubble').setDepth(3);
+	      speech_bubbles[persona_name].displayWidth = 130;
+	      speech_bubbles[persona_name].displayHeight = 58;
 
 	    pronunciatios[persona_name] = this.add.text(
 	                                   new_sprite.body.x - 6,
@@ -409,6 +412,44 @@
 	      showNeedsPanel(displayName, pointer.x, pointer.y);
 	    });
 	  }
+
+	  // RichFX: hide the static speech_bubble images until a persona speaks —
+	  // the drawn bubbles (RichFX.showSpeech) replace them.
+	  for (let name in speech_bubbles) speech_bubbles[name].setVisible(false);
+
+	  // RichFX: boot the animation engine (textures, emitters, night tint,
+	  // shadows, glows, per-persona state). Must run AFTER the personas dict
+	  // is fully built, and BEFORE the update() loop first runs.
+	  RichFX.init(this, {
+	    personas: personas,
+	    tileWidth: tile_width,
+	    cycles: execute_count_max,
+	    mapWidth: map.widthInPixels,
+	    mapHeight: map.heightInPixels,
+	    onBubbleVisibility: function(name, visible) {
+	      if (speech_bubbles[name]) speech_bubbles[name].setVisible(visible);
+	      if (visible && pronunciatios[name]) pronunciatios[name].setAlpha(0.25);
+	      if (!visible && pronunciatios[name]) pronunciatios[name].setAlpha(1);
+	    }
+	  });
+
+	  // RichFX: prime each persona with its starting activity + snap to its
+	  // starting tile, so sprites are stationary and animating from frame one.
+	  for (let name in personas) {
+	    let init_step = all_movement[step] || {};
+	    let init_data = init_step[name.replace(/_/g, " ")];
+	    if (init_data) {
+	      RichFX.onStepData(name, {
+	        x: init_data.movement[0], y: init_data.movement[1],
+	        description: init_data.description,
+	        pronunciatio: init_data.pronunciatio,
+	        chat: null  // no chat bubbles on page load
+	      });
+	      RichFX.tickMove(name, 0);
+	    }
+	  }
+	  // RichFX: day/night tint starts at the demo's start datetime.
+	  RichFX.setClock(start_datetime);
 
 	  // Close needs panel when clicking on empty space
 	  this.input.on('pointerdown', function(pointer) {
@@ -510,33 +551,43 @@
 
 
 
-	  // *** MOVING PERSONAS ***
-	 	for (let i=0; i<Object.keys(personas).length; i++) {
-	 		let curr_persona_name = Object.keys(personas)[i];
-    	let curr_persona = personas[curr_persona_name];
-    	let curr_pronunciatio = pronunciatios[Object.keys(personas)[i]];
-    	let curr_speech_bubble = speech_bubbles[Object.keys(personas)[i]];
+	  // *** MOVING PERSONAS *** 
+	  for (let i=0; i<Object.keys(personas).length; i++) {
+	  let curr_persona_name = Object.keys(personas)[i];
+	    	let curr_persona = personas[curr_persona_name];
+	   	let curr_pronunciatio = pronunciatios[Object.keys(personas)[i]];
+	   	let curr_speech_bubble = speech_bubbles[Object.keys(personas)[i]];
 
-    	if (curr_persona_name.replace("_", " ") in all_movement[step]) {
-    		if (execute_count == execute_count_max) { 
-    			let curr_x = all_movement[step][curr_persona_name.replace("_", " ")]["movement"][0]
+	    	if (curr_persona_name.replace("_", " ") in (all_movement[step] || {})) {
+	    		if (execute_count == execute_count_max) { 
+	    		let curr_x = all_movement[step][curr_persona_name.replace("_", " ")]["movement"][0]
 	        let curr_y = all_movement[step][curr_persona_name.replace("_", " ")]["movement"][1]
-    			movement_target[curr_persona_name] = [curr_x * tile_width, 
+	    		movement_target[curr_persona_name] = [curr_x * tile_width, 
 	                                              curr_y * tile_width]; 
 	        let pronunciatio_content = all_movement[step][curr_persona_name.replace("_", " ")]["pronunciatio"];
 	        let description_content = all_movement[step][curr_persona_name.replace("_", " ")]["description"];
 	        let chat_content_raw = all_movement[step][curr_persona_name.replace("_", " ")]["chat"];
 
+	        // RichFX: feed this persona's step payload into the engine.
+	        // Sets the eased-move target, classifies idle activity from the
+	        // description, pops emoji emotes, and drives chat bubbles.
+	        RichFX.onStepData(curr_persona_name, {
+	          x: curr_x, y: curr_y,
+	          description: description_content,
+	          pronunciatio: pronunciatio_content,
+	          chat: chat_content_raw
+	        });
+
 	        let chat_content = "";
 	        if (chat_content_raw != null ){
-		        for (let j=0; j<chat_content_raw.length; j++) { 
-		        	chat_content += chat_content_raw[j][0] + ": " + chat_content_raw[j][1] + "<br>"
-		        }
-		      } else {
-		      	chat_content = "<em>None at the moment</em>"
-		      }
+	  for (let j=0; j<chat_content_raw.length; j++) { 
+	  chat_content += chat_content_raw[j][0] + ": " + chat_content_raw[j][1] + "<br>"
+	  }
+	  } else {
+	  chat_content = "<em>None at the moment</em>"
+	  }
 
-	       	// This is what gives the pronunciatio balloon the name initials. We 
+	       		// This is what gives the pronunciatio balloon the name initials. We 
 	        // use regex to extract the initials of the personas. 
 	        // E.g., "Dolores Murphy" -> "DM"
 	        let rgx = new RegExp(/(\p{L}{1})\p{L}+/, 'gu');
@@ -551,78 +602,74 @@
 	        document.getElementById("current_action__"+curr_persona_name).innerHTML = description_content.split("@")[0];
 	        document.getElementById("target_address__"+curr_persona_name).innerHTML = description_content.split("@")[1];
 	        document.getElementById("chat__"+curr_persona_name).innerHTML = chat_content;
-    		}
+	    		}
 
-    		if (execute_count > 0) {
-    			if (curr_persona.body.x < movement_target[curr_persona_name][0]) {
-	          curr_persona.body.x += movement_speed; 
-	          anims_direction = "r";
-	          pre_anims_direction = "r"
-	          pre_anims_direction_dict[curr_persona_name] = "r"
-	        } else if (curr_persona.body.x > movement_target[curr_persona_name][0]) {
-	          curr_persona.body.x -= movement_speed; 
-	          anims_direction = "l";
-	          pre_anims_direction = "l"
-	          pre_anims_direction_dict[curr_persona_name] = "l"
-	        } else if (curr_persona.body.y < movement_target[curr_persona_name][1]) {
-	          curr_persona.body.y += movement_speed;
-	          anims_direction = "d";
-	          pre_anims_direction = "d"
-	          pre_anims_direction_dict[curr_persona_name] = "d"
-	        } else if (curr_persona.body.y > movement_target[curr_persona_name][1]) {
-	          curr_persona.body.y -= movement_speed;
-	          anims_direction = "u";
-	          pre_anims_direction = "u"
-	          pre_anims_direction_dict[curr_persona_name] = "u"
-	        } else {
-	        	anims_direction = "";
-	        }
+	    		if (execute_count > 0) {
+	          // RichFX: eased tile movement with walk bob/lean + dust. Returns
+	          // the facing direction ('l'|'r'|'u'|'d'|'') for the walk-cycle
+	          // anims, so the original direction logic is preserved.
+	          let anims_direction = RichFX.tickMove(curr_persona_name, execute_count);
+	          if (anims_direction == "") {
+	            // already at target: keep idle FX alive for this persona
+	            RichFX.tickIdle(curr_persona_name);
+	          }
+	          pre_anims_direction_dict[curr_persona_name] = anims_direction || pre_anims_direction_dict[curr_persona_name];
 
-	        curr_pronunciatio.x = curr_persona.body.x + 18; 
-          curr_pronunciatio.y = curr_persona.body.y - 42 - 25; // DEBUG 1 --- I added 32 offset on Dec 29. 
-          curr_speech_bubble.x = curr_persona.body.x + 80; 
-          curr_speech_bubble.y = curr_persona.body.y - 39;
+	          curr_pronunciatio.x = curr_persona.body.x + 18; 
+	          curr_pronunciatio.y = curr_persona.body.y - 42 - 25;
+	          curr_speech_bubble.x = curr_persona.body.x + 80; 
+	          curr_speech_bubble.y = curr_persona.body.y - 39;
 
-          let left_walk_name = curr_persona_name + "-left-walk";
-					let right_walk_name = curr_persona_name + "-right-walk";
-					let down_walk_name = curr_persona_name + "-down-walk";
-					let up_walk_name = curr_persona_name + "-up-walk";
-          if (anims_direction == "l") {
-			      curr_persona.anims.play(left_walk_name, true);
-			    } else if (anims_direction == "r") {
-			      curr_persona.anims.play(right_walk_name, true);
-			    } else if (anims_direction == "u") {
-			      curr_persona.anims.play(up_walk_name, true);
-			    } else if (anims_direction == "d") {
-			      curr_persona.anims.play(down_walk_name, true);
-			    };
-    		}
-    	} else { 
-    		curr_persona.anims.stop();
-	      // If we were moving, pick an idle frame to use
-	      if (pre_anims_direction_dict[curr_persona_name] == "l") curr_persona.setTexture(curr_persona_name, "left"); else
-	      if (pre_anims_direction_dict[curr_persona_name] == "r") curr_persona.setTexture(curr_persona_name, "right"); else
-	      if (pre_anims_direction_dict[curr_persona_name] == "u") curr_persona.setTexture(curr_persona_name, "up"); else
-	      if (pre_anims_direction_dict[curr_persona_name] == "d") curr_persona.setTexture(curr_persona_name, "down");
-    	}
-	 	}
+	          let left_walk_name = curr_persona_name + "-left-walk";
+	  let right_walk_name = curr_persona_name + "-right-walk";
+	  let down_walk_name = curr_persona_name + "-down-walk";
+	  let up_walk_name = curr_persona_name + "-up-walk";
+	          if (anims_direction == "l") {
+	  curr_persona.anims.play(left_walk_name, true);
+	  } else if (anims_direction == "r") {
+	  curr_persona.anims.play(right_walk_name, true);
+	  } else if (anims_direction == "u") {
+	  curr_persona.anims.play(up_walk_name, true);
+	  } else if (anims_direction == "d") {
+	  curr_persona.anims.play(down_walk_name, true);
+	  };
+	   	    	}
 
-	  if (execute_count == 0) {
-		  for (let i=0; i<Object.keys(personas).length; i++) {
+	    	} else { 
+	    		curr_persona.anims.stop();
+	    	// If we were moving, pick an idle frame to use
+	    	if (pre_anims_direction_dict[curr_persona_name] == "l") curr_persona.setTexture(curr_persona_name, "left");
+	    	else if (pre_anims_direction_dict[curr_persona_name] == "r") curr_persona.setTexture(curr_persona_name, "right");
+	    	else if (pre_anims_direction_dict[curr_persona_name] == "u") curr_persona.setTexture(curr_persona_name, "up");
+	    	else if (pre_anims_direction_dict[curr_persona_name] == "d") curr_persona.setTexture(curr_persona_name, "down");
+	    	// RichFX: idle/breathing/activity FX run every frame for
+	    	// stationary personas (the common case in sparse step data).
+	    	RichFX.tickIdle(curr_persona_name);
+	    	}
+	    	}
+
+	    	if (execute_count == 0) {
+	  for (let i=0; i<Object.keys(personas).length; i++) {
 	      let curr_persona_name = Object.keys(personas)[i]
 	      let curr_persona = personas[curr_persona_name];
 	      curr_persona.body.x = movement_target[curr_persona_name][0];
 	      curr_persona.body.y = movement_target[curr_persona_name][1];
 	    }
-			execute_count = execute_count_max + 1;
-	    step = step + 1;
+	    execute_count = execute_count_max + 1;
+    step = step + 1;
 
-	    start_datetime = new Date(start_datetime.getTime() + step_size);
- 			document.getElementById("game-time-content").innerHTML = start_datetime.toLocaleTimeString("en-US", datetime_options);
+    start_datetime = new Date(start_datetime.getTime() + step_size);
+    // RichFX: advance the day/night tint with the in-game clock.
+    RichFX.setClock(start_datetime);
+ 		document.getElementById("game-time-content").innerHTML = start_datetime.toLocaleTimeString("en-US", datetime_options);
     }
 
-	  execute_count -= 1;
-	}
+  // RichFX: per-frame engine update — day/night tint, per-persona shadows
+  // and glows, ambient fireflies/leaves, speech-bubble follow/typewriter.
+  RichFX.update();
+
+  execute_count -= 1;
+}
 
 	// Control button binders
 	var play_button=document.getElementById("play_button");

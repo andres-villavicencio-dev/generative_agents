@@ -32,7 +32,7 @@ from utils import *
 
 # Ollama configuration
 OLLAMA_BASE_URL = "http://localhost:11434"
-OLLAMA_CHAT_MODEL = "gemma4:e4b"
+OLLAMA_CHAT_MODEL = os.environ.get("GA_CHAT_MODEL", "qwen3.5:2b")
 OLLAMA_EMBED_MODEL = "embeddinggemma:latest"
 
 # llama.cpp server configuration

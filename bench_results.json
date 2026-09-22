@@ -1,0 +1,82 @@
+[
+ {
+  "lane": "jev",
+  "case": 0,
+  "decision": "no \u2014 continue current activity",
+  "dist": {
+   "no": 0.8974697238774573,
+   "yes": 0.1025302761225428
+  },
+  "latency_s": 4.799
+ },
+ {
+  "lane": "jev",
+  "case": 1,
+  "decision": "no \u2014 continue current activity",
+  "dist": {
+   "no": 0.6944940849973676,
+   "yes": 0.30550591500263224
+  },
+  "latency_s": 7.053
+ },
+ {
+  "lane": "jev",
+  "case": 2,
+  "decision": "yes \u2014 initiate a conversation",
+  "dist": {
+   "no": 0.041336896091171055,
+   "yes": 0.9586631039088289
+  },
+  "latency_s": 14.115
+ },
+ {
+  "lane": "jev",
+  "case": 3,
+  "decision": "yes \u2014 initiate a conversation",
+  "dist": {
+   "no": 0.03513182276582047,
+   "yes": 0.9648681772341796
+  },
+  "latency_s": 6.212
+ },
+ {
+  "lane": "jev",
+  "case": 4,
+  "decision": "yes \u2014 initiate a conversation",
+  "dist": {
+   "no": 0.40910171727389916,
+   "yes": 0.5908982827261008
+  },
+  "latency_s": 9.365
+ },
+ {
+  "lane": "llm",
+  "case": 0,
+  "decision": "no",
+  "latency_s": 2.215
+ },
+ {
+  "lane": "llm",
+  "case": 1,
+  "decision": "no",
+  "latency_s": 9.71
+ },
+ {
+  "lane": "llm",
+  "case": 2,
+  "decision": "no",
+  "latency_s": 3.511
+ },
+ {
+  "lane": "llm",
+  "case": 3,
+  "decision": "yes",
+  "latency_s": 7.101
+ },
+ {
+  "lane": "llm",
+  "case": 4,
+  "decision": "no",
+  "latency_s": 6.0
+ }
+]

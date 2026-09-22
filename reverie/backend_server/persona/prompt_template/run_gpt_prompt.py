@@ -1464,8 +1464,92 @@ def run_gpt_prompt_new_decomp_schedule(persona,
 
 
 
+def _jev_decide_to_talk_prompt(persona, target_persona, retrieved):
+  """Build a decide_to_talk prompt ending at the decision point and score it.
+
+  Mirrors the context assembly of run_gpt_prompt_decide_to_talk's
+  create_prompt_input, but the prompt ends at 'Answer in "yes" or "no":'
+  so the next-token distribution IS the decision.
+  """
+  from persona.prompt_template.jev_scoring import jev_decide
+
+  last_chat = persona.a_mem.get_last_chat(target_persona.name)
+  last_chatted_time = ""
+  last_chat_about = ""
+  if last_chat:
+    last_chatted_time = last_chat.created.strftime("%B %d, %Y, %H:%M:%S")
+    last_chat_about = last_chat.description
+
+  context = ""
+  for c_node in retrieved["events"]:
+    curr_desc = c_node.description.split(" ")
+    curr_desc[2:3] = ["was"]
+    curr_desc = " ".join(curr_desc)
+    context +=  f"{curr_desc}. "
+  context += "\n"
+  for c_node in retrieved["thoughts"]:
+    context +=  f"{c_node.description}. "
+
+  curr_time = persona.scratch.curr_time.strftime("%B %d, %Y, %H:%M:%S %p")
+  init_act_desc = persona.scratch.act_description
+  if "(" in init_act_desc:
+    init_act_desc = init_act_desc.split("(")[-1][:-1]
+
+  if len(persona.scratch.planned_path) == 0 and "waiting" not in init_act_desc:
+    init_p_desc = f"{persona.name} is already {init_act_desc}"
+  elif "waiting" in init_act_desc:
+    init_p_desc = f"{persona.name} is {init_act_desc}"
+  else:
+    init_p_desc = f"{persona.name} is on the way to {init_act_desc}"
+
+  target_act_desc = target_persona.scratch.act_description
+  if "(" in target_act_desc:
+    target_act_desc = target_act_desc.split("(")[-1][:-1]
+  if len(target_persona.scratch.planned_path) == 0 and "waiting" not in init_act_desc:
+    target_p_desc = f"{target_persona.name} is already {target_act_desc}"
+  elif "waiting" in init_act_desc:
+    target_p_desc = f"{persona.name} is {init_act_desc}"
+  else:
+    target_p_desc = f"{target_persona.name} is on the way to {target_act_desc}"
+
+  prompt = (
+    "Task -- given context, determine whether the subject will initiate "
+    "a conversation with another.\n"
+    f"Context: {context}\n"
+    f"Right now, it is {curr_time}. {persona.name} and {target_persona.name} "
+    f"last chatted at {last_chatted_time} about {last_chat_about}.\n\n"
+    f"{init_p_desc}.\n"
+    f"{target_p_desc}.\n\n"
+    f"Question: Would {persona.name} initiate a conversation with "
+    f"{target_persona.name}?\n\n"
+    "Options:\n"
+    "__JEV_OPTIONS__\n\n"
+    'Answer in "yes" or "no":\n'
+  )
+  choices = {"yes": "yes — initiate a conversation",
+             "no": "no — continue current activity"}
+  return jev_decide(prompt, choices, return_dist=True)
+
+
 def run_gpt_prompt_decide_to_talk(persona, target_persona, retrieved,test_input=None,
                                        verbose=False):
+  # --- Local JEV-style fast path ---------------------------------------
+  # Bounded yes/no decision with a known answer set: score the first
+  # next-token distribution instead of generating reasoning + answer.
+  # Falls back to the legacy CoT path on low margin or any error.
+  try:
+    from persona.prompt_template.jev_scoring import jev_decide, USE_JEV_SCORING
+    if USE_JEV_SCORING:
+      jev_result = _jev_decide_to_talk_prompt(persona, target_persona, retrieved)
+      decision, dist = jev_result
+      if decision is not None:
+        if debug or verbose:
+          print_run_prompts("jev:decide_to_talk", persona, {},
+                            ["jev-scored"], f"[JEV] {decision} p={dist}", decision)
+        return decision, [decision, f"[JEV] dist={dist}", {}, [], "jev"]
+  except ImportError:
+    pass
+
   def create_prompt_input(init_persona, target_persona, retrieved,
                           test_input=None):
     last_chat = init_persona.a_mem.get_last_chat(target_persona.name)
@@ -1528,13 +1612,19 @@ def run_gpt_prompt_decide_to_talk(persona, target_persona, retrieved,test_input=
 
   def __func_validate(gpt_response, prompt=""):
     try:
-      if gpt_response.split("Answer in yes or no:")[-1].strip().lower() in ["yes", "no"]:
-        return True
-      return False
+      return __func_clean_up(gpt_response) in ["yes", "no"]
     except:
       return False
 
   def __func_clean_up(gpt_response, prompt=""):
+    # The Ollama JSON-forced response escapes the literal marker (the model
+    # writes 'Answer in \\"yes\\" or \\"no\\": [...'), so splitting on the
+    # plain marker never matches and the fail-safe always fired. The answer
+    # is the last yes/no token in the response.
+    import re
+    matches = re.findall(r'\b(yes|no)\b', gpt_response.lower())
+    if matches:
+      return matches[-1]
     return gpt_response.split("Answer in yes or no:")[-1].strip().lower()
 
   def get_fail_safe():

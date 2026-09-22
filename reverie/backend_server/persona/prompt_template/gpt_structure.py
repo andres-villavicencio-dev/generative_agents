@@ -32,12 +32,12 @@ from utils import *
 
 # Ollama configuration
 OLLAMA_BASE_URL = "http://localhost:11434"
-OLLAMA_CHAT_MODEL = "nemotron-cascade-2:30b-a3b-q4_K_M"
+OLLAMA_CHAT_MODEL = "gemma4:e4b"
 OLLAMA_EMBED_MODEL = "embeddinggemma:latest"
 
 # llama.cpp server configuration
 LLAMA_CPP_BASE_URL = "http://localhost:8080"
-USE_LLAMA_CPP = True  # Set True to use llama.cpp instead of Ollama
+USE_LLAMA_CPP = False  # Set True to use llama.cpp instead of Ollama
 
 # GBNF grammar for JSON schema constraint: {"output": "<string>"}
 _GBNF_JSON_OUTPUT = r'''root   ::= "{" ws "\"output\"" ws ":" ws string ws "}"

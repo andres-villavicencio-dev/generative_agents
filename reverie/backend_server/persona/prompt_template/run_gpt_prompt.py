@@ -634,6 +634,38 @@ def run_gpt_prompt_action_sector(action_description,
                                 maze,
                                 test_input=None,
                                 verbose=False):
+  # --- JEV fast path: letter-scored choice over accessible sectors ------
+  try:
+    from persona.prompt_template.jev_scoring import jev_score_choice, USE_JEV_SCORING
+    if USE_JEV_SCORING:
+      act_world = f"{maze.access_tile(persona.scratch.curr_tile)['world']}"
+      # MAR 11 TEMP filtering (verbatim from legacy path)
+      accessible_sector_str = persona.s_mem.get_str_accessible_sectors(act_world)
+      curr = accessible_sector_str.split(", ")
+      fin_accessible_sectors = []
+      for i in curr:
+        if "'s house" in i:
+          if persona.scratch.last_name in i:
+            fin_accessible_sectors += [i]
+        else:
+          fin_accessible_sectors += [i]
+      if fin_accessible_sectors:
+        action_desc_1 = action_description.split("(")[0].strip()
+        jev_prompt = (
+          f"{persona.scratch.name} lives in {persona.scratch.living_area.split(':')[1]} "
+          f"and is currently in {maze.access_tile(persona.scratch.curr_tile)['sector']}. \n"
+          f"Activity: {action_desc_1}\n"
+          f"Which area should they go to for this activity? Stay in the current area "
+          f"if the activity can be done there. Options:\n__JEV_OPTIONS__\n"
+          f"Answer with the letter only:"
+        )
+        jev_out = jev_score_choice(jev_prompt, fin_accessible_sectors)
+        if jev_out is not None:
+          return jev_out, ["jev", jev_prompt, "jev", ["jev"], "jev"]
+  except Exception:
+    pass
+  # --- end JEV fast path ------------------------------------------------
+
   def create_prompt_input(action_description, persona, maze, test_input=None):
     act_world = f"{maze.access_tile(persona.scratch.curr_tile)['world']}"
 
@@ -796,6 +828,31 @@ def run_gpt_prompt_action_arena(action_description,
                                 maze, act_world, act_sector,
                                 test_input=None,
                                 verbose=False):
+  # --- JEV fast path: letter-scored choice over arenas in the sector ----
+  try:
+    from persona.prompt_template.jev_scoring import jev_score_choice, USE_JEV_SCORING
+    if USE_JEV_SCORING:
+      x = f"{act_world}:{act_sector}"
+      accessible_arena_str = persona.s_mem.get_str_accessible_sector_arenas(x)
+      arenas = [a.strip() for a in accessible_arena_str.split(",") if a.strip()]
+      if arenas:
+        action_desc_1 = action_description.split("(")[0].strip()
+        jev_prompt = (
+          f"{persona.scratch.name} is going to {act_sector}, which has the following areas: \n"
+          f"__JEV_OPTIONS__\n\n"
+          f"Activity: {action_desc_1}\n"
+          f"Stay in the current area if the activity can be done there. "
+          f"NEVER go into other people's rooms unless necessary.\n"
+          f"Which area in {act_sector} should {persona.scratch.name} go to for this activity? "
+          f"Answer with the letter only:"
+        )
+        jev_out = jev_score_choice(jev_prompt, arenas)
+        if jev_out is not None:
+          return jev_out, ["jev", jev_prompt, "jev", ["jev"], "jev"]
+  except Exception:
+    pass
+  # --- end JEV fast path ------------------------------------------------
+
   def create_prompt_input(action_description, persona, maze, act_world, act_sector, test_input=None):
     prompt_input = []
     # prompt_input += [persona.scratch.get_str_name()]
@@ -936,6 +993,27 @@ def run_gpt_prompt_action_game_object(action_description,
                                       temp_address,
                                       test_input=None,
                                       verbose=False):
+  # --- JEV fast path: letter-scored choice over objects in the arena ---
+  try:
+    from persona.prompt_template.jev_scoring import jev_score_choice, USE_JEV_SCORING
+    if USE_JEV_SCORING and not TOOL_REGISTRY_AVAILABLE:
+      objects = [o.strip() for o in persona.s_mem.get_str_accessible_arena_game_objects(temp_address).split(",") if o.strip()]
+      if objects:
+        action_desc_1 = action_description.split("(")[0].strip()
+        jev_prompt = (
+          f"{persona.scratch.name} is in {temp_address.split(':')[-1]}. \n"
+          f"Objects available in this area:\n__JEV_OPTIONS__\n\n"
+          f"Activity: {action_desc_1}\n"
+          f"Which object should {persona.scratch.name} use for this activity? "
+          f"Answer with the letter only:"
+        )
+        jev_out = jev_score_choice(jev_prompt, objects)
+        if jev_out is not None:
+          return jev_out, ["jev", jev_prompt, "jev", ["jev"], "jev"]
+  except Exception:
+    pass
+  # --- end JEV fast path ------------------------------------------------
+
   def create_prompt_input(action_description,
                           persona,
                           temp_address,
@@ -2158,6 +2236,26 @@ def run_gpt_prompt_convo_to_thoughts(persona,
 
 
 def run_gpt_prompt_event_poignancy(persona, event_description, test_input=None, verbose=False):
+  # --- JEV fast path: single forward pass, digits 1-10 ------------------
+  try:
+    from persona.prompt_template.jev_scoring import jev_score_digit, USE_JEV_SCORING
+    if USE_JEV_SCORING:
+      jev_prompt = (
+        f"Here is a brief description of {persona.scratch.name}. \n"
+        f"{persona.scratch.get_str_iss()} \n\n"
+        f"On the scale of 1 to 10, where 1 is purely mundane (e.g., brushing teeth, making bed) "
+        f"and 10 is extremely poignant (e.g., a break up, college acceptance), "
+        f"rate the likely poignancy of the following event for {persona.scratch.name}. \n\n"
+        f"Event: {event_description}\n"
+        f"Rate (return a number between 1 to 10):"
+      )
+      jev_out = jev_score_digit(jev_prompt)
+      if jev_out is not None:
+        return jev_out, ["jev", jev_prompt, "jev", ["jev"], "jev"]
+  except Exception as _e:
+    pass
+  # --- end JEV fast path ------------------------------------------------
+
   def create_prompt_input(persona, event_description, test_input=None):
     prompt_input = [persona.scratch.name,
                     persona.scratch.get_str_iss(),
@@ -2233,6 +2331,26 @@ def run_gpt_prompt_event_poignancy(persona, event_description, test_input=None, 
 
 
 def run_gpt_prompt_thought_poignancy(persona, event_description, test_input=None, verbose=False):
+  # --- JEV fast path: single forward pass, digits 1-10 ------------------
+  try:
+    from persona.prompt_template.jev_scoring import jev_score_digit, USE_JEV_SCORING
+    if USE_JEV_SCORING:
+      jev_prompt = (
+        f"Here is a brief description of {persona.scratch.name}. \n"
+        f"{persona.scratch.get_str_iss()} \n\n"
+        f"On the scale of 1 to 10, where 1 is purely mundane (e.g., brushing teeth, making bed) "
+        f"and 10 is extremely poignant (e.g., a break up, college acceptance), "
+        f"rate the likely poignancy of the following thought for {persona.scratch.name}. \n\n"
+        f"Thought: {event_description}\n"
+        f"Rate (return a number between 1 to 10):"
+      )
+      jev_out = jev_score_digit(jev_prompt)
+      if jev_out is not None:
+        return jev_out, ["jev", jev_prompt, "jev", ["jev"], "jev"]
+  except Exception:
+    pass
+  # --- end JEV fast path ------------------------------------------------
+
   def create_prompt_input(persona, event_description, test_input=None):
     prompt_input = [persona.scratch.name,
                     persona.scratch.get_str_iss(),
@@ -2306,6 +2424,26 @@ def run_gpt_prompt_thought_poignancy(persona, event_description, test_input=None
 
 
 def run_gpt_prompt_chat_poignancy(persona, event_description, test_input=None, verbose=False):
+  # --- JEV fast path: single forward pass, digits 1-10 ------------------
+  try:
+    from persona.prompt_template.jev_scoring import jev_score_digit, USE_JEV_SCORING
+    if USE_JEV_SCORING:
+      jev_prompt = (
+        f"Here is a brief description of {persona.scratch.name}. \n"
+        f"{persona.scratch.get_str_iss()} \n\n"
+        f"On the scale of 1 to 10, where 1 is purely mundane (e.g., brushing teeth, making bed) "
+        f"and 10 is extremely poignant (e.g., a break up, college acceptance), "
+        f"rate the likely poignancy of the following conversation for {persona.scratch.name}. \n\n"
+        f"Conversation: {event_description}\n"
+        f"Rate (return a number between 1 to 10):"
+      )
+      jev_out = jev_score_digit(jev_prompt)
+      if jev_out is not None:
+        return jev_out, ["jev", jev_prompt, "jev", ["jev"], "jev"]
+  except Exception:
+    pass
+  # --- end JEV fast path ------------------------------------------------
+
   def create_prompt_input(persona, event_description, test_input=None):
     prompt_input = [persona.scratch.name,
                     persona.scratch.get_str_iss(),

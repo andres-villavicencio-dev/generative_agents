@@ -44,10 +44,13 @@ from persona.prompt_template.gpt_structure import OLLAMA_BASE_URL, OLLAMA_CHAT_M
 # Default off: everything routes through the legacy generation path.
 USE_JEV_SCORING = os.environ.get("GA_JEV_SCORING", "0") == "1"
 
-# If the margin between winner and runner-up is below this, defer to the
-# legacy path (which does full CoT reasoning). Measured against the full
-# averaged distribution.
+# Per-call-type margin gates. A decision that isn't sharply separated from
+# its runner-up defers to the legacy CoT path. Poignancy is a 10-way score
+# with a forgiving downstream (importance recency-weighting), spatial choice
+# picks a literal building — wrong pick = visible pathing weirdness, so it
+# needs a higher bar.
 JEV_MIN_MARGIN = 0.05
+JEV_SPATIAL_MIN_MARGIN = 0.10
 
 # How many candidate tokens to request per position. 20 is Ollama's cap.
 JEV_TOP_LOGPROBS = 20
@@ -184,6 +187,118 @@ def jev_decide(question_prompt, choices, return_dist=False):
         return None, None
 
     return choices[winner], avg if return_dist else None
+
+
+def jev_score_digit(prompt, lo=1, hi=10, min_margin=JEV_MIN_MARGIN):
+    """
+    Score an integer answer (poignancy 1-10) from ONE forward pass.
+    Prompt must end exactly at the answer position (e.g. 'Rate (return a
+    number between 1 to 10):'). Returns int or None (caller falls back to
+    legacy path).
+    """
+    if not USE_JEV_SCORING:
+        return None
+    _jev_stats["calls"] += 1
+    t0 = time.time()
+
+    digit_tokens = {str(d): d for d in range(lo, hi + 1)}
+    probs = _score_one_ordering(prompt, set(digit_tokens.keys()))
+    if not probs:
+        _jev_stats["fallback_error"] += 1
+        return None
+
+    total = sum(probs.values())
+    if total <= 0:
+        _jev_stats["fallback_error"] += 1
+        return None
+    dist = {digit_tokens[t]: p / total for t, p in probs.items()}
+
+    ranked = sorted(dist.items(), key=lambda kv: -kv[1])
+    winner, winner_p = ranked[0]
+    runner_p = ranked[1][1] if len(ranked) > 1 else 0.0
+
+    _jev_stats["scored"] += 1
+    _jev_stats["latency_samples"].append(time.time() - t0)
+    if len(_jev_stats["latency_samples"]) > 200:
+        _jev_stats["latency_samples"] = _jev_stats["latency_samples"][-200:]
+
+    if winner_p - runner_p < min_margin:
+        _jev_stats["fallback_margin"] += 1
+        return None
+
+    return winner
+
+
+def jev_score_choice(prompt, options, min_margin=JEV_SPATIAL_MIN_MARGIN,
+                     return_dist=False):
+    """
+    Score a choice over enumerated multi-token options (sector/arena/
+    game_object names). Uses letter labels (A/B/C/...) so the FIRST token
+    after the decision point identifies the pick; permuting the label
+    assignment mitigates order bias. Returns the chosen option STRING
+    (verbatim) or None.
+    """
+    if not USE_JEV_SCORING:
+        return None
+    if not options:
+        return None
+    _jev_stats["calls"] += 1
+    t0 = time.time()
+
+    labels = [chr(ord("A") + i) for i in range(len(options))]
+    # Order-bias mitigation: try 2 label permutations (forward + reversed).
+    # K! for sectors is large; 2 samples bound the cost at 2 passes.
+    permutations_to_try = [list(range(len(options)))]
+    if len(options) > 2:
+        permutations_to_try.append(list(reversed(range(len(options)))))
+
+    dists = []
+    option_by_label = None
+    for perm in permutations_to_try:
+        # perm[i] = index into options for label i
+        option_by_label = {labels[i]: options[perm[i]] for i in range(len(labels))}
+        options_block = "\n".join(
+            f"{labels[i]}) {options[perm[i]]}" for i in range(len(labels))
+        )
+        p = prompt.replace("__JEV_OPTIONS__", options_block)
+        d = _score_one_ordering(p, set(l.lower() for l in labels))
+        if d is None:
+            return None  # hard fail -> fallback
+        # Map label probs onto option strings (scores come back lowercase)
+        d_opts = {}
+        for t, prob in d.items():
+            if t.upper() in option_by_label:
+                d_opts[option_by_label[t.upper()]] = prob
+        dists.append(d_opts)
+
+    # Drop empty perm-dist maps (soft miss: label not in top-20 logprobs) —
+    # but require at least one non-empty map to proceed.
+    dists = [d for d in dists if d]
+    if not dists:
+        _jev_stats["fallback_error"] += 1
+        return None
+
+    avg = _average_distributions(dists)
+    if not avg:
+        _jev_stats["fallback_error"] += 1
+        return None
+
+    ranked = sorted(avg.items(), key=lambda kv: -kv[1])
+    winner, winner_p = ranked[0]
+    runner_p = ranked[1][1] if len(ranked) > 1 else 0.0
+
+    _jev_stats["scored"] += 1
+    _jev_stats["latency_samples"].append(time.time() - t0)
+    if len(_jev_stats["latency_samples"]) > 200:
+        _jev_stats["latency_samples"] = _jev_stats["latency_samples"][-200:]
+
+    if winner_p - runner_p < min_margin:
+        _jev_stats["fallback_margin"] += 1
+        if return_dist:
+            return None, avg
+        return None
+
+    return (winner, avg) if return_dist else winner
 
 
 def jev_stats_reset():

@@ -441,13 +441,21 @@
 
 	  // console.log("phase: " + phase + ", step: " + step);
 	  // *** MOVE PERSONAS ***
-	  // Moving personas take place in three distinct phases: "process," "update,"
-	  // and "execute." These phases are determined by the value of <phase>. 
+	  // Moving personas take place in three distinct phases: "process,"
+	  // "update," and "execute." These phases are determined by the value of <phase>. 
 	  // Only one of the three phases is incurred in each update cycle. 
 	  if (phase == "process") {
 	    // "process" takes all current locations of the personas and send them to
-	    // the frontend server in a json form. Here, we first create the json 
-	    // file that records all persona locations: 
+	    // the frontend server in a json form.
+	    //
+	    // FOLLOW MODE (read-only viewer): when the simulation is being driven
+	    // headlessly (headless_driver.py is the sole writer of environment
+	    // files), the browser must NOT POST positions back — two writers cause
+	    // position corruption (Math.ceil rounding + racing the driver) and
+	    // agents drift through walls. In follow mode we skip the POST and go
+	    // straight to waiting for the next movement file.
+	    const FOLLOW_MODE = ("{{ mode }}" === "replay");
+	    if (!FOLLOW_MODE) {
 	    let data = {"step": step, 
 	    						"sim_code": sim_code,
 	                "environment": {}}
@@ -463,6 +471,7 @@
 	    retrieve_xobj.overrideMimeType("application/json");
 	    retrieve_xobj.open('POST', "{% url 'process_environment' %}", true);
 	    retrieve_xobj.send(json);   
+	    }
 	    // Finally, we update the phase variable to start the "udpate" process. 
 	    // Now that we sent all persona locations to the backend server, we need
 	    // to wait until the backend determines what the personas will do next. 

@@ -589,6 +589,19 @@ window.RichFX = (function () {
       return '';
     }
 
+    // Phase-wrap guard: when execute_count hits 0, the first persona in the
+    // template's loop snaps ALL bodies and resets execute_count to
+    // cycles+1 mid-loop; personas later in the loop then reach tickMove
+    // with execute_count == cycles+1. Interpolating with that counter
+    // clamps t to 0 and yanks the sprite back to the step's START tile —
+    // the "walks then bounces back" bug. Hold at the landed target instead.
+    if (execute_count > st.cycles) {
+      sp.body.x = st.tx; sp.body.y = st.ty;
+      st.hasTarget = false;
+      tickState(name);
+      return '';
+    }
+
     var t = (st.cycles - execute_count) / st.cycles;
     t = clamp(t, 0, 1);
     var moved = (st.tx !== st.sx) || (st.ty !== st.sy);

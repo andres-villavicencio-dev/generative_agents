@@ -104,7 +104,7 @@ def UIST_Demo(request):
   return demo(request, "March20_the_ville_n25_UIST_RUN-step-1-141", 2160, play_speed="3")
 
 
-def home(request):
+def home(request): 
   f_curr_sim_code = "temp_storage/curr_sim_code.json"
   f_curr_step = "temp_storage/curr_step.json"
 
@@ -116,7 +116,7 @@ def home(request):
   with open(f_curr_sim_code) as json_file:  
     sim_code = json.load(json_file)["sim_code"]
   
-  with open(f_curr_step) as json_file:  
+  with open(f_curr_step) as json_file: 
     step = json.load(json_file)["step"]
 
   # NOTE: We intentionally do NOT delete curr_step.json here.
@@ -129,7 +129,7 @@ def home(request):
   persona_names_set = set()
   for i in find_filenames(f"storage/{sim_code}/personas", ""): 
     x = i.split("/")[-1].strip()
-    if x[0] != ".": 
+    if x[0] != ".":
       persona_names += [[x, x.replace(" ", "_")]]
       persona_names_set.add(x)
 
@@ -138,18 +138,36 @@ def home(request):
   # step, not the latest file. Using max(file_count) would load positions
   # from a much later step after a fork, causing sprites to start at wrong
   # locations and desync with the backend.
+  # If the exact step file is missing (backend's curr_step runs ahead of
+  # the environment files under concurrency — browser POSTs race the
+  # headless driver), fall back to the newest existing file instead of a
+  # 500 FileNotFoundError.
   curr_json = f'storage/{sim_code}/environment/{str(step)}.json'
-  with open(curr_json) as json_file:
+  if not check_if_file_exists(curr_json):
+    env_dir = f'storage/{sim_code}/environment'
+    candidates = sorted(
+      (int(f.split(".")[0]) for f in os.listdir(env_dir)
+       if f.endswith(".json") and f.split(".")[0].isdigit()),
+      reverse=True)
+    if candidates:
+      step = candidates[0]
+      curr_json = f'storage/{sim_code}/environment/{str(step)}.json'
+  with open(curr_json) as json_file: 
     persona_init_pos_dict = json.load(json_file)
     for key, val in persona_init_pos_dict.items():
       if key in persona_names_set:
         persona_init_pos += [[key, val["x"], val["y"]]]
 
+  # ?follow=1 → read-only viewer mode (mode="replay" in the template):
+  # the headless driver is the sole writer of environment files; the
+  # browser polls movement files and never POSTs positions back.
+  mode = "replay" if request.GET.get("follow") else "simulate"
+
   context = {"sim_code": sim_code,
              "step": step,
              "persona_names": persona_names,
              "persona_init_pos": persona_init_pos,
-             "mode": "simulate"}
+             "mode": mode}
   template = "home/home.html"
   return render(request, template, context)
 

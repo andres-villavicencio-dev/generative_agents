@@ -1,0 +1,81 @@
+{
+ "poignancy": [
+  {
+   "case": "Isabella Rodriguez is setting up the mus",
+   "jev": 2,
+   "jev_s": 0.89,
+   "legacy": 2,
+   "legacy_s": 0.63
+  },
+  {
+   "case": "Maria Lopez is studying for her physics ",
+   "jev": 2,
+   "jev_s": 0.81,
+   "legacy": 2,
+   "legacy_s": 0.64
+  },
+  {
+   "case": "Klaus Mueller is writing a research pape",
+   "jev": null,
+   "jev_s": 0.87,
+   "legacy": 3,
+   "legacy_s": 1.32
+  },
+  {
+   "case": "Maria Lopez is brushing her teeth",
+   "jev": 1,
+   "jev_s": 0.63,
+   "legacy": 1,
+   "legacy_s": 0.68
+  },
+  {
+   "case": "Klaus Mueller saw Maria at the cafe and ",
+   "jev": 3,
+   "jev_s": 0.77,
+   "legacy": 3,
+   "legacy_s": 0.6
+  }
+ ],
+ "spatial": [
+  {
+   "case": "Isabella Rodriguez eating lunch",
+   "options_n": 9,
+   "jev": "Hobbs Cafe",
+   "jev_s": 1.27,
+   "legacy": "Hobbs Cafe",
+   "legacy_s": 1.56
+  },
+  {
+   "case": "Maria Lopez studying for her physics quiz",
+   "options_n": 7,
+   "jev": "Dorm for Oak Hill College",
+   "jev_s": 1.9,
+   "legacy": "Dorm for Oak Hill College",
+   "legacy_s": 16.36
+  },
+  {
+   "case": "Klaus Mueller writing a research paper",
+   "options_n": 7,
+   "jev": "Oak Hill College",
+   "jev_s": 13.34,
+   "legacy": "Dorm for Oak Hill College",
+   "legacy_s": 30.76
+  },
+  {
+   "case": "Isabella Rodriguez listening to music",
+   "options_n": 9,
+   "jev": "Hobbs Cafe",
+   "jev_s": 1.38,
+   "legacy": "Hobbs Cafe",
+   "legacy_s": 1.24
+  },
+  {
+   "case": "Maria Lopez going to the gym",
+   "options_n": 7,
+   "jev": null,
+   "jev_s": 1.36,
+   "legacy": "Dorm for Oak Hill College",
+   "legacy_s": 38.74
+  }
+ ]
+}

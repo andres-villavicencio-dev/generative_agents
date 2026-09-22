@@ -31,14 +31,13 @@ run_gpt_prompt = importlib.import_module("persona.prompt_template.run_gpt_prompt
 def load_personas():
     """Load Persona objects from the live sim's checkpoint."""
     from persona.persona import Persona
-    from utils import load_memo
 
     personas = {}
     p_dir = os.path.join(SIM_STORE, "personas")
     for name in os.listdir(p_dir):
         p_path = os.path.join(p_dir, name, "bootstrap_memory")
         if os.path.isdir(p_path):
-            personas[name] = Persona(name, p_path)
+            personas[name] = Persona(name, os.path.join(p_dir, name))
     return personas
 
 

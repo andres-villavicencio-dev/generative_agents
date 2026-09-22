@@ -1543,12 +1543,12 @@ def run_gpt_prompt_decide_to_talk(persona, target_persona, retrieved,test_input=
       jev_result = _jev_decide_to_talk_prompt(persona, target_persona, retrieved)
       decision, dist = jev_result
       if decision is not None:
-        if debug or verbose:
-          print_run_prompts("jev:decide_to_talk", persona, {},
-                            ["jev-scored"], f"[JEV] {decision} p={dist}", decision)
         return decision, [decision, f"[JEV] dist={dist}", {}, [], "jev"]
-  except ImportError:
-    pass
+  except Exception as _jev_err:
+    # Fail-open: any scorer problem falls through to the legacy CoT path.
+    # The simulation must never stall or crash on the experimental path.
+    print(f"[JEV] fast path error ({_jev_err.__class__.__name__}: {_jev_err}) "
+          f"— falling back to legacy generation")
 
   def create_prompt_input(init_persona, target_persona, retrieved,
                           test_input=None):

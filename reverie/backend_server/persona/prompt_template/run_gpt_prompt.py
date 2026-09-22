@@ -1062,10 +1062,28 @@ def run_gpt_prompt_action_game_object(action_description,
     x_lower = {i.lower(): i for i in x}
     if output.lower() in x_lower:
       output = x_lower[output.lower()]
-    elif x:
-      output = random.choice(x)
     else:
-      output = fail_safe
+      # Semantic fallback: strip articles/punctuation and try containment
+      # both ways before giving up. Replaces the old random.choice dice
+      # roll that sent agents to sleep on refrigerators (GA-8874).
+      def _norm(s):
+        return s.lower().strip().strip(".,;:'\"()").replace("the ", "").strip()
+      out_n = _norm(output)
+      matched = None
+      for obj in x:
+        obj_n = _norm(obj)
+        if out_n and (out_n in obj_n or obj_n in out_n):
+          matched = obj
+          break
+      if matched:
+        output = matched
+      elif x:
+        # Deterministic: first object in arena order instead of dice roll.
+        # Keeps behavior stable and replayable; fail_safe below if empty.
+        output = x[0]
+        print(f"[GameObjectFallback] '{output}' not among {x}; using arena-first '{output}'")
+      else:
+        output = fail_safe
 
   # COO-22: If a tool matches the action, prefer tool game objects
   if TOOL_REGISTRY_AVAILABLE:
@@ -1206,6 +1224,13 @@ def run_gpt_prompt_event_triple(action_description, persona, verbose=False):
     try:
       gpt_response = __func_clean_up(gpt_response, prompt="")
       if len(gpt_response) != 2:
+        return False
+      # Content check: reject JSON-fragment garbage (count-only validation
+      # stamped '"predicate": "is"' responses as valid triples).
+      for part in gpt_response:
+        if ":" in part or "{" in part or "}" in part or '"' in part or len(part) > 80:
+          return False
+      if not all(part and part.isprintable() for part in gpt_response):
         return False
     except: return False
     return True
@@ -1365,6 +1390,13 @@ def run_gpt_prompt_act_obj_event_triple(act_game_object, act_obj_desc, persona, 
     try:
       gpt_response = __func_clean_up(gpt_response, prompt="")
       if len(gpt_response) != 2:
+        return False
+      # Content check: reject JSON-fragment garbage (count-only validation
+      # lets '"predicate": "is"'-style responses pass as valid triples).
+      for part in gpt_response:
+        if ":" in part or "{" in part or "}" in part or '"' in part or len(part) > 80:
+          return False
+      if not all(part and part.isprintable() for part in gpt_response):
         return False
     except: return False
     return True

@@ -72,13 +72,27 @@ def main():
     say(f"backend pid={rev.pid} (log: /tmp/{sim}_backend.log)")
 
     # -- wait for sim dirs, then driver ------------------------------------
+    # Cold-start wait: each persona runs an initial planning burst (wake
+    # hour, daily plan, decomp, schedule) before the FIRST movement file is
+    # written. 3 agents ≈ 2-5 min; 25 agents ≈ 40-60 min. Keep it generous.
     mov_dir = os.path.join(STORAGE, sim, "movement")
+    wait_cap = int(os.environ.get("GA_COLDSTART_WAIT_S", "3600"))
+    backend_log_path = f"/tmp/{sim}_backend.log"
     waited = 0
-    while not os.path.isdir(mov_dir) and waited < 300:
+    last_beat = 0
+    while not os.path.isdir(mov_dir) and waited < wait_cap:
         time.sleep(2)
         waited += 2
+        if waited - last_beat >= 60:
+            last_beat = waited
+            try:
+                with open(backend_log_path) as f:
+                    gns = sum(1 for line in f if "GNS FUNCTION" in line)
+                say(f"cold-start: {waited}s elapsed, {gns} LLM calls done")
+            except FileNotFoundError:
+                say(f"cold-start: {waited}s elapsed (no backend log yet)")
     if not os.path.isdir(mov_dir):
-        say("FATAL: movement dir never appeared — backend failed to fork sim")
+        say(f"FATAL: movement dir never appeared after {waited}s — backend failed to fork sim")
         rev.terminate()
         sys.exit(1)
     say(f"movement dir ready after {waited}s")

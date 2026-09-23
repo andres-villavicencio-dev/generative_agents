@@ -409,7 +409,8 @@ def ChatGPT_safe_generate_response(prompt,
                                    fail_safe_response="error",
                                    func_validate=None,
                                    func_clean_up=None,
-                                   verbose=False):
+                                   verbose=False,
+                                   model_hint=None):
     prompt = '"""\n' + prompt + '\n"""\n'
     prompt += f"Output the response to the prompt above in json. {special_instruction}\n"
     prompt += "Example output json:\n"
@@ -423,7 +424,7 @@ def ChatGPT_safe_generate_response(prompt,
         try:
             # _ollama_generate already extracts ["output"] from schema-constrained JSON,
             # so curr_gpt_response is already the plain value (e.g. "5", "Maria is sleeping").
-            curr_gpt_response = ChatGPT_request(prompt).strip()
+            curr_gpt_response = ChatGPT_request(prompt, model_hint=model_hint).strip()
 
             if func_validate(curr_gpt_response, prompt=prompt):
                 return func_clean_up(curr_gpt_response, prompt=prompt)

@@ -63,6 +63,23 @@ def _resolve_model(model_hint):
     """Return (model_name, num_ctx) for a call-family hint (or None for fast lane)."""
     model = OLLAMA_MODEL_ROUTES.get(model_hint, OLLAMA_CHAT_MODEL)
     return model, _NUM_CTX_BY_MODEL.get(model, 8192)
+
+
+_LANE_THINK_ENV = {
+    None:      "GA_FAST_THINK",
+    "planning": "GA_PLANNING_THINK",
+    "artifact": "GA_ARTIFACT_THINK",
+    "convo":    "GA_CONVO_THINK",
+    "insight":  "GA_INSIGHT_THINK",
+}
+
+def _lane_think(model_hint):
+    """Per-lane reasoning toggle for /api/chat. Defaults to False: GA call
+    formats need the answer at position 1, and most of the volume is
+    short-format calls where reasoning tokens are pure latency. Lanes may
+    opt into think=true (quality over speed) via GA_<LANE>_THINK=1."""
+    env_key = _LANE_THINK_ENV.get(model_hint, "GA_FAST_THINK")
+    return os.environ.get(env_key, "0") == "1"
 OLLAMA_EMBED_MODEL = "embeddinggemma:latest"
 
 # llama.cpp server configuration
@@ -190,31 +207,47 @@ def _llama_cpp_generate(prompt, retries=5, free_form=False):
 
 def _ollama_generate(prompt, retries=5, free_form=False, model_hint=None):
     """
-    Make a request to Ollama's generate endpoint.
-    Returns the response text or raises an exception after retries exhausted.
-    Retries with exponential backoff on empty responses.
-    Schema-constrained JSON ensures output is always {"output": "..."}.
-    Individual func_clean_up functions handle parsing the output value.
+    Make a request to Ollama's CHAT endpoint (conversation-native; works with
+    both classic completion models and modern reasoning models).
 
-    free_form=True: skip schema constraint, return raw text (for multi-line prompts
-    like task decomposition that need numbered list output, not a JSON string).
+    2026-09 redesign: GA's prompt library was written for 2023-era completion
+    APIs ("Plan:" style cues). Modern sLLMs are chat-native and often
+    reasoning-first. Routing everything through /api/chat with explicit
+    `think` control makes any model family usable:
+      - think=false: no reasoning tokens, answer lands directly (fast lane)
+      - think=true:  reasoning happens in a SEPARATE field, content stays
+                     clean (heavy lanes can opt into quality)
+    The prompt template text is sent verbatim as the user message — content
+    compatibility is preserved; only the API surface changes.
+
+    free_form=True: skip JSON format constraint (multi-line outputs like task
+    decomposition). free_form=False: constrain to JSON object output.
     model_hint: call-family for multi-model routing (planning/artifact/convo/insight).
     """
     if USE_LLAMA_CPP:
         return _llama_cpp_generate(prompt, retries=retries, free_form=free_form)
-    url = f"{OLLAMA_BASE_URL}/api/generate"
+    url = f"{OLLAMA_BASE_URL}/api/chat"
     model, num_ctx = _resolve_model(model_hint)
     request_body = {
         "model": model,
-        "prompt": prompt,
         "stream": False,
+        # Modern-model compatibility: suppress/enable reasoning explicitly.
+        # Default think=False — GA call formats need the answer at position 1.
+        # Quality-critical lanes may set GA_<LANE>_THINK=1 to opt in.
+        "think": _lane_think(model_hint),
+        "messages": [
+            {
+                "role": "user",
+                "content": prompt,
+            }
+        ],
         "options": {
             "num_ctx": num_ctx,
             "temperature": 0.7,
         }
     }
     if not free_form:
-        request_body["format"] = "json"  # Ollama 0.18 only supports "json" string, not schema objects
+        request_body["format"] = "json"  # Ollama 0.18+ supports "json" string
         request_body["system"] = (
             "You are a simulation assistant. "
             "IMPORTANT: Respond in English only. "
@@ -241,13 +274,14 @@ def _ollama_generate(prompt, retries=5, free_form=False, model_hint=None):
             )
             with urllib.request.urlopen(req, timeout=None) as response:  # no timeout - local model, let it run
                 result = json.loads(response.read().decode('utf-8'))
-                text = result.get("response", "")
-                # qwen3.5 is a thinking model — response is in response field when complete,
-                # but if empty, extract from thinking field as fallback
-                if not text.strip() and result.get("thinking"):
-                    thinking = result["thinking"]
-                    # Use the last coherent sentence/answer from thinking
-                    text = thinking.strip()
+                # /api/chat response: content lives under message.content.
+                # If a model still emits reasoning inline (think=false
+                # unsupported or ignored), the reasoning field is separate —
+                # we only ever consume message.content.
+                msg = result.get("message", {})
+                text = msg.get("content", "")
+                if not text.strip() and result.get("response", ""):
+                    text = result["response"]  # legacy/generate-shape fallback
                 text = _strip_markdown(text)
                 # Extract ["output"] value from schema-constrained JSON.
                 # The format enforcement always wraps responses as {"output": "..."},

@@ -85,6 +85,10 @@ def _score_one_ordering(prompt, answer_tokens):
         "model": OLLAMA_CHAT_MODEL,
         "prompt": prompt,
         "stream": False,
+        # Modern-model compatibility: suppress reasoning so the answer token
+        # lands at position 1 where the restricted-softmax scoring expects it.
+        # Verified 2026-09-23 on qwen3.5:2b — clean digit logprobs at top.
+        "think": False,
         "options": {"num_ctx": 8192, "temperature": 0, "num_predict": 1},
         "logprobs": True,
         "top_logprobs": JEV_TOP_LOGPROBS,

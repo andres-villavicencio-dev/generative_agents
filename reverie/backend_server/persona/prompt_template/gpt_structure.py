@@ -31,8 +31,38 @@ import urllib.error
 from utils import *
 
 # Ollama configuration
-OLLAMA_BASE_URL = "http://localhost:11434"
+OLLAMA_BASE_URL = os.environ.get("GA_OLLAMA_URL", "http://localhost:11434")
 OLLAMA_CHAT_MODEL = os.environ.get("GA_CHAT_MODEL", "qwen3.5:2b")
+
+# ---------------------------------------------------------------------------
+# Multi-model routing: GA's call families have wildly different shapes.
+#   fast lane   (~85% of calls): short, format-strict, high-frequency
+#   heavy lanes (rare, quality-critical): planning / artifact / convo / insight
+# Models are selected per call via model_hint, resolved through env vars so
+# each lane is independently swappable WITHOUT code changes:
+#   GA_PLANNING_MODEL, GA_ARTIFACT_MODEL, GA_CONVO_MODEL, GA_INSIGHT_MODEL
+# Probed 2026-09-23 (see session log): every 2025-26 reasoning-first sLLM
+# (qwen3.5:2b, ornith-1.5:9b, lfm2.5:8b-a1b) breaks GA's 2023-era completion-
+# style prompt library. gemma3:latest is the only probe-clean model per lane.
+# Keep defaults == OLLAMA_CHAT_MODEL until a candidate passes probe.
+# Per-model context windows: gemma3=131k but KV-heavy -> cap 8192;
+# future non-reasoning models may want larger ctx via this table.
+# ---------------------------------------------------------------------------
+OLLAMA_MODEL_ROUTES = {
+    "planning": os.environ.get("GA_PLANNING_MODEL", OLLAMA_CHAT_MODEL),
+    "artifact": os.environ.get("GA_ARTIFACT_MODEL", OLLAMA_CHAT_MODEL),
+    "convo":    os.environ.get("GA_CONVO_MODEL",    OLLAMA_CHAT_MODEL),
+    "insight":  os.environ.get("GA_INSIGHT_MODEL",  OLLAMA_CHAT_MODEL),
+}
+_NUM_CTX_BY_MODEL = {
+    "gemma3:latest": 8192,
+    # default 8192 keeps KV VRAM in check on the 8GB card
+}
+
+def _resolve_model(model_hint):
+    """Return (model_name, num_ctx) for a call-family hint (or None for fast lane)."""
+    model = OLLAMA_MODEL_ROUTES.get(model_hint, OLLAMA_CHAT_MODEL)
+    return model, _NUM_CTX_BY_MODEL.get(model, 8192)
 OLLAMA_EMBED_MODEL = "embeddinggemma:latest"
 
 # llama.cpp server configuration
@@ -158,7 +188,7 @@ def _llama_cpp_generate(prompt, retries=5, free_form=False):
     return ""
 
 
-def _ollama_generate(prompt, retries=5, free_form=False):
+def _ollama_generate(prompt, retries=5, free_form=False, model_hint=None):
     """
     Make a request to Ollama's generate endpoint.
     Returns the response text or raises an exception after retries exhausted.
@@ -168,16 +198,18 @@ def _ollama_generate(prompt, retries=5, free_form=False):
 
     free_form=True: skip schema constraint, return raw text (for multi-line prompts
     like task decomposition that need numbered list output, not a JSON string).
+    model_hint: call-family for multi-model routing (planning/artifact/convo/insight).
     """
     if USE_LLAMA_CPP:
         return _llama_cpp_generate(prompt, retries=retries, free_form=free_form)
     url = f"{OLLAMA_BASE_URL}/api/generate"
+    model, num_ctx = _resolve_model(model_hint)
     request_body = {
-        "model": OLLAMA_CHAT_MODEL,
+        "model": model,
         "prompt": prompt,
         "stream": False,
         "options": {
-            "num_ctx": 8192,
+            "num_ctx": num_ctx,
             "temperature": 0.7,
         }
     }
@@ -278,20 +310,21 @@ def GPT4_request(prompt):
         return "LLM ERROR"
 
 
-def ChatGPT_request(prompt):
+def ChatGPT_request(prompt, model_hint=None):
     """
     Given a prompt, make a request to Ollama and return the response.
     (Replaces ChatGPT requests with local Ollama)
 
     ARGS:
       prompt: a str prompt
+      model_hint: call-family for multi-model routing (planning/artifact/convo/insight)
     RETURNS:
       a str of Ollama's response.
     """
     try:
         if USE_LLAMA_CPP:
             return _llama_cpp_generate(prompt)
-        return _ollama_generate(prompt)
+        return _ollama_generate(prompt, model_hint=model_hint)
     except Exception as e:
         print(f"LLM ERROR: {e}")
         return "LLM ERROR"
@@ -403,7 +436,7 @@ def ChatGPT_safe_generate_response_OLD(prompt,
 # ###################[SECTION 2: ORIGINAL GPT-3 STRUCTURE] ###################
 # ============================================================================
 
-def GPT_request(prompt, gpt_parameter, free_form=False):
+def GPT_request(prompt, gpt_parameter, free_form=False, model_hint=None):
     """
     Given a prompt and a dictionary of GPT parameters, make a request to Ollama.
     gpt_parameter is accepted for API compatibility but ignored — Ollama uses
@@ -413,6 +446,7 @@ def GPT_request(prompt, gpt_parameter, free_form=False):
       prompt: a str prompt
       gpt_parameter: a python dictionary (accepted for compat, not forwarded)
       free_form: if True, skip schema constraint (for multi-line outputs like task decomp)
+      model_hint: call-family for multi-model routing (planning/artifact/convo/insight)
     RETURNS:
       a str of Ollama's response.
     """
@@ -420,7 +454,7 @@ def GPT_request(prompt, gpt_parameter, free_form=False):
     try:
         if USE_LLAMA_CPP:
             return _llama_cpp_generate(prompt, free_form=free_form)
-        return _ollama_generate(prompt, free_form=free_form)
+        return _ollama_generate(prompt, free_form=free_form, model_hint=model_hint)
     except Exception as e:
         print(f"TOKEN LIMIT EXCEEDED: {e}")
         return "TOKEN LIMIT EXCEEDED"
@@ -464,18 +498,26 @@ def safe_generate_response(prompt,
                            func_validate=None,
                            func_clean_up=None,
                            verbose=False,
-                           free_form=False):
+                           free_form=False,
+                           model_hint=None):
     if verbose:
         print(prompt)
 
     for i in range(repeat):
-        curr_gpt_response = GPT_request(prompt, gpt_parameter, free_form=free_form)
-        if func_validate(curr_gpt_response, prompt=prompt):
-            return func_clean_up(curr_gpt_response, prompt=prompt)
-        if verbose:
-            print("---- repeat count: ", i, curr_gpt_response)
-            print(curr_gpt_response)
-            print("~~~~")
+        try:
+            curr_gpt_response = GPT_request(prompt, gpt_parameter, free_form=free_form,
+                                            model_hint=model_hint)
+            if func_validate(curr_gpt_response, prompt=prompt):
+                return func_clean_up(curr_gpt_response, prompt=prompt)
+            if verbose:
+                print("---- repeat count: ", i, curr_gpt_response)
+                print(curr_gpt_response)
+                print("~~~~")
+        except Exception as e:
+            # A transport/validation exception must NEVER escape to reverie's
+            # interactive console (that wedges the backend silently — the
+            # 2026-09-23 bulletin-board incident). Swallow, count, retry.
+            print(f"[safe_generate_response] attempt {i+1}/{repeat} exception: {e!r}")
     return fail_safe_response
 
 

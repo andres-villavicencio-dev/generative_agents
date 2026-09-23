@@ -1060,11 +1060,11 @@ def _should_react(persona, retrieved, personas):
   #             ["thoughts"] = [<ConceptNode>, ...]}
   curr_event = retrieved["curr_event"]
 
-  if ":" not in curr_event.subject: 
-    # this is a persona event. 
+  if curr_event.subject in personas:
+    # this is a persona event.
     if lets_talk(persona, personas[curr_event.subject], retrieved):
       return f"chat with {curr_event.subject}"
-    react_mode = lets_react(persona, personas[curr_event.subject], 
+    react_mode = lets_react(persona, personas[curr_event.subject],
                             retrieved)
     return react_mode
   return False

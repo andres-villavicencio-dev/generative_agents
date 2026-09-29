@@ -27,6 +27,19 @@ import math
 import os
 import shutil
 import traceback
+import threading
+from concurrent.futures import ThreadPoolExecutor
+
+# FIX (vector 1 — parallel cognition): the step loop ran all 15 personas'
+# perceive→retrieve→plan serially, and each persona's cognition is
+# independent except for conversations (which mutate BOTH personas' scratch).
+# Pool the per-persona move() calls; conversations serialize on CONVO_LOCK
+# (shared object lives in concurrency_utils.py so plan.py can import it too).
+from concurrency_utils import CONVO_LOCK
+
+# LLM concurrency: 3-4 decode slots fit the 8GB 3070 with the 4b lane model
+# (q8_0 KV cache). Threads beyond this just queue at the daemon.
+GA_MOVE_WORKERS = int(os.environ.get("GA_MOVE_WORKERS", "6"))
 
 # from selenium import webdriver  # not needed for local run
 
@@ -34,8 +47,9 @@ from global_methods import *
 from utils import *
 from maze import *
 from persona.persona import *
-from resource_manager import WorldResourceManager, ACTION_RESOURCE_MAPPINGS, PRODUCTION_MAPPINGS, get_persona_decay_multiplier
-from artifact_manager import ArtifactManager, ARTIFACT_EMOJI, ARTIFACT_TYPES, CREATION_ACTION_MAPPINGS
+from resource_manager import WorldResourceManager, ACTION_RESOURCE_MAPPINGS, PRODUCTION_MAPPINGS, get_persona_decay_multiplier, match_production
+from artifact_manager import (ArtifactManager, ARTIFACT_EMOJI, ARTIFACT_TYPES,
+                              CREATION_ACTION_PATTERNS)
 from chronicle import chronicle_milestone
 
 ##############################################################################
@@ -94,7 +108,23 @@ class ReverieServer:
     # <step> denotes the number of steps that our game has taken. A step here
     # literally translates to the number of moves our personas made in terms
     # of the number of tiles. 
+    # RESUME CHECKPOINT OVERRIDE: when resuming a sim from a checkpoint step
+    # beyond the (possibly stale) fork meta, GA_RESUME_STEP / GA_RESUME_TIME
+    # force the sim to start at that step. Used by run_live3d_resume.py, whose
+    # fork parent's meta.json step lags the actual checkpoint.
     self.step = reverie_meta['step']
+    resume_step = os.environ.get("GA_RESUME_STEP")
+    if resume_step is not None:
+      self.step = int(resume_step)
+      resume_time = os.environ.get("GA_RESUME_TIME")
+      if resume_time:
+        self.curr_time = datetime.datetime.strptime(
+            resume_time, "%B %d, %Y, %H:%M:%S")
+        reverie_meta['curr_time'] = resume_time
+        with open(f"{sim_folder}/reverie/meta.json", "w") as outfile:
+          outfile.write(json.dumps(reverie_meta, indent=2))
+      print(f"[reverie] resume checkpoint override: step={self.step} "
+            f"curr_time={self.curr_time}")
 
     # Clean up stale environment and movement files from the parent sim
     # that are beyond our starting step. These cause race conditions
@@ -267,19 +297,35 @@ class ReverieServer:
 
   def try_create_artifact(self, persona, act_description):
     """Check if an action creates an artifact and handle creation."""
-    # Dedup: don't create twice for same action
-    if (hasattr(persona.scratch, 'last_artifact_action') and
-        persona.scratch.last_artifact_action == act_description):
-      return None
-
+    # FIX (accumulation gate): task decomposition shreds creative blocks into
+    # 5-30 min subtasks, so no single action ever met the old hard
+    # duration_min gate — artifacts were NEVER created because of this.
+    # Now accumulate minutes per artifact type per sim day; create when the
+    # day's total effort reaches duration_min.
+    # NOTE: identical consecutive subtask descriptions are real effort and
+    # must count — the old dedup guard starved accumulation. Rate control is
+    # the accumulation reset itself: one artifact per duration_min of work.
     mapping = self.artifact_manager.match_creation_action(act_description)
     if not mapping:
       return None
 
-    # Check duration meets minimum
-    if (persona.scratch.act_duration is not None and
-        persona.scratch.act_duration < mapping.get("duration_min", 0)):
-      return None
+    duration_min = mapping.get("duration_min", 0)
+    act_duration = persona.scratch.act_duration or 0
+    day_key = self.curr_time.strftime("%Y-%m-%d")
+    prog_key = f"{mapping['type']}|{day_key}"
+    if not hasattr(persona.scratch, "artifact_progress"):
+      persona.scratch.artifact_progress = {}
+    # PERF (improvement 3a — effort credit): task decomposition shreds creative
+    # blocks into 5-30 min subtasks, so raw minutes understate real effort —
+    # n30 logged 66 creative actions but produced only 2 artifacts in 1.7 days.
+    # Credit x2 keeps the accumulation gate meaningful (book=60min now really
+    # means ~30 real minutes of scheduled work).
+    persona.scratch.artifact_progress[prog_key] = (
+      persona.scratch.artifact_progress.get(prog_key, 0) + 2 * max(act_duration, 5))
+    if persona.scratch.artifact_progress[prog_key] < duration_min:
+      return None  # not enough accumulated effort yet today
+    # Threshold met — create and reset this key's progress
+    persona.scratch.artifact_progress[prog_key] = 0
 
     # Consume materials if required
     materials = mapping.get("materials", {})
@@ -578,6 +624,85 @@ class ReverieServer:
         s.needs[need] = max(0, min(100, current_val))
 
 
+  def _process_shopping(self, persona, act_description):
+    """FIX (shopping loop): when a persona is AT the supply store with a
+    grocery goal, actually buy goods — purchase() deducts wallet money and
+    moves stock out of store shelves — then carry them home and restock the
+    home fridge, and record the purchase in memory."""
+    try:
+      s = persona.scratch
+      curr = (s.act_address or "").lower()
+      if "supply store" not in curr and "shelves" not in curr:
+        return  # not at the store
+      act_lower = (act_description or "").lower()
+      if not any(k in act_lower for k in ("grocery", "groceries", "shopping", "buy")):
+        return  # not a shopping action
+
+      # Which home fridge does this persona own?
+      persona_first = persona.name.split()[0].lower()
+      home_fridge = None
+      for address in self.resource_manager.world_state:
+        if "refrigerator" in address.lower() and persona_first in address.lower():
+          home_fridge = address
+          break
+      if not home_fridge:
+        return  # no home fridge to stock
+
+      # Pin the CANONICAL store address (STORE_ADDRESSES[0]) — iterating
+      # world_state picks whichever duplicate key comes FIRST in the dict
+      # (the legacy 'store:shelves:groceries' shadow store), silently
+      # draining phantom stock instead of the real one.
+      store_addr = None
+      canonical = self.resource_manager.STORE_ADDRESSES[0]
+      norm = self.resource_manager._normalize_address(canonical)
+      if norm:
+        store_addr = norm
+      if not store_addr:
+        for address in self.resource_manager.world_state:
+          if "supply store" in address.lower() or ("shelves" in address.lower() and "store" in address.lower()):
+            store_addr = address
+            break
+      if not store_addr:
+        return
+
+      # Shopping list: staple items below a home-fridge threshold
+      staples = ["eggs", "bread", "milk", "coffee_beans"]
+      bought = []
+      from resource_manager import ITEM_PRICES
+      for item in staples:
+        home_stock = self.resource_manager.world_state[home_fridge].get(item, 0)
+        if home_stock < 5:
+          qty = 10  # buy a batch
+          if self.resource_manager.purchase(store_addr, item, qty, s):
+            bought.append((item, qty))
+            self.resource_manager.restock(home_fridge, item, qty)
+      if not bought:
+        return
+
+      # Remove the fulfilled shopping goal
+      if hasattr(s, "resource_goals"):
+        s.resource_goals = [g for g in s.resource_goals
+                            if "grocery shopping" not in g.lower()]
+
+      # Memory event so the purchase is part of the agent's lived experience
+      summary = ", ".join(f"{qty} {item}" for item, qty in bought)
+      cost = sum(ITEM_PRICES.get(item, 1.0) * qty for item, qty in bought)
+      desc = f"{persona.name} bought {summary} at the supply store for ${cost:.2f} and restocked the refrigerator at home."
+      from persona.prompt_template.gpt_structure import get_embedding
+      try:
+        emb = get_embedding(desc)
+      except Exception:
+        emb = [0.0] * 1536
+      keywords = {"supply store", "groceries", "bought", "restocked"}
+      persona.a_mem.add_event(
+        self.curr_time, None,
+        persona.name, "bought", "groceries",
+        desc, keywords, 6, (desc, emb), [])
+
+      print(f"[Shopping] {persona.name} bought {summary} (${cost:.2f}) -> {home_fridge}")
+    except Exception as e:
+      print(f"[Shopping] Error processing shopping action: {e}")
+
   def consume_resources_for_action(self, persona, act_description):
     """
     Consume world resources based on the action being performed.
@@ -661,12 +786,27 @@ class ReverieServer:
               persona.name == CAFE_OWNER and
               "hobbs cafe" in (persona.scratch.act_address or "").lower()
             )
-            if is_commercial and not is_owner_at_own_cafe and hasattr(self.resource_manager, 'purchase'):
+            # STORE-OWNER GUARD (Sep 2026, post-Harvey): Carmen Ortiz now
+            # owns the supply store — her consuming her own stock is COGS,
+            # not a sale, same rule as Isabella's café.
+            STORE_OWNER = "Carmen Ortiz"
+            is_owner_at_own_store = (
+              persona.name == STORE_OWNER and
+              ("supply store" in (persona.scratch.act_address or "").lower()
+               or "harvey oak supply store" in (persona.scratch.act_address or "").lower())
+            )
+            if is_commercial and not is_owner_at_own_cafe \
+                and not is_owner_at_own_store \
+                and hasattr(self.resource_manager, 'purchase'):
               success = self.resource_manager.purchase(address, item, amount, persona.scratch)
               if success:
                 consumed = True
-                # Bug 3: Pass buyer name so credit log is complete
-                self._credit_cafe_sale(item, amount, persona.name)
+                # CAFÉ-ONLY credit (Sep 2026 fix): store sales already
+                # credit the till inside purchase(); crediting Isabella here
+                # too paid her twice — once with the store's own money.
+                addr_l = address.lower()
+                if "cafe" in addr_l or "hobbs" in addr_l:
+                  self._credit_cafe_sale(item, amount, persona.name)
                 break
               else:
                 self._inject_resource_depleted_event(persona, address, item)
@@ -694,25 +834,69 @@ class ReverieServer:
                 consumed = True
                 break
 
-      # Handle production (e.g., preparing food produces sandwiches)
-      # Only trigger production if persona is at Hobbs Cafe (check full act_address path)
-      if keyword in PRODUCTION_MAPPINGS:
-        act_addr = (getattr(persona.scratch, "act_address", "") or "").lower()
-        curr_tile_addr = (getattr(persona.scratch, "curr_tile", "") or "")
-        at_cafe = "hobbs cafe" in act_addr or "hobbs cafe" in str(curr_tile_addr).lower()
-        if not at_cafe:
-          # Also check description for cafe context
-          act_desc = (getattr(persona.scratch, "act_description", "") or "").lower()
-          at_cafe = "hobbs cafe" in act_desc or "open cafe" in act_desc or "cafe counter" in act_desc
-        if at_cafe:
-          for prod_pattern, prod_item, prod_amount in PRODUCTION_MAPPINGS[keyword]:
-            for address in self.resource_manager.world_state:
-              if prod_pattern.lower() in address.lower():
-                self.resource_manager.restock(address, prod_item, prod_amount)
-                print(f"[ResourceManager] {persona.name} produced {prod_amount} {prod_item} at {address}")
-                break
+    # Handle production (restock cafe counters) — fires on regex match,
+    # independent of the ACTION_RESOURCE_MAPPINGS keyword gate that
+    # previously hid it (production fired 0 times in all n-series runs).
+    # NOTE: hoisted OUT of the keyword loop — it must fire even when the
+    # action matches no consumption keyword at all.
+    prod_match = match_production(act_lower)
+    if prod_match:
+      prod_sw, prod_pa = prod_match
+      act_addr = (getattr(persona.scratch, "act_address", "") or "").lower()
+      curr_tile_addr = (getattr(persona.scratch, "curr_tile", "") or "")
+      at_cafe = ("hobbs cafe" in act_addr
+                 or "hobbs cafe" in str(curr_tile_addr).lower())
+      if not at_cafe:
+        # Also check description for cafe context
+        at_cafe = ("hobbs cafe" in act_lower or "open cafe" in act_lower
+                   or "cafe counter" in act_lower)
+      if at_cafe:
+        for address in self.resource_manager.world_state:
+          if "counter" in address.lower() or "prepared_food" in address.lower():
+            self.resource_manager.restock(address, "sandwiches", prod_sw)
+            self.resource_manager.restock(address, "pastries", prod_pa)
+        print(f"[ResourceManager] {persona.name} produced {prod_sw} sandwiches "
+              f"and {prod_pa} pastries at the cafe counters")
+        # Track accumulation so Isabella's stock-ups yield real artifacts
+        self._note_cafe_production(persona, act_description)
+      else:
+        print(f"[ResourceManager] Production pattern matched for "
+              f"{persona.name} but they are not at the cafe "
+              f"(addr: '{act_addr}') — skipping restock")
 
     return all_success
+
+  def _note_cafe_production(self, persona, act_description):
+    """ECONOMY+ARTIFACT WELD: count Isabella's cafe stock-up actions; each
+    full batch triggers the existing meal-artifact chain with a
+    canonicalized description so the CREATION_ACTION_PATTERNS meal rules
+    fire and a named, perceivable meal artifact lands on the cafe tile."""
+    try:
+      s = persona.scratch
+      day_key = self.curr_time.strftime("%Y-%m-%d")
+      key = f"cafe_production|{day_key}"
+      if not hasattr(s, 'cafe_production_count'):
+        s.cafe_production_count = {}
+      s.cafe_production_count[key] = s.cafe_production_count.get(key, 0) + 1
+      n = s.cafe_production_count[key]
+      print(f"[Economy] {persona.name} cafe production count for {day_key}: {n}")
+      # One batch-artifact per sim-day per creator — the stock-up block
+      # fires many subtasks per day (measured ~86 in n32), and minting an
+      # artifact every 3 fires would spam ~28 identical meals/day.
+      done_key = f"cafe_artifact_done|{day_key}"
+      if n >= 3 and not s.cafe_production_count.get(done_key):
+        s.cafe_production_count[key] = 0
+        s.cafe_production_count[done_key] = True
+        # Canonicalized description so the meal creation rules match cleanly
+        # (must contain a meal word — 'meal', not 'food' — or
+        # match_creation_action returns None; verified against the real
+        # CREATION_ACTION_PATTERNS matcher offline).
+        canonical = "preparing a meal for the cafe: sandwiches and pastries batch"
+        self.try_create_artifact(persona, canonical)
+        print(f"[Economy] Cafe food batch complete for {persona.name} — "
+              f"meal artifact attempted")
+    except Exception as e:
+      print(f"[Economy] cafe production tracking failed: {e}")
 
   def _credit_cafe_sale(self, item, amount, buyer_name="unknown"):
     """Phase 5: Credit Isabella Rodriguez's wallet when café items are purchased."""
@@ -730,6 +914,18 @@ class ReverieServer:
         print(f"[Economy] Isabella earned ${price:.2f} from {buyer_name} buying {amount}x {item} (wallet: ${self.personas[cafe_owner].scratch.wallet:.0f})")
     except Exception as e:
       pass  # Economy is optional, never crash sim
+
+  def _sweep_store_till(self):
+    """STORE-OWNER PAYDAY: weekly profit draw from the till (float $500
+    kept). Delegates to resource_manager.sweep_store_till; returns 0 on
+    any failure (economy must never crash the sim)."""
+    try:
+      if hasattr(self.resource_manager, 'sweep_store_till'):
+        return self.resource_manager.sweep_store_till()
+      return 0.0
+    except Exception as e:
+      print(f"[Payday] Warning: store till sweep failed: {e}")
+      return 0.0
 
   def _check_and_do_payday(self):
     """Phase 5: Weekly payday — credit each agent a role-based income every 7 sim-days."""
@@ -753,6 +949,23 @@ class ReverieServer:
     if is_monday and is_morning and current_day != last_payday:
       self._last_payday_day = current_day
       for persona_name, persona in self.personas.items():
+        # STORE-OWNER SWEEP (Sep 2026, post-Harvey): Carmen Ortiz draws the
+        # store till's weekly profit as her income — the till keeps a float
+        # and she takes the surplus above $500. No profit, no payday; the
+        # store is a real going concern whose income is customer-funded.
+        STORE_OWNER = "Carmen Ortiz"
+        if persona_name == STORE_OWNER:
+          sweep = self._sweep_store_till()
+          if sweep > 0:
+            persona.scratch.wallet += sweep
+            if hasattr(self.resource_manager, '_update_financial_stress'):
+              self.resource_manager._update_financial_stress(persona.scratch)
+            print(f"[Payday] {persona_name} swept ${sweep:.2f} store profit "
+                  f"(wallet: ${persona.scratch.wallet:.0f})")
+          else:
+            print(f"[Payday] {persona_name} store till under float — no draw "
+                  f"(wallet: ${persona.scratch.wallet:.0f})")
+          continue
         income = WEEKLY_INCOME.get(persona_name, 150.0)
         persona.scratch.wallet = getattr(persona.scratch, 'wallet', 100.0) + income
         if hasattr(self.resource_manager, '_update_financial_stress'):
@@ -815,11 +1028,27 @@ class ReverieServer:
       if not hasattr(persona.scratch, "resource_goals"):
         persona.scratch.resource_goals = []
       if any(food in item for food in ["eggs", "bread", "milk"]):
+        # FIX (shopping loop): eating out is a stopgap — also push a grocery
+        # run so home fridges can actually restock. The store exists, is fully
+        # stocked, and purchase() works; there was simply no path that ever
+        # sent an agent to buy.
         goal = "go to Hobbs Cafe to have breakfast"
+        if goal not in persona.scratch.resource_goals:
+          persona.scratch.resource_goals.append(goal)
+        shopping_goal = "go grocery shopping at Harvey Oak Supply Store"
+        if shopping_goal not in persona.scratch.resource_goals:
+          persona.scratch.resource_goals.append(shopping_goal)
       elif item == "coffee_beans":
         goal = "go to Hobbs Cafe to get coffee"
+        if goal not in persona.scratch.resource_goals:
+          persona.scratch.resource_goals.append(goal)
+        shopping_goal = "go grocery shopping at Harvey Oak Supply Store"
+        if shopping_goal not in persona.scratch.resource_goals:
+          persona.scratch.resource_goals.append(shopping_goal)
       elif item == "hot_water":
         goal = "use the common bathroom shower"
+        if goal not in persona.scratch.resource_goals:
+          persona.scratch.resource_goals.append(goal)
       else:
         goal = None
       if goal and goal not in persona.scratch.resource_goals:
@@ -1025,22 +1254,48 @@ class ReverieServer:
           # move. The movement for each of the personas comes in the form of
           # x y coordinates where the persona will move towards. e.g., (50, 34)
           # This is where the core brains of the personas are invoked.
+          # FIX (vector 1): pool the independent per-persona cognition with
+          # a small thread pool; conversations serialize on _CONVO_LOCK.
           movements = {"persona": dict(),
                        "meta": dict()}
-          for persona_name, persona in list(self.personas.items()):
+
+          def _move_one(args):
+            persona_name, persona = args
             # Skip deceased personas
             if persona.scratch.is_deceased:
-              continue
-
+                return None
             # Death check: has this agent reached their lifespan?
             if (persona.scratch.death_age is not None
                 and persona.scratch.current_age >= persona.scratch.death_age):
+                return persona_name  # handled serially below
+            # Track previous action to detect transitions
+            prev_act_description = persona.scratch.act_description
+            next_tile, pronunciatio, description = persona.move(
+              self.maze, self.personas, self.personas_tile[persona_name],
+              self.curr_time)
+            return (persona_name, persona, prev_act_description,
+                    next_tile, pronunciatio, description)
+
+          dead_candidates = []
+          with ThreadPoolExecutor(max_workers=GA_MOVE_WORKERS) as ex:
+            move_results = list(ex.map(_move_one,
+                                        list(self.personas.items())))
+          for res in move_results:
+            if res is None:
+              continue
+            if isinstance(res, str):
+              dead_candidates.append(res)
+              continue
+            persona_name, persona, prev_act_description, \
+                next_tile, pronunciatio, description = res
+
+            # FIX (vector 1): death handling moved out of the pooled worker —
+            # milestone saves + tile removal are serial side effects.
+            if persona_name in dead_candidates:
               persona.scratch.is_deceased = True
-              # Remove agent from the world
               curr_tile = self.personas_tile[persona_name]
               self.maze.remove_subject_events_from_tile(persona.name, curr_tile)
               del self.personas_tile[persona_name]
-              # Post death notice on community bulletin board
               if self.bulletin_tile:
                 bx, by = self.bulletin_tile
                 death_notice = (
@@ -1048,7 +1303,6 @@ class ReverieServer:
                   f"{persona.name} passed away at age {persona.scratch.current_age}",
                   f"{persona.name} passed away at age {persona.scratch.current_age}")
                 self.maze.tiles[by][bx]["events"].add(death_notice)
-              # Chronicle and save
               chronicle_milestone(persona, "death",
                 f"{persona.name} passed away at age {persona.scratch.current_age}",
                 sim_folder, poignancy=9)
@@ -1064,18 +1318,6 @@ class ReverieServer:
               chronicle_milestone(persona, "birthday",
                 f"{persona.name} turned {new_age}", sim_folder)
 
-            # Track previous action to detect transitions
-            prev_act_description = persona.scratch.act_description
-
-            # <next_tile> is a x,y coordinate. e.g., (58, 9)
-            # <pronunciatio> is an emoji. e.g., "\ud83d\udca4"
-            # <description> is a string description of the movement. e.g.,
-            #   writing her next novel (editing her novel)
-            #   @ double studio:double studio:common room:sofa
-            next_tile, pronunciatio, description = persona.move(
-              self.maze, self.personas, self.personas_tile[persona_name],
-              self.curr_time)
-
             # Satisfy needs when persona transitions to a new action
             curr_act_description = persona.scratch.act_description
             if curr_act_description != prev_act_description:
@@ -1085,6 +1327,11 @@ class ReverieServer:
                 self.consume_resources_for_action(persona, curr_act_description)
               except Exception as e:
                 print(f"[Reverie] Warning: resource consumption failed: {e}")
+              # Shopping loop: buy and carry groceries home (Phase 5 fix)
+              try:
+                self._process_shopping(persona, curr_act_description)
+              except Exception as e:
+                print(f"[Reverie] Warning: shopping processing failed: {e}")
               # Artifact creation and interaction (Phase 6)
               try:
                 self.try_create_artifact(persona, curr_act_description)

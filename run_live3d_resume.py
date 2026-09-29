@@ -55,6 +55,21 @@ def main():
         f"(+{remaining} steps) ===")
 
     # -- backend: self-fork from old_sim; run is relative --------------------
+    # Pass the resume checkpoint so the backend starts at start_step even if
+    # the fork parent's meta.json step is stale (lags the checkpoint).
+    resume_time = None
+    ckpt_move = os.path.join(STORAGE, old_sim, "movement", f"{start_step}.json")
+    try:
+        import json
+        with open(ckpt_move) as f:
+            resume_time = json.load(f)["meta"]["curr_time"]
+    except (OSError, KeyError, ValueError):
+        pass
+    backend_env = os.environ.copy()
+    backend_env["GA_RESUME_STEP"] = str(start_step)
+    if resume_time:
+        backend_env["GA_RESUME_TIME"] = resume_time
+
     inputs = f"{old_sim}\n{new_sim}\nrun {remaining}\n"
     backend_log = open(f"/tmp/{new_sim}_backend.log", "a")
     rev = subprocess.Popen(
@@ -65,6 +80,7 @@ def main():
         stderr=subprocess.STDOUT,
         text=True,
         bufsize=1,
+        env=backend_env,
     )
     rev.stdin.write(inputs)
     rev.stdin.flush()

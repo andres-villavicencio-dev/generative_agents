@@ -94,11 +94,14 @@ class WorldResourceManager:
         "bathroom": {"capacity": 1, "use_duration_ticks": 2},
     }
 
-    # Store locations for daily restocking
+    # Store locations for daily restocking (single canonical address —
+    # the legacy 'store:shelves:groceries' duplicate double-billed wholesale)
     STORE_ADDRESSES = [
-        "store:shelves:groceries",
         "the Ville:Harvey Oak Supply Store:supply store:shelves"
     ]
+
+    # Ledger file for the store till (recovered from Sep 25 pyc)
+    TILL_FILE_NAME = "economy_ledger.json"
 
     # Store max stock levels
     STORE_MAX_STOCK = {
@@ -131,6 +134,32 @@ class WorldResourceManager:
         else:
             print("[ResourceManager] Initializing with default world state")
             self.world_state = dict(self.DEFAULT_WORLD_STATE)
+
+        # Deduplicate store addresses on load: fold any legacy shadow-store
+        # key (e.g. 'store:shelves:groceries') into the canonical address so
+        # purchases/deliveries can never split across two keys and wholesale
+        # is never double-billed. Canonical key always wins.
+        if self.STORE_ADDRESSES:
+            canonical = self.STORE_ADDRESSES[0]
+            canon_stock = self.world_state.get(canonical)
+            legacy_keys = [
+                k for k in self.world_state
+                if k != canonical
+                and ("shelves" in k.lower() and "store" in k.lower())
+                or (":" not in k and "shelves" in k.lower())
+            ]
+            for k in legacy_keys:
+                shadow = self.world_state.pop(k)
+                if canon_stock is not None and isinstance(shadow, dict):
+                    # Keep the LOWER stock for each item — depleted real stock
+                    # is truth; phantom surplus from the shadow key is not.
+                    for item, qty in shadow.items():
+                        if isinstance(qty, (int, float)):
+                            cur = canon_stock.get(item)
+                            if isinstance(cur, (int, float)):
+                                canon_stock[item] = min(cur, qty)
+                print(f"[ResourceManager] Deduped legacy store key '{k}' "
+                      f"into canonical '{canonical}'")
 
         # Resource locks for shared resources (concurrent contention)
         # Format: {address: {"locked_by": persona_name, "until_tick": tick_number}}
@@ -236,6 +265,22 @@ class WorldResourceManager:
         # Deduct from wallet
         buyer_scratch.wallet -= price
 
+        # Sale -> till (Sep 2026 reconstruction): store purchases land in
+        # the store till — money previously vanished here. Café counter
+        # sales credit Isabella in reverie.py instead.
+        addr_l = address.lower()
+        is_store = ("supply store" in addr_l
+                    or ("shelves" in addr_l and "store" in addr_l))
+        if is_store:
+            buyer_name = getattr(buyer_scratch, 'name', 'Unknown')
+            self.credit_store_till(price, item, amount, buyer_name, address)
+            # ECONOMY REVIVAL (Sep 2026): stamp cooldown so the proactive
+            # shopping layer knows when this agent last shopped.
+            try:
+                buyer_scratch.last_grocery_shop = self.last_tick_time
+            except Exception:
+                pass
+
         # Update financial stress based on remaining funds
         if hasattr(buyer_scratch, 'financial_stress'):
             if buyer_scratch.wallet < 20:
@@ -248,6 +293,74 @@ class WorldResourceManager:
         print(f"[Purchase] {buyer_name} spent ${price:.2f} on {amount}x {item} at {address} (wallet: ${buyer_scratch.wallet:.0f})")
 
         return True
+
+    def _till_file(self):
+        return os.path.join(self.sim_folder, "resources", self.TILL_FILE_NAME)
+
+    def _load_till(self):
+        """Load the store till from disk; default = starting float $500."""
+        try:
+            with open(self._till_file()) as f:
+                data = json.load(f)
+            return data
+        except (FileNotFoundError, json.JSONDecodeError):
+            return {"store_till": 500.0,
+                    "transactions": []}
+
+    def _save_till(self, data):
+        try:
+            os.makedirs(os.path.dirname(self._till_file()), exist_ok=True)
+            with open(self._till_file(), "w") as f:
+                json.dump(data, f, indent=2)
+        except IOError as e:
+            print(f"[ResourceManager] Error saving till: {e}")
+
+    def credit_store_till(self, price, item, amount, buyer_name, address):
+        """Money paid at a store lands in the till instead of vanishing."""
+        data = self._load_till()
+        data["store_till"] = data.get("store_till", 500.0) + price
+        data["transactions"].append({
+            "time": str(self.last_tick_time or ""),
+            "type": "sale",
+            "buyer": buyer_name,
+            "item": item,
+            "amount": amount,
+            "price": round(price, 2),
+            "address": address
+        })
+        self._save_till(data)
+        print(f"[Economy] Store till +${price:.2f} ({amount}x {item} from "
+              f"{buyer_name}) -> ${data['store_till']:.2f}")
+
+    def sweep_store_till(self):
+        """STORE-OWNER PAYDAY (Sep 2026): weekly profit draw. Returns the
+        surplus above the $500 float and debits it from the till — the
+        owner's income is the store's customer-funded profit, not a salary."""
+        data = self._load_till()
+        till = data.get("store_till", 500.0)
+        sweep = round(max(0.0, till - 500.0), 2)
+        if sweep > 0:
+            data["store_till"] = 500.0
+            data["transactions"].append({
+                "time": str(self.last_tick_time or ""),
+                "type": "owner_sweep",
+                "amount": sweep,
+            })
+            self._save_till(data)
+        return sweep
+
+    def debit_store_till(self, cost, sim_time):
+        """Supplier payment for daily delivery (wholesale)."""
+        data = self._load_till()
+        data["store_till"] = data.get("store_till", 500.0) - cost
+        data["transactions"].append({
+            "time": sim_time.strftime("%B %d, %Y, %H:%M:%S"),
+            "type": "wholesale_delivery",
+            "cost": round(cost, 2),
+        })
+        self._save_till(data)
+        print(f"[Economy] Store till -${cost:.2f} (daily wholesale delivery) "
+              f"-> ${data['store_till']:.2f}")
 
     def restock(self, address, item, amount):
         """
@@ -305,19 +418,26 @@ class WorldResourceManager:
             print(f"[ResourceManager] Error in tick: {e}")
 
     def _do_daily_delivery(self, sim_time):
-        """
-        Perform daily store restocking.
-        """
+        """Perform daily store restocking. Each delivered unit debits the
+        store till at wholesale cost (50% of retail) — the store is a going
+        concern whose restocking has a visible price (Sep 2026 reconstruction,
+        verified against the Sep 25 pyc bytecode)."""
         time_str = sim_time.strftime("%B %d, %Y, %H:%M:%S")
 
         for store_addr in self.STORE_ADDRESSES:
             normalized = self._normalize_address(store_addr)
-            if normalized and normalized in self.world_state:
-                location = self.world_state[normalized]
-                for item, max_stock in self.STORE_MAX_STOCK.items():
-                    location[item] = max_stock
-                location["last_delivery"] = time_str
-                print(f"[ResourceManager] Daily delivery to {normalized}")
+            if not (normalized and normalized in self.world_state):
+                continue
+            location = self.world_state[normalized]
+            wholesale_cost = 0.0
+            for item, max_stock in self.STORE_MAX_STOCK.items():
+                delivered = max(0, max_stock - location.get(item, 0))
+                location[item] = max_stock
+                wholesale_cost += ITEM_PRICES.get(item, 1.0) * 0.5 * delivered
+            location["last_delivery"] = time_str
+            if wholesale_cost > 0:
+                self.debit_store_till(wholesale_cost, sim_time)
+            print(f"[ResourceManager] Daily delivery to {normalized}")
 
     def try_acquire(self, address, resource_type, persona_name, current_tick):
         """
@@ -591,6 +711,12 @@ ACTION_RESOURCE_MAPPINGS = {
     # Cafe preparation (Isabella)
     "preparing cafe": [("refrigerator", "eggs", 4), ("refrigerator", "bread", 2)],
     "preparing food": [("refrigerator", "eggs", 2), ("refrigerator", "bread", 1)],
+
+    # Grocery shopping (Sep 2026 economy revival): the proactive shopping
+    # layer injects 'buy groceries at the Harvey Oak Supply Store' — this
+    # mapping is what turns that action into a real paid purchase from the
+    # store's shelves (location-matched in reverie.py's consumption loop).
+    "groceries": [("shelves", "eggs", 5), ("shelves", "bread", 3), ("shelves", "milk", 2)],
 }
 
 # Production mappings - when consuming resources produces other resources
@@ -667,3 +793,48 @@ def get_persona_decay_multiplier(persona_name, need_type):
     baselines = PERSONA_NEED_BASELINES.get(persona_name, DEFAULT_PERSONA_BASELINES)
     key = f"{need_type}_decay_mult"
     return baselines.get(key, 1.0)
+
+
+# CAFE PRODUCTION MATCHER (Sep 2026 reconstruction): reverie.py calls this
+# with the lowercased action description; returns (sandwiches, pastries)
+# to restock at café counters, or None. Contract from the surviving call
+# site; patterns recovered from session recon — café stock-up/open actions
+# produce counter food so Isabella has stock to sell.
+import re as _re
+
+_CAFE_PROD_PATTERNS = [
+    (_re.compile(r"\bstock(ing|ed|s)?\b.*\bcafe\b", _re.I), (3, 3)),
+    (_re.compile(r"\bopen(ing|ed|s)?\b.*\bcafe\b", _re.I), (3, 3)),
+    (_re.compile(r"\bprepar(ing|e|ed)\b.*\b(cafe|food|pastries)\b", _re.I), (3, 3)),
+]
+
+_CAFE_PROD_KEYWORDS = {
+    "preparing cafe": (3, 3),
+    "opening the cafe": (3, 3),
+    "preparing the cafe": (3, 3),
+    "open cafe": (3, 3),
+}
+
+def match_production(action_desc):
+    """Return (sandwiches, pastries) produced by a café prep action, else None.
+
+    Checks exact keyword phrases from PRODUCTION_MAPPINGS first (they map to
+    per-action amounts), then falls back to looser regex patterns for
+    stock/open/prep phrasings.
+    """
+    if not action_desc:
+        return None
+    desc = action_desc.lower()
+    # keyword phrases from PRODUCTION_MAPPINGS: values are lists of
+    # (resource_pattern, item, amount) triples — extract per-item amounts
+    for phrase, consumptions in PRODUCTION_MAPPINGS.items():
+        if phrase in desc:
+            amounts = {}
+            for _pattern, item, amt in consumptions:
+                amounts[item] = amounts.get(item, 0) + amt
+            return (amounts.get("sandwiches", 0), amounts.get("pastries", 0))
+    # looser regex fallback
+    for pat, pair in _CAFE_PROD_PATTERNS:
+        if pat.search(desc):
+            return pair
+    return None

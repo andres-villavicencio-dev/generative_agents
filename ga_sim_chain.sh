@@ -11,7 +11,10 @@ TARGET="${GA_TARGET:-25920}"
 FRONTEND_SIM_FILE="$BASE/environment/frontend_server/temp_storage/curr_sim_code.json"
 
 while true; do
-  latest=$(ls -d "$STORAGE"/live3d_n1[0-9] 2>/dev/null | sort -V | tail -1)
+  # FIX: the old glob 'live3d_n1[0-9]' only matched n10-n19 — it was blind to
+  # n20+ and would "resume" from an older sim while wiping the newer one as a
+  # "partial fork". Match the whole live3d_nN series, newest-wins.
+  latest=$(ls -d "$STORAGE"/live3d_n[0-9]* 2>/dev/null | sort -V | tail -1)
   [ -z "$latest" ] && { echo "FATAL: no live3d_n1x sim found"; exit 1; }
   sim=$(basename "$latest")
 

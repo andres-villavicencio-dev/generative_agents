@@ -112,22 +112,36 @@ def generate_painting_prompt(agent_name, action, persona_description):
 
 
 def _generate_painting_image(prompt, agent_name):
-    """Attempt to generate an actual image from the prompt."""
+    """Generate a real image from the prompt via the keyless Pollinations
+    endpoint (improvement 3b, Sep 2026). Falls back to None on any failure —
+    the caller keeps the text prompt either way."""
     try:
-        import subprocess
+        import urllib.parse, urllib.request
         image_dir = os.path.join(_get_artifacts_dir(), "images")
         os.makedirs(image_dir, exist_ok=True)
-        
+
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
         safe_name = re.sub(r'[^a-zA-Z0-9_]', '_', agent_name.lower())
-        output_path = os.path.join(image_dir, f"{safe_name}_{ts}.png")
-        
+        output_path = os.path.join(image_dir, f"{safe_name}_{ts}.jpg")
+
+        url = ("https://image.pollinations.ai/prompt/"
+               + urllib.parse.quote(prompt[:400])
+               + "?width=512&height=512&nologo=true&seed="
+               + str(abs(hash(prompt)) % 1000000))
+        req = urllib.request.Request(url, headers={"User-Agent": "GA-sim/1.0"})
+        with urllib.request.urlopen(req, timeout=90) as resp:
+            data = resp.read()
+        if len(data) < 2000:
+            return None  # error page, not an image
+        with open(output_path, "wb") as f:
+            f.write(data)
         return {
             "image_path": output_path,
-            "model": "placeholder",
-            "note": "Image generation requires Stable Diffusion setup"
+            "model": "pollinations",
+            "note": f"{len(data)//1024}KB"
         }
     except Exception as e:
+        print(f"[ArtifactGenerator] pollinations fetch failed: {e}")
         return None
 
 
@@ -237,17 +251,17 @@ def generate_invention_description(agent_name, action, persona_description):
 
 
 # Keyword → (generator_function, artifact_log_type)
+# PERF/content fix (Sep 2026): keyword matching used bare substring `in`, so
+# "sing" matched "using" and a children's-book action dispatched to the SONG
+# generator (live3d_n31 artifact_001 "Whispers of the Whispering Pines" got
+# lullaby lyrics as its content). Match at word boundaries instead; stems
+# (compos*) keep prefix matching.
 _CONTENT_DISPATCH = [
-    (["build", "invent", "craft"],
-     generate_invention_description, "invention"),
-    (["cook", "bake", "meal", "food", "recipe"],
-     generate_meal_description, "meal"),
-    (["paint", "draw", "sketch", "artwork"],
-     generate_painting_with_image, "painting"),
-    (["song", "music", "compos", "sing"],
-     generate_song_lyrics, "song"),
-    (["writing", "letter", "essay", "poem", "journal", "book"],
-     generate_written_content, "writing"),
+    (r"\b(build|invent|craft|construct|design)\w*", generate_invention_description, "invention"),
+    (r"\b(cook|bake|meal|meals|food|recipe|recipes|breakfast|lunch|dinner|dish)\w*", generate_meal_description, "meal"),
+    (r"\b(paint|paints|painting|painted|draw|draws|drawing|sketch|artwork|canvas)\w*", generate_painting_with_image, "painting"),
+    (r"\b(song|songs|music|musical|melody|melodies|compos\w*|lyric|lyrics|sing|sings|singing)\b", generate_song_lyrics, "song"),
+    (r"\b(writing|writings|letter|letters|essay|essays|poem|poems|journal|journals|book|books|novel|story|stories|write|writes|wrote|written)\b", generate_written_content, "writing"),
 ]
 
 
@@ -255,10 +269,9 @@ def generate_artifact_content(agent_name, action, persona_description):
     """Dispatch to the appropriate generator based on action keywords.
     Returns (content_full, content_type) or ("", None) if no match."""
     action_lower = action.lower()
-    for keywords, generator_fn, content_type in _CONTENT_DISPATCH:
-        for kw in keywords:
-            if kw in action_lower:
-                content = generator_fn(agent_name, action, persona_description)
-                return content, content_type
+    for pattern, generator_fn, content_type in _CONTENT_DISPATCH:
+        if re.search(pattern, action_lower):
+            content = generator_fn(agent_name, action, persona_description)
+            return content, content_type
     print(f"[ArtifactGenerator] No content type matched for action: {action}")
     return "", None

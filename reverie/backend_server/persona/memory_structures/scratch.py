@@ -197,6 +197,7 @@ class Scratch:
 
     # ARTIFACT TRACKING
     self.last_artifact_action = None  # dedup guard for artifact creation
+    self.artifact_progress = {}  # accumulated creative minutes: {"<type>|<day>": minutes}
 
     # ECONOMY LAYER (Phase 5)
     # Agent wallet and financial stress
@@ -301,6 +302,7 @@ class Scratch:
       if "resource_goals" in scratch_load:
         self.resource_goals = scratch_load["resource_goals"]
       self.last_artifact_action = scratch_load.get("last_artifact_action", None)
+      self.artifact_progress = scratch_load.get("artifact_progress", {})
 
       # Load economy layer (Phase 5) with backwards compatibility
       if "wallet" in scratch_load:
@@ -397,6 +399,7 @@ class Scratch:
       scratch["needs_danger"] = self.needs_danger
     scratch["resource_goals"] = self.resource_goals if hasattr(self, "resource_goals") else []
     scratch["last_artifact_action"] = self.last_artifact_action if hasattr(self, "last_artifact_action") else None
+    scratch["artifact_progress"] = self.artifact_progress if hasattr(self, "artifact_progress") else {}
 
     # Save economy layer (Phase 5)
     scratch["wallet"] = self.wallet if hasattr(self, "wallet") else 100.0
@@ -593,7 +596,11 @@ class Scratch:
                      act_start_time=None): 
     self.act_address = action_address
     self.act_duration = action_duration
-    self.act_description = action_description
+    # FIX (poison-wrap bug): final gate. Descriptions with unbounded nested
+    # "(...)" wraps once grew to 864M chars (885MB movement files). Scrub
+    # every action description entering scratch.
+    from persona.prompt_template.run_gpt_prompt import _clean_action_text
+    self.act_description = _clean_action_text(action_description)
     self.act_pronunciatio = action_pronunciatio
     self.act_event = action_event
 
@@ -649,7 +656,14 @@ class Scratch:
         x = (x + datetime.timedelta(minutes=1))
       end_time = (x + datetime.timedelta(minutes=self.act_duration))
 
-    if end_time.strftime("%H:%M:%S") == self.curr_time.strftime("%H:%M:%S"): 
+    # FIX (phone freeze, n33): stock compared H:M:S for EXACT equality, so
+    # an action whose end time was ever skipped (checkpoint resume with a
+    # stale scratch, clock jump) never finished until the same wall-clock
+    # time the NEXT day — 58% of the town stuck on one filler for 7h.
+    # Past-due = finished.
+    if end_time is None or self.curr_time is None:
+      return True
+    if self.curr_time >= end_time:
       return True
     return False
 

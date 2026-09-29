@@ -7,8 +7,21 @@ Description: This defines the "Plan" module for generative agents.
 import datetime
 import math
 import random 
+import re
 import sys
 import time
+import threading
+
+# PERF (improvement 2 — social attention budget): n30 telemetry showed 1,964
+# decide_to_talk LLM calls firing in simultaneous waves (one per agent per
+# perceived persona-event), all queued on CONVO_LOCK — the midday chat-cascade
+# wall. Two mitigations:
+#   1. A semaphore caps concurrent decide-to-talk/decide-to-react LLM calls, so
+#      a busy cafe doesn't stampede the lane daemon (waves resolve 2-at-a-time
+#      instead of 25-at-a-time).
+#   2. lets_talk() short-circuits on low-poignancy events (poig < 3) before any
+#      LLM call — banal stimuli never reach the model.
+_SOCIAL_THINK_SEM = threading.Semaphore(2)
 sys.path.append('../../')
 
 from global_methods import *
@@ -36,6 +49,187 @@ def generate_wake_up_hour(persona):
   """
   if debug: print ("GNS FUNCTION: <generate_wake_up_hour>")
   return int(run_gpt_prompt_wake_up_hour(persona)[0])
+
+
+_PLAN_T = r'(\d{1,2})(?::(\d{2}))?\s*(a\.?\s?m\.?|p\.?\s?m\.?)?'
+_WORKLIKE_RE = re.compile(
+  r'\b(work|shift|store|shop|counter|caf[eé]|class|lecture|office|study|'
+  r'research|practic|rehears|paint|writ|compos|open|serv|manag|teach|'
+  r'pharmac|clinic|restock|stock|sell|sales|customer)\w*', re.I)
+_PLAN_FILLERS = ["relaxing and unwinding at home",
+                 "tidying up their home",
+                 "taking a short stroll nearby",
+                 "browsing on their phone"]
+# Quick chores never stretch across open time (Klaus showered 3h in test).
+_SHORT_ACT_RE = re.compile(
+  r'\b(shower|bath|brush|wash|drink|breakfast|lunch|dinner|meal|snack|eat|'
+  r'coffee|tea|restroom|bathroom|toilet|dress|get dressed)\w*', re.I)
+
+
+def _plan_ampm(s):
+  if not s:
+    return None
+  return 'am' if s.strip().lower().startswith('a') else 'pm'
+
+
+def _plan_hour(h, m, ampm):
+  h = int(h); m = int(m) if m else 0
+  if ampm == 'pm' and h != 12:
+    h += 12
+  elif ampm == 'am' and h == 12:
+    h = 0
+  return h, m
+
+
+def parse_plan_item(req):
+  """One daily_req line -> (start_hour|None, end_hour|None, activity).
+
+  FIX (Sep 2026, filler epidemic): the old parser knew only 'at X am/pm'
+  and 'from X am to Y pm' (both sides with am/pm) and DISCARDED end times,
+  so '1:00 pm ... close store at 8:00 pm' became 2h work + 5h phone/stroll
+  fillers, and 'until noon' / 'around 5 pm' / 'between 1 and 4 pm' /
+  '7:00 to 8:00 pm' were misplaced or lost. end_hour is exclusive and
+  rounded UP when minutes are present (until 4:30 pm -> 17)."""
+  text = re.sub(r'\b(?:noon|midday)\b', '12:00 pm', req or '', flags=re.I)
+  text = re.sub(r'\bmidnight\b', '12:00 am', text, flags=re.I)
+  T = _PLAN_T
+  start = end = None
+  spans = []
+
+  m = re.search(r'\b(?:from|between)\s+' + T + r'\s*(?:to|until|till|and|-|–)\s*' + T,
+                text, re.I)
+  if not m:
+    m = re.search(r'(?<![\d:])' + T + r'\s*(?:-|–|to)\s*' + T, text, re.I)
+    if m and not (m.group(3) or m.group(6)):
+      m = None
+  if m:
+    a1, a2 = _plan_ampm(m.group(3)), _plan_ampm(m.group(6))
+    if a2 is None:
+      a2 = a1
+    if a1 is None:
+      a1 = a2
+      if (_plan_hour(m.group(1), m.group(2), a1)[0] >
+          _plan_hour(m.group(4), m.group(5), a2)[0]) and a2 == 'pm':
+        a1 = 'am'   # "from 11 to 1 pm" = 11am-1pm
+    sh, _ = _plan_hour(m.group(1), m.group(2), a1)
+    eh, em = _plan_hour(m.group(4), m.group(5), a2)
+    if eh == 0:
+      eh = 24
+    if em:
+      eh += 1
+    start, end = sh, eh
+    spans.append(m.span())
+  else:
+    me = re.search(r'\b(?:until|till|by|before)\s+' + T, text, re.I)
+    if me and me.group(3):
+      eh, em = _plan_hour(me.group(1), me.group(2), _plan_ampm(me.group(3)))
+      if eh == 0:
+        eh = 24
+      end = eh + (1 if em else 0)
+      spans.append(me.span())
+    ms = re.search(r'\b(?:at|around|about|after|approximately|approx\.?|~)\s+' + T,
+                   text, re.I)
+    if ms and ms.group(3):
+      start = _plan_hour(ms.group(1), ms.group(2), _plan_ampm(ms.group(3)))[0]
+      spans.append(ms.span())
+    elif start is None:
+      mb = re.search(r'(?<![\d:])(\d{1,2})(?::(\d{2}))?\s*(a\.?\s?m\.?|p\.?\s?m\.?)(?![a-z])',
+                     text, re.I)
+      if mb and not any(a <= mb.start() < b for a, b in spans):
+        start = _plan_hour(mb.group(1), mb.group(2), _plan_ampm(mb.group(3)))[0]
+        spans.append(mb.span())
+  if start is not None and end is not None and end <= start:
+    end = None
+
+  act = text
+  for a, b in sorted(spans, reverse=True):
+    act = act[:a] + ' ' + act[b:]
+  act = re.sub(r'\s+', ' ', act).strip()
+  act = re.sub(r'^(?:at|from|until|to|between|around|by|and)\b\s*', '', act, flags=re.I)
+  act = re.sub(r'\s*\b(?:at|from|until|to|between|around|by|and|in the)\s*$', '', act, flags=re.I)
+  act = act.strip(' .,;:-')
+  return start, end, act
+
+
+def build_schedule_from_req(daily_req, wake_up_hour, name=''):
+  """daily_req -> 24 hourly activity strings (slot h = hour h).
+
+  Priority: explicit ranges fill their whole span; point-anchored items
+  own their start hour and run until the next item (<=4h, or <=8h for
+  work-like blocks - a store shift, classes); anything left over after
+  the plan is exhausted gets rotating fillers (consecutive fillers differ
+  so hour-compression can't merge them into one giant block)."""
+  items = []
+  last_start = last_end = None
+  for idx, req in enumerate(daily_req or []):
+    s, e, act = parse_plan_item(req)
+    if not act:
+      continue
+    if s is None:
+      if last_end is not None:
+        s = last_end
+      elif last_start is not None:
+        s = last_start + 1
+    if s is None or s > 23:
+      continue
+    if e is not None and e <= s:
+      e = None
+    items.append((s, e, idx, act))
+    last_start, last_end = s, e
+
+  # sleep hour: an explicit evening bed/sleep item wins; else stock rule
+  sleep_hour = None
+  for s, e, idx, act in items:
+    if s >= 20 and re.search(r'\b(sleep|bed|bedtime)\b', act, re.I):
+      sleep_hour = s
+  if sleep_hour is None:
+    covered = [(e if e is not None else s + 1) for s, e, _, _ in items]
+    sleep_hour = min(max(max(covered) if covered else 21, 21), 23)
+  sleep_hour = max(sleep_hour, wake_up_hour + 1)
+
+  slots = [None] * 24
+  # 1) explicit ranges, plan order (later lines override earlier ones)
+  for s, e, idx, act in sorted(items, key=lambda x: x[2]):
+    if e is not None:
+      for h in range(s, min(e, 24)):
+        slots[h] = act
+  # 2) point anchors own their start hour (lunch at 12 inside a work range)
+  point_starts = sorted({s for s, e, _, _ in items})
+  for s, e, idx, act in sorted(items, key=lambda x: x[2]):
+    if e is None:
+      slots[s] = act
+  # 3) open-ended items run until the next item starts
+  for s, e, idx, act in sorted(items, key=lambda x: (x[0], x[2])):
+    if e is not None:
+      continue
+    nxt = [p for p in point_starts if p > s]
+    stop = min(nxt[0] if nxt else sleep_hour, sleep_hour)
+    limit = (8 if _WORKLIKE_RE.search(act)
+             else 1 if _SHORT_ACT_RE.search(act) else 3)
+    for h in range(s + 1, min(stop, s + limit, 24)):
+      if slots[h] is not None:
+        break
+      slots[h] = act
+
+  out = []
+  first_item_h = min((s for s, _, _, _ in items), default=None)
+  wake_fills = 0
+  for h in range(24):
+    if h < wake_up_hour:
+      out.append("sleeping")
+    elif h >= sleep_hour:
+      out.append("going to bed and sleeping")
+    elif slots[h]:
+      out.append(slots[h])
+    elif (first_item_h is None or h < first_item_h or h <= wake_up_hour + 1) and wake_fills < 2:
+      out.append("waking up and completing morning routine")
+      wake_fills += 1
+    else:
+      out.append(_PLAN_FILLERS[h % len(_PLAN_FILLERS)])
+  if name:
+    print(f"[schedule-deterministic v2] {name}: wake={wake_up_hour} "
+          f"sleep={sleep_hour} items={len(items)}")
+  return out
 
 
 def generate_first_daily_plan(persona, wake_up_hour, resource_manager=None):
@@ -187,8 +381,27 @@ def generate_hourly_schedule(persona, wake_up_hour):
       for rh, ra in req_map:
         if rh <= h:
           act = ra
+        else:
+          break
       return act
 
+    # FIX A (duration sanity): the original forward-fill spread one anchored
+    # activity across EVERY un-anchored hour until sleep_hour — Eddy's
+    # "Practice piano for an hour" became a 420-min block, Isabella's nap
+    # 360 min, freezing agents for half a sim-day on one action. Now any
+    # forward-filled stretch is capped at 2 hours; the gap after it gets
+    # "relaxing at home" instead of an endless repeat of the same activity.
+    CAP_FILL_HOURS = 2
+    _fill_anchor = None   # (req_hour, act) the stretch started from
+    _fill_len = 0
+    # Rotating fillers: consecutive fill hours must differ, else the
+    # hour-compression step merges them back into ONE giant block (the
+    # 8h "relaxing" merge the first offline CALL test caught).
+    _FILLERS = ["relaxing and unwinding at home",
+                "tidying up their home",
+                "taking a short stroll nearby",
+                "browsing on their phone"]
+    _wake_fills = 0
     for h in range(24):
       if h < wake_up_hour:
         schedule.append("sleeping")
@@ -196,11 +409,26 @@ def generate_hourly_schedule(persona, wake_up_hour):
         schedule.append("going to bed and sleeping")
       else:
         act = _req_for_hour(h)
-        if act:
+        if act and (_fill_anchor is None or _fill_anchor[1] != act):
+          _fill_anchor = (h, act)
+          _fill_len = 1
           schedule.append(act)
+          _wake_fills = 0
+        elif act and _fill_len < CAP_FILL_HOURS:
+          _fill_len += 1
+          schedule.append(act)
+        elif act:
+          _fill_len += 1
+          # Past the cap: rotate fillers so no two consecutive hours match.
+          schedule.append(_FILLERS[h % len(_FILLERS)])
         else:
-          # Before first req starts but after wake_up — use wake-up activity
-          schedule.append("waking up and completing morning routine")
+          # Before first req starts but after wake_up — wake-up routine,
+          # itself capped at 2 hours, then rotating leisure fillers.
+          if _wake_fills < CAP_FILL_HOURS:
+            schedule.append("waking up and completing morning routine")
+          else:
+            schedule.append(_FILLERS[h % len(_FILLERS)])
+          _wake_fills += 1
 
     print(f"[schedule-deterministic] {persona.scratch.name}: wake={wake_up_hour} sleep={sleep_hour} req_anchors={len(req_map)}")
     for h, act in enumerate(schedule):
@@ -208,7 +436,9 @@ def generate_hourly_schedule(persona, wake_up_hour):
         print(f"  {h:02d}:00 → {act}")
     return schedule
 
-  n_m1_activity = _build_schedule_from_req(persona.scratch.daily_req, wake_up_hour)
+  # v2 builder (module-level, parses ranges/end times) — see parse_plan_item.
+  n_m1_activity = build_schedule_from_req(persona.scratch.daily_req,
+                                          wake_up_hour, persona.scratch.name)
   
   # Step 1. Compressing the hourly schedule to the following format: 
   # The integer indicates the number of hours. They should add up to 24. 
@@ -365,6 +595,7 @@ EMOJI_LOOKUP = {
   "sit": "🪑", "sitting": "🪑",
   "think": "🤔", "thinking": "🤔", "contemplate": "🤔",
   "phone": "📱", "call": "📞",
+  "tidying": "🧹", "stroll": "🚶",
   "computer": "💻", "laptop": "💻", "browse": "💻",
   "watch": "📺", "watching": "📺", "tv": "📺",
   "wait": "⌛", "waiting": "⌛", "idle": "⌛",
@@ -375,10 +606,27 @@ EMOJI_LOOKUP = {
 
 def _lookup_pronunciatio(description):
   """Try to match action description to emoji via lookup table.
-  Returns emoji string or None if no match found."""
+  Returns emoji string or None if no match found.
+
+  FIX (perf 6): the old paren-stripping took the INSIDE of the first
+  parenthetical — "browsing on their phone (1)" stripped to "1", a
+  guaranteed lookup miss that pushed ~40% of pronunciatio calls to the
+  LLM (measured on n30: 59% hit rate instead of 75%). Now: strip the
+  leading main-clause BEFORE the first paren, plus trailing
+  annotation parens like "(1)"/"(2. ...)".
+  """
   desc = description.lower().strip()
+  if "@" in desc:  # drop trailing location: "cooking @ kitchen"
+    desc = desc.split("@")[0].strip()
   if "(" in desc:
-    desc = desc.split("(")[-1].split(")")[0].strip()
+    # main clause before the first paren is the real action
+    head = desc.split("(")[0].strip()
+    if not head:  # paren-led description — fall back to old behavior
+      head = desc.split("(")[-1].split(")")[0].strip()
+    # kill residual trailing annotation parens on the head, e.g. "watch tv (1) (2)"
+    import re as _re
+    head = _re.sub(r"\s*\([^)]*\)\s*", " ", head).strip()
+    desc = head if head else desc
   if desc in EMOJI_LOOKUP:
     return EMOJI_LOOKUP[desc]
   for keyword, emoji in EMOJI_LOOKUP.items():
@@ -503,6 +751,24 @@ def generate_convo_summary(persona, convo):
 
 
 def generate_decide_to_talk(init_persona, target_persona, retrieved): 
+  # Rizzo reflex fast path (Sep 2026 redesign): typed yes/no choice,
+  # ~130ms, zero generated tokens. Falls open to the legacy LLM path.
+  try:
+    from persona.prompt_template.rizzo_scoring import rizzo_decide_talk
+    last_chat = init_persona.a_mem.get_last_chat(target_persona.name)
+    last_about = last_chat.description if last_chat else None
+    ans, conf = rizzo_decide_talk(
+        init_persona.scratch.name, init_persona.scratch.act_description,
+        target_persona.name, target_persona.scratch.act_description,
+        last_chat_about=last_about,
+        needs=getattr(init_persona.scratch, 'needs', None))
+    if ans is not None:
+      if debug: print (f"[RIZZO] decide_to_talk -> {ans} (conf {conf:.2f})")
+      return ans == "yes"
+  except Exception as _rizzo_err:
+    print(f"[RIZZO] talk fast path error ({_rizzo_err.__class__.__name__}: "
+          f"{_rizzo_err}) — falling back to legacy generation")
+
   x =run_gpt_prompt_decide_to_talk(init_persona, target_persona, retrieved)[0]
   if debug: print ("GNS FUNCTION: <generate_decide_to_talk>")
 
@@ -514,6 +780,32 @@ def generate_decide_to_talk(init_persona, target_persona, retrieved):
 
 def generate_decide_to_react(init_persona, target_persona, retrieved): 
   if debug: print ("GNS FUNCTION: <generate_decide_to_react>")
+
+  # Rizzo reflex fast path (Sep 2026 redesign): typed wait/continue choice.
+  # NOTE: this replaces an unvalidated legacy path — the live decide_to_react
+  # prompts offered only 2 options but asked for "three options", so the LLM
+  # answered the nonexistent Option 3 on 81% of calls (runtime collapsed it
+  # to False). Rizzo always answers a valid option or punts (None, None).
+  try:
+    from persona.prompt_template.rizzo_scoring import rizzo_decide_react
+    # Layer 0: capacity-1 facilities (bathroom/shower) are exclusive — say so
+    # in the prompt so the typed decision has the facts it needs. Check both
+    # the address and the activity text (sim addresses can mismatch).
+    _act = ((init_persona.scratch.act_address or "") + " "
+            + (init_persona.scratch.act_description or "")).lower()
+    _excl = any(w in _act for w in ("bathroom", "shower", "toilet"))
+    ans, conf = rizzo_decide_react(
+        init_persona.scratch.name, init_persona.scratch.act_description,
+        target_persona.name, target_persona.scratch.act_description,
+        venue=init_persona.scratch.act_address,
+        exclusive=_excl)
+    if ans is not None:
+      if debug: print (f"[RIZZO] decide_to_react -> {ans} (conf {conf:.2f})")
+      return ans
+  except Exception as _rizzo_err:
+    print(f"[RIZZO] react fast path error ({_rizzo_err.__class__.__name__}: "
+          f"{_rizzo_err}) — falling back to legacy generation")
+
   return run_gpt_prompt_decide_to_react(init_persona, target_persona, retrieved)[0]
 
 
@@ -580,11 +872,29 @@ def generate_new_decomp_schedule(persona, inserted_act, inserted_act_dur,  start
   persona_name = persona.name 
   main_act_dur = main_act_dur
 
-  x = truncated_act_dur[-1][0].split("(")[0].strip() + " (on the way to " + truncated_act_dur[-1][0].split("(")[-1][:-1] + ")"
+  # FIX (poison-wrap bug): "on the way to" rewrite used to slice
+  # multi-paren text badly (split("(")[-1] grabs the LAST group, and
+  # [:-1] leaves a dangling paren) — and the insert-wrap below
+  # accumulated wrapped text across replans, doubling schedule entries
+  # exponentially (seen live: 864M-char descriptions, 885MB movement
+  # files). Scrub everything to the plain task head before any wrapping.
+  def _scrub(t):
+    return t.split("(")[0].strip()
+
+  prev_head = _scrub(truncated_act_dur[-1][0])
+  prev_sub = (truncated_act_dur[-1][0].split("(")[-1].rsplit(")", 1)[0].strip()
+              if "(" in truncated_act_dur[-1][0] else "")
+  if prev_sub:
+    x = f"{prev_head} (on the way to {prev_sub})"
+  else:
+    x = f"{prev_head} (on the way)"
   truncated_act_dur[-1][0] = x 
 
   if "(" in truncated_act_dur[-1][0]: 
-    inserted_act = truncated_act_dur[-1][0].split("(")[0].strip() + " (" + inserted_act + ")"
+    # FIX: wrap a CLEANED insert — never re-wrap wrapped text. Cap length
+    # so a chatty LLM can't smuggle a novel in here either.
+    cleaned_insert = _scrub(inserted_act)[:80]
+    inserted_act = prev_head[:80] + f" ({cleaned_insert})"
 
   # To do inserted_act_dur+1 below is an important decision but I'm not sure
   # if I understand the full extent of its implications. Might want to 
@@ -695,9 +1005,28 @@ def _long_term_planning(persona, new_day, maze=None):
   elif new_day == "New day":
     revise_identity(persona)
 
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - TODO
-    # We need to create a new daily_req here...
-    persona.scratch.daily_req = persona.scratch.daily_req
+    # FIX (Sep 2026): stock GA left this as a TODO — `daily_req = daily_req`
+    # — so agents replayed DAY ONE's plan forever, and anyone whose first
+    # plan was the canned fail_safe lived the canned day every day (20/26
+    # agents: 'read a book 8-12, nap 1-4' -> filler-hours -> phones).
+    # revise_identity just refreshed `currently` + today's plan requirement,
+    # so a fresh plan carries the agent's evolving storylines. If today's
+    # generation still collapses to the fail_safe, keep yesterday's REAL plan.
+    _FS_SIG = "read a book from 8:00 am to 12:00 pm"
+    _old_req = list(persona.scratch.daily_req or [])
+    try:
+      _new_req = generate_first_daily_plan(persona, wake_up_hour,
+                                           resource_manager)
+    except Exception as e:
+      print(f"[plan] {persona.scratch.name}: new-day plan failed ({e!r}); keeping previous")
+      _new_req = None
+    _new_is_fs = bool(_new_req) and any(_FS_SIG in x for x in _new_req)
+    _old_is_fs = any(_FS_SIG in x for x in _old_req)
+    if _new_req and (not _new_is_fs or _old_is_fs or not _old_req):
+      persona.scratch.daily_req = _new_req
+    print(f"[plan] {persona.scratch.name}: new-day daily_req "
+          f"{'REGENERATED' if persona.scratch.daily_req is _new_req else 'KEPT'}"
+          f" ({len(persona.scratch.daily_req)} items, fail_safe={_new_is_fs})")
 
   # Based on the daily_req, we create an hourly schedule for the persona, 
   # which is a list of todo items with a time duration (in minutes) that 
@@ -742,6 +1071,52 @@ def _determine_action(persona, maze):
     maze: Current <Maze> instance.
   """
   # Check resource goals first — these take priority over normal replanning
+  # FIX (needs-driven urgency): needs_critical was a dead threshold — nothing
+  # ever read it. When a need crosses the critical line, inject an urgent
+  # resource goal so the persona actually ACTS on its body instead of
+  # following the daily plan while desperate.
+  if hasattr(persona.scratch, "needs") and persona.scratch.needs:
+    critical = getattr(persona.scratch, "needs_critical", 20)
+    urgent_map = {
+      "bladder": "go to the nearest bathroom to relieve themselves",
+      "hygiene": "take a shower in the bathroom",
+      "hunger": "eat a meal or get food from Hobbs Cafe",
+      "energy": "go home and take a rest",
+      "hydration": "get a drink of water",
+    }
+    for need, goal in urgent_map.items():
+      val = persona.scratch.needs.get(need, 100)
+      if val < critical:
+        # Don't stack duplicates of the same urgent goal
+        if goal not in persona.scratch.resource_goals:
+          persona.scratch.resource_goals.insert(0, goal)
+        break  # one urgent need at a time — highest urgency order above
+
+  # PROACTIVE GROCERY SHOPPING (Sep 2026 economy revival): inject a
+  # shopping goal before hunger goes critical, with a cooldown, so money
+  # actually circulates (22/25 agents had never spent a dollar).
+  try:
+    _needs = getattr(persona.scratch, "needs", None)
+    _hunger = _needs.get("hunger", 100) if isinstance(_needs, dict) else 100
+    _wallet = getattr(persona.scratch, "wallet", 0)
+    _last_shop = getattr(persona.scratch, "last_grocery_shop", None)
+    _hours = None
+    if _last_shop is not None:
+      try:
+        _hours = ((persona.scratch.curr_time - _last_shop).total_seconds() / 3600.0)
+      except Exception:
+        _hours = None
+    _cooldown_ok = (_last_shop is None) or (_hours is None) or (_hours >= 6)
+    _shop_goal = "buy groceries at the Harvey Oak Supply Store"
+    _already = _shop_goal in getattr(persona.scratch, "resource_goals", [])
+    if (_hunger < 45 and _cooldown_ok and _wallet >= 30
+        and not _already and hasattr(persona.scratch, "resource_goals")):
+      persona.scratch.resource_goals.insert(0, _shop_goal)
+      print(f"[Economy] {persona.name} heading to the store "
+            f"(hunger {_hunger:.0f}, wallet ${_wallet:.0f})")
+  except Exception:
+    pass  # economy must never crash the plan loop
+
   if hasattr(persona.scratch, "resource_goals") and persona.scratch.resource_goals:
     resource_goal = persona.scratch.resource_goals.pop(0)
     print(f"[ResourceGoal] {persona.name} pursuing: {resource_goal}")
@@ -1004,9 +1379,16 @@ def _should_react(persona, retrieved, personas):
       if init_persona.scratch.chatting_with_buffer[target_persona.name] > 0: 
         return False
 
-    if generate_decide_to_talk(init_persona, target_persona, retrieved): 
+    # Social attention budget: banal events (low poignancy) never reach the
+    # LLM — the decide prompt embeds the same context the poig score graded.
+    _curr = retrieved.get("curr_event") if isinstance(retrieved, dict) else None
+    if _curr is not None and getattr(_curr, "poignancy", 10) < 3:
+      return False
 
-      return True
+    # Cap concurrent social-decision LLM calls (see _SOCIAL_THINK_SEM note).
+    with _SOCIAL_THINK_SEM:
+      if generate_decide_to_talk(init_persona, target_persona, retrieved): 
+        return True
 
     return False
 
@@ -1106,8 +1488,12 @@ def _create_react(persona, inserted_act, inserted_act_dur,
     dur_sum += dur
     count += 1
 
-  ret = generate_new_decomp_schedule(p, inserted_act, inserted_act_dur, 
+  ret = generate_new_decomp_schedule(p, inserted_act, inserted_act_dur,
                                        start_hour, end_hour)
+  # FIX A (duration sanity): LLM decomp output may exceed the parent block.
+  # Clamp the spliced block to the intended reaction duration so a chat or
+  # nap reaction can't inflate into a multi-hour freeze.
+  ret = clamp_subtask_durations(ret, parent_dur=inserted_act_dur)
   p.scratch.f_daily_schedule[start_index:end_index] = ret
   p.scratch.add_new_action(act_address,
                            inserted_act_dur,
@@ -1323,21 +1709,24 @@ def plan(persona, maze, personas, new_day, retrieved):
     focused_event = _choose_retrieved(persona, retrieved)
   
   # Step 2: Once we choose an event, we need to determine whether the
-  #         persona will take any actions for the perceived event. There are
-  #         three possible modes of reaction returned by _should_react. 
-  #         a) "chat with {target_persona.name}"
-  #         b) "react"
-  #         c) False
-  if focused_event: 
-    reaction_mode = _should_react(persona, focused_event, personas)
-    if reaction_mode: 
-      # If we do want to chat, then we generate conversation 
-      if reaction_mode[:9] == "chat with":
-        _chat_react(maze, persona, focused_event, reaction_mode, personas)
-      elif reaction_mode[:4] == "wait": 
-        _wait_react(persona, reaction_mode)
-      # elif reaction_mode == "do other things": 
-      #   _chat_react(persona, focused_event, reaction_mode, personas)
+  # persona will take any actions for the perceived event. There are
+  # three possible modes of reaction returned by _should_react.
+  #   a) "chat with {target_persona.name}"
+  #   b) "react"
+  #   c) False
+  # FIX (vector 1): reaction decisions read other personas' live state and
+  # conversations mutate BOTH personas — serialize on CONVO_LOCK under the
+  # pooled-cognition step loop.
+  from concurrency_utils import CONVO_LOCK
+  if focused_event:
+    with CONVO_LOCK:
+      reaction_mode = _should_react(persona, focused_event, personas)
+      if reaction_mode:
+        # If we do want to chat, then we generate conversation
+        if reaction_mode[:9] == "chat with":
+          _chat_react(maze, persona, focused_event, reaction_mode, personas)
+        elif reaction_mode[:4] == "wait":
+          _wait_react(persona, reaction_mode)
 
   # Step 3: Chat-related state clean up. 
   # If the persona is not chatting with anyone, we clean up any of the 

@@ -12,6 +12,16 @@ from global_methods import *
 from persona.prompt_template.gpt_structure import *
 from persona.prompt_template.run_gpt_prompt import *
 
+import os as _os
+def _env_minutes(name, default):
+  try:
+    return max(0.0, float(_os.environ.get(name, default))) * 60.0
+  except (TypeError, ValueError):
+    return float(default) * 60.0
+# Perception flood guards (see perceive() FIX notes). 0 disables.
+_PERCEPT_DEDUP_SEC = _env_minutes("GA_PERCEPT_DEDUP_MIN", 30)
+_NEED_PERCEPT_COOLDOWN_SEC = _env_minutes("GA_NEED_PERCEPT_COOLDOWN_MIN", 60)
+
 POIGNANCY_KEYWORDS = {
   1: ["idle", "sleeping", "napping", "resting", "sitting", "standing",
       "waiting", "brushing teeth", "making bed", "getting dressed",
@@ -51,6 +61,14 @@ def generate_poig_score(persona, event_type, description):
     return score
 
   if event_type == "event":
+    # Rizzo Flow fast path (local Jev, Sep 2026 A/B winner): typed 1-10
+    # decision from a single forward pass, ~130ms, zero generated tokens.
+    # Fail-open: (None, None) -> the gemma3-J / legacy generation path below.
+    from persona.prompt_template.rizzo_scoring import rizzo_score_poignancy
+    rs, rc = rizzo_score_poignancy(persona.scratch.name,
+                                   persona.scratch.get_str_iss(), description)
+    if rs is not None:
+      return rs
     return run_gpt_prompt_event_poignancy(persona, description)[0]
   elif event_type == "chat":
     return run_gpt_prompt_chat_poignancy(persona,
@@ -228,7 +246,26 @@ def perceive(persona, maze):
     # then we add that event to the a_mem and return it. 
     latest_events = persona.a_mem.get_summarized_latest_events(
                                     persona.scratch.retention)
-    if p_event not in latest_events:
+    # FIX (memory flood → reflection wedge, n33): per-step needs "feels"
+    # events evicted static objects from the 8-event retention window, so
+    # "easel is idle" / artifact paintings were re-recorded every ~3 steps
+    # (Rajiv: 11k nodes, 1000x per object). Time-based dedup for OBJECT and
+    # ARTIFACT events only (subjects with ':' addresses). Persona events and
+    # chats keep stock behavior so social reactions are untouched.
+    _recent_dup = False
+    if ":" in s and p_event[1] != "chat with":
+      _seen = getattr(persona.scratch, "_percept_last_seen", None)
+      if _seen is None:
+        _seen = {}
+        persona.scratch._percept_last_seen = _seen
+      _now = persona.scratch.curr_time
+      _last = _seen.get(p_event)
+      if (_last is not None and _now is not None and
+          (_now - _last).total_seconds() < _PERCEPT_DEDUP_SEC):
+        _recent_dup = True
+      elif p_event not in latest_events:
+        _seen[p_event] = _now
+    if p_event not in latest_events and not _recent_dup:
       # We start by managing keywords. 
       keywords = set()
       sub = p_event[0]
@@ -299,7 +336,19 @@ def perceive(persona, maze):
   # NEEDS-AWARE PERCEPTION
   # Add internal state perceptions based on low needs and location context
   resource_perceptions = perceive_resource_context(persona)
+  # FIX (memory flood): each needs line was re-added EVERY step (Rajiv:
+  # 1708x "alone... feels like talking"). Cooldown per distinct line.
+  _need_seen = getattr(persona.scratch, "_need_percept_last", None)
+  if _need_seen is None:
+    _need_seen = {}
+    persona.scratch._need_percept_last = _need_seen
+  _now = persona.scratch.curr_time
   for perception_desc in resource_perceptions:
+    _last = _need_seen.get(perception_desc)
+    if (_last is not None and _now is not None and
+        (_now - _last).total_seconds() < _NEED_PERCEPT_COOLDOWN_SEC):
+      continue
+    _need_seen[perception_desc] = _now
     # Create a low-importance (score 1) observation memory
     keywords = set(["internal state", "needs"])
     s_subj = persona.name

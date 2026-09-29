@@ -1,0 +1,227 @@
+{
+  "vision_r": 8,
+  "att_bandwidth": 8,
+  "retention": 8,
+  "curr_time": "February 18, 2023, 23:59:50",
+  "curr_tile": [
+    61,
+    43
+  ],
+  "daily_plan_req": "1. wake up and complete the morning routine at 5:30\u202fam,   2. open the store with delivery loaded at 7:00\u202fam,   3. restock shelves and work the counter until 8:00\u202fpm,   4. take a lunch break at noon,   5. read a book from 1:00 to 4:00\u202fpm",
+  "name": "Harvey Oak",
+  "first_name": "Harvey",
+  "last_name": "Oak",
+  "age": 58,
+  "birth_date": "February 13, 1965, 21:59:50",
+  "death_age": 79,
+  "is_deceased": false,
+  "innate": "hardworking, honest, community-minded, thrifty",
+  "learned": "Harvey Oak has owned the Harvey Oak Supply Store for over twenty years. He knows every customer by name and keeps the shelves stocked with everything the town needs. He takes pride in fair prices and honest dealings.",
+  "currently": "Status: Saturday, February\u202f18,\u202f2023 \u2013 Harvey Oak remains at home. He awoke early as usual, followed his routine of reading books, short rest breaks, and enjoying a quiet cup of coffee. After finishing his personal tasks, he settled in to reflect on the calm closure of Friday\u2019s shift (ending 12:01\u202fAM at the downtown supply store). Harvey felt present, unhurried, and grateful for each moment\u2014much like his own words: \u201cI feel present. And that, for me, is enough.\u201d No work or scheduled activities are planned today; he intends to continue his personal routine until Monday\u2019s return to the store (opening Monday, February\u202f19 at 8:00\u202fAM).",
+  "lifestyle": "Harvey Oak goes to bed around 10pm, awakes up around 5:30am.",
+  "living_area": "the Ville:Harvey Oak Supply Store",
+  "concept_forget": 100,
+  "daily_reflection_time": 180,
+  "daily_reflection_size": 5,
+  "overlap_reflect_th": 4,
+  "kw_strg_event_reflect_th": 10,
+  "kw_strg_thought_reflect_th": 9,
+  "recency_w": 1,
+  "relevance_w": 1,
+  "importance_w": 1,
+  "recency_decay": 0.995,
+  "importance_trigger_max": 250,
+  "importance_trigger_curr": 240,
+  "importance_ele_n": 7,
+  "thought_count": 0,
+  "daily_req": [
+    "wake up and complete the morning routine at 8:00 am",
+    "eat breakfast at 7:00 am",
+    "open store with delivery loaded from 7:00 to 9:00 am",
+    "restock shelves and work counter until 8:00 pm",
+    "take lunch break from noon to 12:30 pm",
+    "read book from 1:00 to 4:00 pm",
+    "write thank you note to community on computer at 5:00 pm",
+    "prepare coffee for delivery using coffee machine at 5:30 pm",
+    "walk to store with coffee and take inventory check at 6:15 pm",
+    "go home and read book until 10:00 pm"
+  ],
+  "f_daily_schedule": [
+    [
+      "sleeping",
+      480
+    ],
+    [
+      "wake up and complete the morning routine (wake up and complete the morning routine)",
+      60
+    ],
+    [
+      "restock shelves and work counter (restock shelves and work counter) (restock shelves and work counter (restock shelves and work counter))",
+      180
+    ],
+    [
+      "take lunch break",
+      60
+    ],
+    [
+      "read book (read book) (read book (read book)) (read book (read book) (read book (read book)))",
+      180
+    ],
+    [
+      "restock shelves and work counter",
+      60
+    ],
+    [
+      "prepare coffee for delivery using coffee machine (prepare coffee for delivery using coffee machine)",
+      60
+    ],
+    [
+      "walk to store with coffee and take inventory check (walk to store with coffee and take inventory check)",
+      60
+    ],
+    [
+      "go home and read book (go home and read book) (go home and read book (go home and read book))",
+      180
+    ],
+    [
+      "going to bed and sleeping",
+      120
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ]
+  ],
+  "f_daily_schedule_hourly_org": [
+    [
+      "sleeping",
+      480
+    ],
+    [
+      "wake up and complete the morning routine",
+      60
+    ],
+    [
+      "restock shelves and work counter",
+      180
+    ],
+    [
+      "take lunch break",
+      60
+    ],
+    [
+      "read book",
+      180
+    ],
+    [
+      "restock shelves and work counter",
+      60
+    ],
+    [
+      "prepare coffee for delivery using coffee machine",
+      60
+    ],
+    [
+      "walk to store with coffee and take inventory check",
+      60
+    ],
+    [
+      "go home and read book",
+      180
+    ],
+    [
+      "going to bed and sleeping",
+      120
+    ]
+  ],
+  "act_address": "the Ville:Harvey Oak Supply Store:supply store:supply store product shelf",
+  "act_start_time": "February 18, 2023, 22:52:00",
+  "act_duration": 120,
+  "act_description": "going to bed and sleeping",
+  "act_pronunciatio": "\ud83d\ude34",
+  "act_event": [
+    "Harvey Oak",
+    "go to bed",
+    "sleep"
+  ],
+  "act_obj_description": "in use",
+  "act_obj_pronunciatio": ":",
+  "act_obj_event": [
+    "supply store product shelf",
+    "is",
+    "in use"
+  ],
+  "chatting_with": null,
+  "chat": null,
+  "chatting_with_buffer": {},
+  "chatting_end_time": null,
+  "act_path_set": true,
+  "planned_path": [],
+  "needs": {
+    "hunger": 78.28833333331721,
+    "energy": 98.78333333332658,
+    "hydration": 86.98249999999138,
+    "social": 0,
+    "hygiene": 93.49999999999483,
+    "bladder": 73.48800000005677,
+    "comfort": 95.99999999999682,
+    "stimulation": 96.99999999999761
+  },
+  "needs_decay_rates": {
+    "hunger": 0.005555555555555556,
+    "energy": 0.003703703703703704,
+    "hydration": 0.008333333333333333,
+    "hygiene": 0.002777777777777778,
+    "bladder": 0.006666666666666667,
+    "social": 0.003703703703703704,
+    "comfort": 0.001851851851851852,
+    "stimulation": 0.002777777777777778
+  },
+  "needs_critical": 20,
+  "needs_danger": 5,
+  "resource_goals": [],
+  "last_artifact_action": null,
+  "artifact_progress": {},
+  "wallet": 300.0,
+  "financial_stress": 0.0
+}

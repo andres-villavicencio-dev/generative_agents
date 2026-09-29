@@ -195,7 +195,7 @@
 	  this.load.atlas("atlas", 
 	                  "{% static 'assets/atlas/atlas.png' %}", 
 	                  "{% static 'assets/atlas/atlas.json' %}");
-	}
+	  }
 
 	function create() {  
 	  const map = this.make.tilemap({ key: "map" });
@@ -349,7 +349,6 @@
 	                         .sprite(start_pos[0], start_pos[1], "atlas", "misa-front")
 	                         .setSize(30, 40)
 	                         .setOffset(0, 32); // DEBUG 1 --- I added 32 offset on Dec 29. 
-	    // Here, we are creating the persona and its pronunciatio sprites.
 	    personas[persona_name] = new_sprite;
 	    pronunciatios[persona_name] = this.add.text(
 	                                   new_sprite.body.x - 6, 
@@ -400,7 +399,7 @@
 	    frames: anims.generateFrameNames("atlas", { prefix: "misa-back-walk.", start: 0, end: 3, zeroPad: 3 }),
 	    frameRate: 4,
 	    repeat: -1 });
-	}
+	  }
 
 
 	function update(time, delta) {

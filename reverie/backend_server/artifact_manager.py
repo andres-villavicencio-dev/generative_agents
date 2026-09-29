@@ -7,6 +7,7 @@ agents create through their actions and that other agents can discover and inter
 import json
 import os
 import datetime
+import re
 
 
 # Emoji mapping for frontend rendering
@@ -30,18 +31,35 @@ ARTIFACT_TYPES = {
 }
 
 # Keywords in action descriptions that trigger artifact creation
-# Checked in order — longer/more specific strings first
-CREATION_ACTION_MAPPINGS = {
-    "writing a letter":  {"type": "letter",    "duration_min": 20,  "materials": {}},
-    "painting":          {"type": "painting",  "duration_min": 60,  "materials": {}},
-    "writing":           {"type": "book",      "duration_min": 60,  "materials": {}},
-    "composing":         {"type": "song",      "duration_min": 90,  "materials": {}},
-    "cooking":           {"type": "meal",      "duration_min": 20,  "materials": {}},
-    "baking":            {"type": "meal",      "duration_min": 30,  "materials": {}},
-    "preparing a meal":  {"type": "meal",      "duration_min": 20,  "materials": {}},
-    "inventing":         {"type": "invention", "duration_min": 120, "materials": {}},
-    "crafting":          {"type": "invention", "duration_min": 90,  "materials": {}},
-}
+# FIX (regex word-boundary matching): the lane LLM's actual phrasing almost
+# never contains the exact literal substrings ("writing", "painting"...
+# appear as "write for two hours", "work on book ideas", "cook breakfast") —
+# the matcher silently returned None on EVERY real description and no
+# artifact was ever created. Patterns match word stems instead, ordered
+# most-specific first, with negative guards so consumption phrasing
+# ("reading a book", "arranging books", "composition class") doesn't create.
+CREATION_ACTION_PATTERNS = [
+    # (compiled regex, artifact type, duration_min, materials)
+    # letter FIRST — "writing a letter" must not be swallowed by the generic
+    # write→book rule below.
+    (r"\b(write|writes|writing)\b.*\bletter\b|\bletter\b.*\bwrit", "letter", 20, {}),
+    (r"\bwrit(e|ing|es)?\b(?!.*\bread\b)",                     "book",      60, {}),
+    (r"\b(work on|outline|draft|brainstorm)(ing)?\b.*\bbook\b", "book",     60, {}),
+    (r"\bbook ideas?\b",                                        "book",     60, {}),
+    (r"\b(paint|painting|painted)\b(?!.*\bview\b)",             "painting", 60, {}),
+    (r"\b(sketch|sketching|draw(ing)?)\b(?!.*\bblueprint\b)",   "painting", 60, {}),
+    (r"\b(easel|canvas)\b",                                     "painting", 60, {}),
+    (r"\bcompose(d|s|ing)?\b",                                  "song",     90, {}),
+    (r"\b(song|melody|lyrics)\b.*\bwrit",                       "song",     90, {}),
+    (r"\b(prep|prepare|preparing|cook(ed|ing)?|make|making)\b.*\b(breakfast|brunch|lunch|dinner|meal|dish|soup|stew)\b",
+                                                                "meal",     20, {}),
+    (r"\b(bak(e|ing|ed|es))\b",                                 "meal",     30, {}),
+    (r"\b(prepare|preparing)\b.*\bmeal\b",                      "meal",     20, {}),
+    (r"\binvent(ing|ed|s|ion)?\b",                              "invention",120, {}),
+    (r"\b(craft|crafting|crafted)\b",                           "invention", 90, {}),
+]
+_CREATION_COMPILED = [(re.compile(p, re.IGNORECASE), t, d, m)
+                      for p, t, d, m in CREATION_ACTION_PATTERNS]
 
 # Keywords that indicate an agent is interacting with an artifact
 INTERACTION_KEYWORDS = {
@@ -168,11 +186,16 @@ class ArtifactManager:
 
     def match_creation_action(self, act_description):
         """Check if an action description matches a creation pattern.
-        Returns the mapping dict or None."""
+        Returns the mapping dict or None.
+        FIX: regex word-boundary patterns instead of literal substrings —
+        the literal table never matched the lane LLM's real phrasing, so
+        try_create_artifact's accumulation gate never fired and zero
+        artifacts were created across the entire n23–n26 runs."""
         desc_lower = act_description.lower()
-        for keyword, mapping in CREATION_ACTION_MAPPINGS.items():
-            if keyword in desc_lower:
-                return mapping
+        for rx, atype, duration_min, materials in _CREATION_COMPILED:
+            if rx.search(desc_lower):
+                return {"type": atype, "duration_min": duration_min,
+                        "materials": materials}
         return None
 
     def match_interaction(self, act_description):

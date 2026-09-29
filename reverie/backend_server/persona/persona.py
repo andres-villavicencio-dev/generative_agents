@@ -216,9 +216,23 @@ class Persona:
       new_day = "New day"
     self.scratch.curr_time = curr_time
 
-    # Main cognitive sequence begins here. 
-    perceived = self.perceive(maze)
-    retrieved = self.retrieve(perceived)
+    # Main cognitive sequence begins here.
+    # FIX (vector 2 — sleep fast-path): a sleeping persona's state cannot
+    # change until wake time, yet full retrieve (embedding scan over a_mem)
+    # + decide-to-talk checks ran every step for all 15 agents at night.
+    # If sleeping and action unfinished, skip retrieve + reaction checks;
+    # plan's act_check_finished still triggers wake-up replanning.
+    _act_desc = (self.scratch.act_description or "").lower()
+    _is_sleeping = ("sleep" in _act_desc or "asleep" in _act_desc
+                    or "in bed" in _act_desc)
+    if (_is_sleeping and self.scratch.act_address
+            and not self.scratch.act_check_finished()):
+      retrieved = {}
+      focused_event = False
+    else:
+      perceived = self.perceive(maze)
+      retrieved = self.retrieve(perceived)
+
     plan = self.plan(maze, personas, new_day, retrieved)
     self.reflect()
 

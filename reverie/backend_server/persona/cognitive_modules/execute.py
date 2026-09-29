@@ -5,6 +5,7 @@ File: execute.py
 Description: This defines the "Act" module for generative agents. 
 """
 import sys
+import os
 import random
 sys.path.append('../../')
 
@@ -164,13 +165,47 @@ def execute(persona, maze, personas, plan):
     # first element in the planned_path because it includes the curr_tile. 
     persona.scratch.planned_path = path[1:]
     persona.scratch.act_path_set = True
-  
+
+    # FIX B (walk-timeout): if a walk runs far longer than its planned path
+    # (moving target, stale address, corner-camping), abandon it and replan
+    # instead of walking forever. Baseline: 2x path length + 60 steps slack.
+    persona.scratch.path_budget = max(len(persona.scratch.planned_path) * 2, 60)
+
   # Setting up the next immediate step. We stay at our curr_tile if there is
   # no <planned_path> left, but otherwise, we go to the next tile in the path.
   ret = persona.scratch.curr_tile
-  if persona.scratch.planned_path: 
-    ret = persona.scratch.planned_path[0]
-    persona.scratch.planned_path = persona.scratch.planned_path[1:]
+  # WALK-SPEED KNOB (Sep 2026): tiles per sim-step (1 step = 10 sim-sec).
+  # Stock = 1 tile/step; GA_WALK_TILES>1 covers walks faster so long walks
+  # stop eating disproportionate schedule time. Budget still decrements 1
+  # per step so walk-timeout semantics are unchanged.
+  try:
+    walk_tiles = max(1, int(os.environ.get("GA_WALK_TILES", "1")))
+  except ValueError:
+    walk_tiles = 1
+  if persona.scratch.planned_path:
+    # FIX B (walk-timeout): decrement budget; if exhausted, drop the path —
+    # act_path_set stays True, so next cycle act_check_finished/plan re-decides.
+    budget = getattr(persona.scratch, "path_budget", None)
+    if budget is None:
+      budget = max(len(persona.scratch.planned_path) * 2, 60)
+    budget -= 1
+    if budget <= 0:
+      print(f"[execute] Walk-timeout for {persona.name}: abandoning path to "
+            f"'{persona.scratch.act_address}' — forcing replan")
+      persona.scratch.planned_path = []
+      persona.scratch.act_path_set = True
+      persona.scratch.path_budget = None
+      # Force replan on the next cycle by clearing act_address (same mechanism
+      # the resource-depleted injection uses).
+      persona.scratch.act_address = None
+    else:
+      persona.scratch.path_budget = budget
+      # Consume up to walk_tiles tiles this step; ret is the tile we land on.
+      take = min(walk_tiles, len(persona.scratch.planned_path))
+      ret = persona.scratch.planned_path[take - 1]
+      persona.scratch.planned_path = persona.scratch.planned_path[take:]
+      if not persona.scratch.planned_path:
+        print(f"[execute] Walk arrived: {persona.name} at {ret}")
 
   description = f"{persona.scratch.act_description}"
   description += f" @ {persona.scratch.act_address}"

@@ -272,7 +272,11 @@ def _ollama_generate(prompt, retries=5, free_form=False, model_hint=None):
                 data=data,
                 headers={"Content-Type": "application/json"}
             )
-            with urllib.request.urlopen(req, timeout=None) as response:  # no timeout - local model, let it run
+            # local model, but bounded: an unbounded timeout let a wedged
+            # ollama worker hang the whole backend silently (Sep 2026).
+            # 180s is generous for local inference; on timeout the retry
+            # loop gives the call 5 more chances.
+            with urllib.request.urlopen(req, timeout=180) as response:
                 result = json.loads(response.read().decode('utf-8'))
                 # /api/chat response: content lives under message.content.
                 # If a model still emits reasoning inline (think=false
@@ -411,10 +415,29 @@ def ChatGPT_safe_generate_response(prompt,
                                    func_clean_up=None,
                                    verbose=False,
                                    model_hint=None):
-    prompt = '"""\n' + prompt + '\n"""\n'
+    prompt = '"""' + '\n' + prompt + '\n' + '"""' + '\n'
     prompt += f"Output the response to the prompt above in json. {special_instruction}\n"
     prompt += "Example output json:\n"
     prompt += '{"output": "' + str(example_output) + '"}'
+
+    # FIX (vector 2 — deterministic call cache): many GA prompts are fully
+    # deterministic (temp 0) and repeat identically every step — sleeping
+    # agents re-ask "what emoji for sleeping?" hundreds of times. Cache the
+    # FINAL cleaned result keyed on the exact prompt + model.
+    global _RESPONSE_CACHE
+    try:
+        _RESPONSE_CACHE
+    except NameError:
+        _RESPONSE_CACHE = {}
+    _cache_key = None
+    try:
+        import hashlib as _hashlib
+        _cache_key = (_hashlib.md5(prompt.encode()).hexdigest(),
+                      str(model_hint or OLLAMA_CHAT_MODEL))
+        if _cache_key in _RESPONSE_CACHE:
+            return _RESPONSE_CACHE[_cache_key]
+    except Exception:
+        _cache_key = None
 
     if verbose:
         print("OLLAMA PROMPT")
@@ -427,7 +450,10 @@ def ChatGPT_safe_generate_response(prompt,
             curr_gpt_response = ChatGPT_request(prompt, model_hint=model_hint).strip()
 
             if func_validate(curr_gpt_response, prompt=prompt):
-                return func_clean_up(curr_gpt_response, prompt=prompt)
+                result = func_clean_up(curr_gpt_response, prompt=prompt)
+                if _cache_key is not None and len(str(result)) < 512:
+                    _RESPONSE_CACHE[_cache_key] = result
+                return result
 
             if verbose:
                 print("---- repeat count: \n", i, curr_gpt_response)
@@ -534,16 +560,41 @@ def safe_generate_response(prompt,
                            func_clean_up=None,
                            verbose=False,
                            free_form=False,
-                           model_hint=None):
+                           model_hint=None,
+                           cache=True):
     if verbose:
         print(prompt)
+
+    # PERF (improvement 1 — deterministic prompt cache): the n30 telemetry showed
+    # 99% of (agent, description) pairs repeat across steps, yet event_triple /
+    # sector / arena / poig lanes (safe_generate_response) had NO cache — only
+    # ChatGPT_safe_generate_response did. Cache the FINAL validated result keyed
+    # on (md5(prompt), model_hint). Novelty-dependent callers (conversation
+    # generation, next-line, whisper) must pass cache=False.
+    global _SAFE_RESPONSE_CACHE
+    try:
+        _SAFE_RESPONSE_CACHE
+    except NameError:
+        _SAFE_RESPONSE_CACHE = {}
+    _safe_cache_key = None
+    try:
+        import hashlib as _hashlib
+        _safe_cache_key = (_hashlib.md5(prompt.encode()).hexdigest(),
+                           str(model_hint or OLLAMA_CHAT_MODEL))
+        if cache and _safe_cache_key in _SAFE_RESPONSE_CACHE:
+            return _SAFE_RESPONSE_CACHE[_safe_cache_key]
+    except Exception:
+        _safe_cache_key = None
 
     for i in range(repeat):
         try:
             curr_gpt_response = GPT_request(prompt, gpt_parameter, free_form=free_form,
                                             model_hint=model_hint)
             if func_validate(curr_gpt_response, prompt=prompt):
-                return func_clean_up(curr_gpt_response, prompt=prompt)
+                result = func_clean_up(curr_gpt_response, prompt=prompt)
+                if cache and _safe_cache_key is not None and len(str(result)) < 2048:
+                    _SAFE_RESPONSE_CACHE[_safe_cache_key] = result
+                return result
             if verbose:
                 print("---- repeat count: ", i, curr_gpt_response)
                 print(curr_gpt_response)
@@ -661,9 +712,31 @@ def get_embedding(text, model="text-embedding-ada-002"):
     If USE_LLAMA_CPP=True: uses llama.cpp /embedding endpoint (no Ollama needed).
     Otherwise: uses Ollama embeddinggemma.
     """
+    # FIX (reflection wedge, n33 step 7962): a list-of-dicts focal point from
+    # the LLM reached here and AttributeError'd the whole backend into its
+    # interactive console. Never let a type error kill a 17k-step run.
+    if not isinstance(text, str):
+        if isinstance(text, dict):
+            text = " ".join(str(v) for v in text.values())
+        else:
+            text = str(text)
+        print(f"[embedding] Warning: non-str input coerced: {text[:80]!r}")
     text = text.replace("\n", " ").strip()
     if not text:
         text = "this is blank"
+
+    # FIX (vector 2 — embedding cache): identical strings get embedded over
+    # and over (~110ms each). A simple dict makes repeats free and is bounded
+    # by the number of distinct short strings GA produces.
+    global _EMBED_CACHE
+    try:
+        _EMBED_CACHE
+    except NameError:
+        _EMBED_CACHE = {}
+    cache_key = text[:512]  # long texts truncated consistently
+    if cache_key in _EMBED_CACHE:
+        return _EMBED_CACHE[cache_key]
+    _orig_text = text
 
     if USE_LLAMA_CPP:
         # Use llama.cpp /embedding endpoint directly — no Ollama required
@@ -677,12 +750,14 @@ def get_embedding(text, model="text-embedding-ada-002"):
                 )
                 with urllib.request.urlopen(req, timeout=60) as response:
                     result = json.loads(response.read().decode("utf-8"))
-                    # Response: [{"index": 0, "embedding": [[...2688 floats...]]}]
+                    # Response: [{\"index\": 0, \"embedding\": [[...2688 floats...]]} ]
                     if isinstance(result, list) and result:
                         emb = result[0].get("embedding", [])
                         # emb is [[floats]] — take the first token vector
                         if emb and isinstance(emb[0], list):
-                            return emb[0]
+                            emb = emb[0]
+                        if emb:
+                            _EMBED_CACHE[cache_key] = emb
                         return emb
             except Exception as e:
                 print(f"[embedding] llama.cpp error (attempt {attempt+1}): {e}")
@@ -694,7 +769,7 @@ def get_embedding(text, model="text-embedding-ada-002"):
     url = f"{OLLAMA_BASE_URL}/api/embeddings"
     data = json.dumps({
         "model": OLLAMA_EMBED_MODEL,
-        "prompt": text
+        "prompt": _orig_text
     }).encode("utf-8")
     for attempt in range(3):
         try:
@@ -706,6 +781,7 @@ def get_embedding(text, model="text-embedding-ada-002"):
                 result = json.loads(response.read().decode("utf-8"))
                 embedding = result.get("embedding", [])
                 if embedding:
+                    _EMBED_CACHE[cache_key] = embedding
                     return embedding
                 if attempt < 2:
                     time.sleep(1)

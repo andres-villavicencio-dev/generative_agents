@@ -1,0 +1,365 @@
+{
+  "vision_r": 8,
+  "att_bandwidth": 8,
+  "retention": 8,
+  "curr_time": "February 18, 2023, 23:59:50",
+  "curr_tile": [
+    58,
+    74
+  ],
+  "daily_plan_req": "1. wake up and complete the morning routine at 7:00 am,   2. begin reading Whispers of Gentle Courage from 8:00 am to 12:00 pm,   3. enjoy lunch at home at 12:00 pm,   4. nap peacefully from 1:00 pm to 4:00 pm,   5. watch TV and relax with a quiet smile in The Rose and Crown Pub from 7:00 pm to 8:00 pm",
+  "name": "Carmen Ortiz",
+  "first_name": "Carmen",
+  "last_name": "Ortiz",
+  "age": 33,
+  "birth_date": "February 13, 1990, 15:59:50",
+  "death_age": 77,
+  "is_deceased": false,
+  "innate": "friendly, outgoing, helpful",
+  "learned": "Carmen Ortiz is a shopkeeper at Harvey Oak Supply Store who loves to help people find the supplies they need. She is always looking for ways to make her customers feel welcome.",
+  "currently": "Status: Saturday February 18 \u2013 Morning  \nCarmen Ortiz rose at exactly 8:00\u202fam to the soft gold of morning light spilling across her sunlit bedroom. She completed her routine by 7:00\u202fam with a quiet breakfast of oatmeal and honey toast, nourishing her body as she had each weekday, honoring the small, brave act of beginning the day with intention. At 8:00\u202fam she opened Whispers of Gentle Courage at home, seated by the window where the story\u2019s delicate magic lingered like a breath held too long. She read from 8:00\u202fam to noon, immersing herself in the quiet courage woven through each page. At 12:00\u202fpm she enjoyed her lunch\u2014a home\u2011based pause\u2014eating a light salad and sipping herb\u2011infused tea while watching the afternoon sun warm the room. By 1:00\u202fpm she fell into her nap, from 1:00\u202fpm to 4:00\u202fpm, lying beneath her quilt as the world faded and her soul rested. At 7:00\u202fpm she walked to The Rose and Crown Pub in town, where a single candle flickered on the counter, serving drinks with quiet joy while watching television from 7:00\u202fpm to 8:00\u202fpm. The evening ended at 9:45\u202fpm as she retired to bed beneath her quilt, dreaming of peace, not plot.",
+  "lifestyle": "Carmen Ortiz goes to bed around 11pm, awakes up around 7am, eats dinner around 8pm.",
+  "living_area": "the Ville:Tamara Taylor and Carmen Ortiz's house:Carmen Ortiz's room",
+  "concept_forget": 100,
+  "daily_reflection_time": 180,
+  "daily_reflection_size": 5,
+  "overlap_reflect_th": 4,
+  "kw_strg_event_reflect_th": 10,
+  "kw_strg_thought_reflect_th": 9,
+  "recency_w": 1,
+  "relevance_w": 1,
+  "importance_w": 1,
+  "recency_decay": 0.995,
+  "importance_trigger_max": 250,
+  "importance_trigger_curr": 79,
+  "importance_ele_n": 68,
+  "thought_count": 5,
+  "daily_req": [
+    "wake up and complete the morning routine at 8:00 am",
+    "wake up and complete morning routine at 7:00 am",
+    "eat breakfast at 8:00 am",
+    "begin reading Whispers of Gentle Courage from 8:00 am to 12:00 pm",
+    "enjoy home lunch with salad and tea at 12:00 pm",
+    "nap peacefully from 1:00 pm to 4:00 pm",
+    "walk to The Rose and Crown Pub at 7:00 pm for TV and drinks",
+    "relax until bedtime around 11:00 pm"
+  ],
+  "f_daily_schedule": [
+    [
+      "sleeping",
+      480
+    ],
+    [
+      "eat breakfast (eat breakfast)",
+      60
+    ],
+    [
+      "begin reading Whispers of Gentle Courage (begin reading Whispers of Gentle Courage) (begin reading Whispers of Gentle Courage (begin reading Whispers of Gentle Courage))",
+      180
+    ],
+    [
+      "enjoy home lunch with salad and tea",
+      60
+    ],
+    [
+      "nap peacefully (1) Carmen is lying down on her quilt)",
+      10
+    ],
+    [
+      "nap peacefully (breathing deeply and calmly)",
+      10
+    ],
+    [
+      "nap peacefully (feeling relaxed and at peace)",
+      10
+    ],
+    [
+      "nap peacefully (listening to the quiet sounds of her room)",
+      10
+    ],
+    [
+      "nap peacefully (letting go of any thoughts or worries)",
+      10
+    ],
+    [
+      "nap peacefully (resting gently and safely)",
+      10
+    ],
+    [
+      "nap peacefully (drifting toward a peaceful sleep)",
+      10
+    ],
+    [
+      "nap peacefully (remaining still and undisturbed)",
+      10
+    ],
+    [
+      "nap peacefully (to relax further)",
+      10
+    ],
+    [
+      "nap peacefully (calm and at ease)",
+      10
+    ],
+    [
+      "nap peacefully (still feeling refreshed)",
+      10
+    ],
+    [
+      "nap peacefully (slowly settles into rest)",
+      10
+    ],
+    [
+      "nap peacefully (to breathe and stay relaxed)",
+      10
+    ],
+    [
+      "nap peacefully (fully at peace with her surroundings)",
+      10
+    ],
+    [
+      "nap peacefully (still and undisturbed)",
+      40
+    ],
+    [
+      "relaxing and unwinding at home (relaxing and unwinding at home) (relaxing and unwinding at home (relaxing and unwinding at home)) (relaxing and unwinding at home (relaxing and unwinding at home) (relaxing and unwinding at home (relaxing and unwinding at home)))",
+      60
+    ],
+    [
+      "tidying up their home (tidying up their home)",
+      60
+    ],
+    [
+      "taking a short stroll nearby (taking a short stroll nearby)",
+      60
+    ],
+    [
+      "walk to The Rose and Crown Pub for TV and drinks (walk to The Rose and Crown Pub for TV and drinks)",
+      60
+    ],
+    [
+      "relaxing and unwinding at home (relaxing and unwinding at home)",
+      60
+    ],
+    [
+      "tidying up their home (tidying up their home)",
+      60
+    ],
+    [
+      "taking a short stroll nearby (taking a short stroll nearby)",
+      60
+    ],
+    [
+      "going to bed and sleeping",
+      60
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ]
+  ],
+  "f_daily_schedule_hourly_org": [
+    [
+      "sleeping",
+      480
+    ],
+    [
+      "eat breakfast",
+      60
+    ],
+    [
+      "begin reading Whispers of Gentle Courage",
+      180
+    ],
+    [
+      "enjoy home lunch with salad and tea",
+      60
+    ],
+    [
+      "nap peacefully",
+      180
+    ],
+    [
+      "relaxing and unwinding at home",
+      60
+    ],
+    [
+      "tidying up their home",
+      60
+    ],
+    [
+      "taking a short stroll nearby",
+      60
+    ],
+    [
+      "walk to The Rose and Crown Pub for TV and drinks",
+      60
+    ],
+    [
+      "relaxing and unwinding at home",
+      60
+    ],
+    [
+      "tidying up their home",
+      60
+    ],
+    [
+      "taking a short stroll nearby",
+      60
+    ],
+    [
+      "going to bed and sleeping",
+      60
+    ]
+  ],
+  "act_address": "the Ville:Tamara Taylor and Carmen Ortiz's house:Carmen Ortiz's room:bed",
+  "act_start_time": "February 18, 2023, 23:06:00",
+  "act_duration": 60,
+  "act_description": "going to bed and sleeping",
+  "act_pronunciatio": "\ud83d\ude34",
+  "act_event": [
+    "Carmen Ortiz",
+    "go",
+    "bed"
+  ],
+  "act_obj_description": "occupied",
+  "act_obj_pronunciatio": "\ud83e\uddcd\u200d\u2642",
+  "act_obj_event": [
+    "bed",
+    "is",
+    "occupied"
+  ],
+  "chatting_with": null,
+  "chat": null,
+  "chatting_with_buffer": {},
+  "chatting_end_time": null,
+  "act_path_set": true,
+  "planned_path": [],
+  "needs": {
+    "hunger": 83.46166666665442,
+    "energy": 100,
+    "hydration": 87.19249999999118,
+    "hygiene": 85.14999999998818,
+    "bladder": 43.34200000005975,
+    "social": 0,
+    "comfort": 97.99999999999841,
+    "stimulation": 95.99999999999682
+  },
+  "needs_decay_rates": {
+    "hunger": 0.005555555555555556,
+    "energy": 0.003703703703703704,
+    "hydration": 0.008333333333333333,
+    "hygiene": 0.002777777777777778,
+    "bladder": 0.006666666666666667,
+    "social": 0.003703703703703704,
+    "comfort": 0.001851851851851852,
+    "stimulation": 0.002777777777777778
+  },
+  "needs_critical": 20,
+  "needs_danger": 5,
+  "resource_goals": [],
+  "last_artifact_action": "read journal sketch the path",
+  "artifact_progress": {
+    "meal|2023-02-15": 0,
+    "meal|2023-02-17": 0,
+    "painting|2023-02-17": 0
+  },
+  "wallet": 250.0,
+  "financial_stress": 0.0
+}

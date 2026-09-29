@@ -18,9 +18,28 @@ from persona.prompt_template.print_prompt import *
 
 TOOL_REGISTRY_AVAILABLE = True
 try:
-    from tool_registry import get_tool_locations_str, get_tool_for_action_context
+  from tool_registry import get_tool_locations_str, get_tool_for_action_context
 except ImportError:
-    TOOL_REGISTRY_AVAILABLE = False
+  TOOL_REGISTRY_AVAILABLE = False
+
+# ---------------------------------------------------------------------------
+# FIX (poison-wrap bug, Sep 2026): schedule/action text accumulated nested
+# paren wraps "(A (B (A (B ...))))" and doubled per replan until movement
+# files hit 885MB. All schedule-writing paths scrub through this.
+def _clean_action_text(text, max_len=200):
+  """Collapse a task string to: plain head + at most ONE paren group,
+  hard-capped in length. Safe on already-clean text (idempotent)."""
+  if not text:
+    return text
+  text = str(text).replace("\n", " ").strip()
+  head = text.split("(")[0].strip()
+  groups = re.findall(r"\(([^()]*)\)", text)
+  out = head
+  if groups:
+    keep = groups[0].strip()
+    if keep and keep.lower() != head.lower():
+      out = f"{head} ({keep})"
+  return out[:max_len].rstrip()
 
 def get_random_alphanumeric(i=6, j=6):
   """
@@ -89,6 +108,31 @@ def run_gpt_prompt_wake_up_hour(persona, test_input=None, verbose=False):
                       prompt_input, prompt, output)
 
   return output, [output, prompt, gpt_param, prompt_input, fail_safe]
+
+
+def clamp_subtask_durations(schedule, parent_dur=None):
+  """FIX A (duration sanity): weak-lane LLMs write subtask durations that
+  wildly exceed the parent block — 'read a book — 1 hour' decomposing to a
+  480-min block froze agents in place for half a sim-day. Cap each subtask at
+  120 min; if parent_dur is known, rescale the whole block to match it."""
+  if not schedule:
+    return schedule
+  clamped = []
+  for act, dur in schedule:
+    try:
+      d = int(dur)
+    except (TypeError, ValueError):
+      d = 5
+    clamped.append([act, max(5, min(d, 120))])
+  if parent_dur:
+    total = sum(d for _, d in clamped)
+    if total > 0 and total != parent_dur:
+      scale = parent_dur / total
+      clamped = [[a, max(5, round(d * scale))] for a, d in clamped]
+      diff = int(parent_dur) - sum(d for _, d in clamped)
+      if clamped and diff != 0:
+        clamped[-1][1] = max(5, clamped[-1][1] + diff)
+  return clamped
 
 
 def run_gpt_prompt_daily_plan(persona,
@@ -171,8 +215,12 @@ def run_gpt_prompt_daily_plan(persona,
       if m:
         item = line[m.end():].strip()
         if item:
-          # Strip LLM artifacts: (minutes left: X), (duration: X minutes, ...), etc.
+          # Strip LLM artifacts: (minutes left: X), (duration in minutes|duration), etc.
           item = re.sub(r'\s*\((?:minutes left|duration in minutes|duration)[^)]*\)', '', item).strip()
+          # FIX (poison-wrap residue): strip nested paren echoes at the daily-plan
+          # layer too — this is where 'take a nap (take a nap (take a nap))'
+          # entered the schedule. _clean_action_text collapses to head + 1 paren.
+          item = _clean_action_text(item)
           # Strip trailing period/comma
           item = item.rstrip('.,').strip()
           cr += [item]
@@ -213,8 +261,20 @@ def run_gpt_prompt_daily_plan(persona,
   prompt_template = "persona/prompt_template/v2/daily_planning_v6.txt"
   prompt_input = create_prompt_input(persona, wake_up_hour, test_input, resource_manager)
   prompt = generate_prompt(prompt_input, prompt_template)
+  # FIX (fail-safe epidemic, Sep 2026): the template is a 2023 completion
+  # stem ending "1) wake up ... at 8:00 am, 2) ". Chat-native lane models
+  # don't continue it — they narrate prose (needs/wallet context makes them
+  # write about bladders), all 5 attempts fail the numbered-list validator,
+  # and 20/26 agents got the identical canned fail_safe day -> hours of
+  # filler ("browsing on their phone"). Tell the model the format outright.
+  prompt += ("\n\n---\nOUTPUT FORMAT: continue the plan above as a numbered "
+             "list. Output ONLY the list items, one per line, starting at 2), "
+             "each like '2) eat breakfast at 7:00 am' or "
+             "'3) <their main activity> from 9:00 am to 12:00 pm'. Write 6 to 10 "
+             "items covering the whole day until bedtime, fitting this "
+             "person's job and interests. No sentences, no commentary, no "
+             "feelings - only the list.")
   fail_safe = get_fail_safe()
-
   # FIX: free_form=True — daily plan needs multi-line numbered list output,
   # not a single {"output": "..."} JSON string which truncates the plan.
   output = safe_generate_response(prompt, gpt_param, 5, fail_safe,
@@ -501,11 +561,18 @@ def run_gpt_prompt_task_decomp(persona,
         continue  # skip empty tasks
       if task[-1] == ".":
         task = task[:-1]
+      # FIX (poison-wrap bug): strip nested paren echoes before they enter
+      # the schedule; cap length.
+      task = _clean_action_text(task)
       try:
         duration = int(k[1].split(",")[0].strip())
       except (ValueError, IndexError):
         continue  # skip lines with unparseable duration
       cr += [[task, duration]]
+
+    # FIX A (duration sanity, defense-in-depth): even after the parent-block
+    # clamp upstream, cap individual subtasks at 120 min.
+    cr = clamp_subtask_durations(cr)
 
     total_expected_min = int(prompt.split("(total duration in minutes")[-1]
                                    .split("):")[0].strip())
@@ -1499,6 +1566,11 @@ def run_gpt_prompt_new_decomp_schedule(persona,
       delta = datetime.datetime.strptime(end_time, "%H:%M") - datetime.datetime.strptime(start_time, "%H:%M")
       delta_min = int(delta.total_seconds()/60)
       if delta_min < 0: delta_min = 0
+      # FIX (poison-wrap bug): the LLM echoes schedule lines verbatim when
+      # they already contain nested "(...)" wraps. Nested groups also break
+      # the " -- " time split downstream. Keep the plain task head plus at
+      # most ONE paren group; cap length so echoes can't compound.
+      action = _clean_action_text(action)
       ret += [[action, delta_min]]
 
     return ret
@@ -1999,7 +2071,7 @@ def run_gpt_prompt_create_conversation(persona, target_persona, curr_loc,
 
   fail_safe = get_fail_safe(persona, target_persona)
   output = safe_generate_response(prompt, gpt_param, 5, fail_safe,
-                                   __func_validate, __func_clean_up)
+                                    __func_validate, __func_clean_up, cache=False)
 
   if debug or verbose:
     print_run_prompts(prompt_template, persona, gpt_param,
@@ -2586,14 +2658,31 @@ def run_gpt_prompt_focal_pt(persona, statements, n, test_input=None, verbose=Fal
 
   # ChatGPT Plugin ===========================================================
   def __chat_func_clean_up(gpt_response, prompt=""): ############
-    ret = ast.literal_eval(gpt_response)
-    return ret
+    # FIX (reflection wedge): weak lane models return [{"question": ...}]
+    # or {"focal_points": [...]} — flatten to a clean list of strings.
+    ret = ast.literal_eval(gpt_response.strip())
+    if isinstance(ret, dict):
+      ret = list(ret.values())
+      if len(ret) == 1 and isinstance(ret[0], list):
+        ret = ret[0]
+    if not isinstance(ret, (list, tuple)):
+      ret = [ret]
+    out = []
+    for item in ret:
+      if isinstance(item, dict):
+        item = " ".join(str(v) for v in item.values())
+      item = str(item).strip()
+      if item:
+        out.append(item)
+    return out
 
   def __chat_func_validate(gpt_response, prompt=""): ############
+    # FIX: previously called the non-chat __func_clean_up, which accepts
+    # any string — validation was a no-op. Validate the real parser.
     try:
-      __func_clean_up(gpt_response, prompt)
-      return True
-    except:
+      ret = __chat_func_clean_up(gpt_response, prompt)
+      return len(ret) > 0 and all(isinstance(x, str) for x in ret)
+    except Exception:
       return False
 
 
@@ -3119,7 +3208,7 @@ def run_gpt_prompt_generate_next_convo_line(persona, interlocutor_desc, prev_con
   fail_safe = get_fail_safe()
   output = safe_generate_response(prompt, gpt_param, 5, fail_safe,
                                    __func_validate, __func_clean_up,
-                                            model_hint="convo")
+                                             model_hint="convo", cache=False)
 
   if debug or verbose:
     print_run_prompts(prompt_template, persona, gpt_param,
@@ -3159,7 +3248,7 @@ def run_gpt_prompt_generate_whisper_inner_thought(persona, whisper, test_input=N
 
   fail_safe = get_fail_safe()
   output = safe_generate_response(prompt, gpt_param, 5, fail_safe,
-                                   __func_validate, __func_clean_up)
+                                   __func_validate, __func_clean_up, cache=False)
 
   if debug or verbose:
     print_run_prompts(prompt_template, persona, gpt_param,
@@ -3197,7 +3286,7 @@ def run_gpt_prompt_planning_thought_on_convo(persona, all_utt, test_input=None, 
   fail_safe = get_fail_safe()
   output = safe_generate_response(prompt, gpt_param, 5, fail_safe,
                                    __func_validate, __func_clean_up,
-                                   model_hint="insight")
+                                   model_hint="insight", cache=False)
 
   if debug or verbose:
     print_run_prompts(prompt_template, persona, gpt_param,
@@ -3266,7 +3355,7 @@ def run_gpt_prompt_memo_on_convo(persona, all_utt, test_input=None, verbose=Fals
 
   fail_safe = get_fail_safe()
   output = safe_generate_response(prompt, gpt_param, 5, fail_safe,
-                                   __func_validate, __func_clean_up)
+                                   __func_validate, __func_clean_up, cache=False)
 
   if debug or verbose:
     print_run_prompts(prompt_template, persona, gpt_param,
@@ -3523,11 +3612,20 @@ Your response:"""
   try:
     response = ChatGPT_request(prompt)
     parts = [p.strip() for p in response.split("|||")]
+    # FIX (weak-lane parsing): lane models sometimes emit a single "|" before
+    # the quality score ("...dawn|||7" -> "...moments. |8/10"). Fall back to
+    # splitting on any pipe so the creative fields aren't thrown away.
+    if len(parts) < 4:
+      alt = [p.strip() for p in response.split("|") if p.strip()]
+      if len(alt) >= 4:
+        parts = alt
     if len(parts) >= 4:
       quality = 5  # default
       try:
-        quality = int(parts[3].strip().split()[0])
-        quality = max(1, min(10, quality))
+        import re as _re
+        m = _re.search(r"\d+", parts[3])
+        if m:
+          quality = max(1, min(10, int(m.group())))
       except (ValueError, IndexError):
         pass
       return {

@@ -243,6 +243,12 @@ def generate_poig_score(persona, event_type, description):
     return score
 
   if event_type == "event" or event_type == "thought":
+    # Rizzo fast path: same cascade as perceive.py (events AND thoughts).
+    from persona.prompt_template.rizzo_scoring import rizzo_score_poignancy
+    rs, rc = rizzo_score_poignancy(persona.scratch.name,
+                                   persona.scratch.get_str_iss(), description)
+    if rs is not None:
+      return rs
     return run_gpt_prompt_event_poignancy(persona, description)[0]
   elif event_type == "chat":
     return run_gpt_prompt_chat_poignancy(persona,

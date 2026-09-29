@@ -425,8 +425,8 @@ def get_world_resources(request, sim_code):
 
 def get_artifacts(request, sim_code):
     artifact_paths = [
-        os.path.join(PROJECT_ROOT, f"storage/{sim_code}/artifacts/artifacts.json"),
-        os.path.join(PROJECT_ROOT, f"compressed_storage/{sim_code}/artifacts/artifacts.json"),
+        os.path.join(PROJECT_ROOT, f"environment/frontend_server/storage/{sim_code}/artifacts/artifacts.json"),
+        os.path.join(PROJECT_ROOT, f"environment/frontend_server/compressed_storage/{sim_code}/artifacts/artifacts.json"),
     ]
 
     artifacts_data = None
@@ -476,7 +476,8 @@ def get_artifact_content(request, sim_code, artifact_type, filename):
             try:
                 if artifact_type == "images" or filename.endswith((".png", ".jpg", ".jpeg", ".gif")):
                     with open(path, "rb") as f:
-                        return HttpResponse(f.read(), content_type="image/png")
+                        ctype = "image/png" if filename.endswith(".png") else "image/jpeg"
+                        return HttpResponse(f.read(), content_type=ctype)
                 else:
                     with open(path) as f:
                         content = f.read()

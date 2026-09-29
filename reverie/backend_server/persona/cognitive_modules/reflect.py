@@ -115,6 +115,12 @@ def generate_poig_score(persona, event_type, description):
     return score
 
   if event_type == "event" or event_type == "thought":
+    # Rizzo fast path: same cascade as perceive.py (events AND thoughts).
+    from persona.prompt_template.rizzo_scoring import rizzo_score_poignancy
+    rs, rc = rizzo_score_poignancy(persona.scratch.name,
+                                   persona.scratch.get_str_iss(), description)
+    if rs is not None:
+      return rs
     return run_gpt_prompt_event_poignancy(persona, description)[0]
   elif event_type == "chat":
     return run_gpt_prompt_chat_poignancy(persona,
@@ -146,9 +152,27 @@ def run_reflect(persona):
   """
   # Reflection requires certain focal points. Generate that first. 
   focal_points = generate_focal_points(persona, 3)
+  # FIX (reflection wedge): belt-and-braces — focal points must be strings.
+  focal_points = [fp if isinstance(fp, str)
+                  else (" ".join(str(v) for v in fp.values())
+                        if isinstance(fp, dict) else str(fp))
+                  for fp in (focal_points or [])]
+  focal_points = [fp for fp in focal_points if fp.strip()]
+  if not focal_points:
+    print(f"[reflect] {persona.name}: no usable focal points — skipping")
+    return
   # Retrieve the relevant Nodes object for each of the focal points. 
   # <retrieved> has keys of focal points, and values of the associated Nodes. 
   retrieved = new_retrieve(persona, focal_points)
+  # FIX (memory flood): duplicate nodes (same embedding_key) crowd the
+  # insight prompt — Rajiv's was 30x the same painting line. Dedup.
+  for fp in list(retrieved.keys()):
+    seen, uniq = set(), []
+    for node in retrieved[fp]:
+      if node.embedding_key not in seen:
+        seen.add(node.embedding_key)
+        uniq.append(node)
+    retrieved[fp] = uniq
 
   # For each of the focal points, generate thoughts and save it in the 
   # agent's memory. 

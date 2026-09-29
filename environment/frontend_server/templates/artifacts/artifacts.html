@@ -125,6 +125,16 @@
       if (data.lyrics) {
         html += "<p><strong>Lyrics:</strong></p><div class='content-full'>" + data.lyrics + "</div>";
       }
+
+      // Generic text payloads (books, essays, stories...): render the largest
+      // text-like field so JSON-wrapped prose is readable, not raw JSON.
+      if (!html && typeof data === "object" && data !== null) {
+        var best = "";
+        ["content", "text", "body", "story", "full", "poem", "description"].forEach(function(k) {
+          if (typeof data[k] === "string" && data[k].length > best.length) best = data[k];
+        });
+        if (best) html = "<div class='content-full'>" + best + "</div>";
+      }
       
       return html || "<div class='content-full'>" + contentFull + "</div>";
     } catch(e) {

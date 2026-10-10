@@ -142,6 +142,10 @@ def agent_chat_v2(maze, init_persona, target_persona):
   curr_chat = []
   print ("July 23")
 
+  # Chat-time accounting (Oct 2026): every reply charges the world clock
+  # GA_CHAT_SECONDS_PER_REPLY sim-seconds; reverie drains the debt when
+  # the step completes so long conversations move the clock like real life.
+  import chat_time as _chat_time
   for i in range(6):  # Reduced from 8 to limit runaway loops 
     focal_points = [f"{target_persona.scratch.name}"]
     retrieved = new_retrieve(init_persona, focal_points, 50)
@@ -159,6 +163,7 @@ def agent_chat_v2(maze, init_persona, target_persona):
                       f"{target_persona.scratch.name} is {target_persona.scratch.act_description}"]
     retrieved = new_retrieve(init_persona, focal_points, 15)
     utt, end = generate_one_utterance(maze, init_persona, target_persona, retrieved, curr_chat)
+    _chat_time.charge_reply()
 
     curr_chat += [[init_persona.scratch.name, utt]]
     if end or _conversation_should_end(utt):
@@ -180,6 +185,7 @@ def agent_chat_v2(maze, init_persona, target_persona):
                       f"{init_persona.scratch.name} is {init_persona.scratch.act_description}"]
     retrieved = new_retrieve(target_persona, focal_points, 15)
     utt, end = generate_one_utterance(maze, target_persona, init_persona, retrieved, curr_chat)
+    _chat_time.charge_reply()
 
     curr_chat += [[target_persona.scratch.name, utt]]
     if end or _conversation_should_end(utt):
@@ -243,6 +249,26 @@ def generate_poig_score(persona, event_type, description):
     return score
 
   if event_type == "event" or event_type == "thought":
+    # Laya v3 fast path (Sep 2026 promotion — gold-standard scorer, :8018).
+    if __import__('os').environ.get("GA_LAYA_POIGNANCY", "0") == "1":
+      try:
+        from persona.prompt_template.laya_scoring import laya_score_poignancy
+        ls, lc = laya_score_poignancy(persona.scratch.name,
+                                      persona.scratch.get_str_iss(), description)
+        if ls is not None:
+          return ls
+      except Exception as _laya_err:
+        print(f"[LAYA] poignancy fast path error ({_laya_err}) — cascading")
+    # Cloud Jev teacher path — harvested answers feed the v3 training set.
+    if __import__('os').environ.get("GA_CLOUDJEV", "0") == "1":
+      try:
+        from persona.prompt_template.cloudjev_scoring import cloudjev_score_poignancy
+        cs, cc = cloudjev_score_poignancy(persona.scratch.name,
+                                          persona.scratch.get_str_iss(), description)
+        if cs is not None:
+          return cs
+      except Exception as _cloud_err:
+        print(f"[CLOUDJEV] poignancy fast path error ({_cloud_err}) — cascading")
     # Rizzo fast path: same cascade as perceive.py (events AND thoughts).
     from persona.prompt_template.rizzo_scoring import rizzo_score_poignancy
     rs, rc = rizzo_score_poignancy(persona.scratch.name,

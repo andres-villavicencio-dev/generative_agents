@@ -198,6 +198,9 @@ class Scratch:
     # ARTIFACT TRACKING
     self.last_artifact_action = None  # dedup guard for artifact creation
     self.artifact_progress = {}  # accumulated creative minutes: {"<type>|<day>": minutes}
+    # VILLE DOTS: long-term projects the persona works on across sim-days.
+    # [{title, type, file, status(drafting|revising|done), sessions_done, target_revs}]
+    self.active_projects = []
 
     # ECONOMY LAYER (Phase 5)
     # Agent wallet and financial stress
@@ -303,6 +306,30 @@ class Scratch:
         self.resource_goals = scratch_load["resource_goals"]
       self.last_artifact_action = scratch_load.get("last_artifact_action", None)
       self.artifact_progress = scratch_load.get("artifact_progress", {})
+      # VILLE DOTS: load long-term projects; absent in old checkpoints = [].
+      self.active_projects = scratch_load.get("active_projects", [])
+      # AGENCY L1: drive arbitration cooldowns (datetime-valued dict)
+      if "_drive_served" in scratch_load:
+        try:
+          self._drive_served = {
+            k: datetime.datetime.strptime(v, '%B %d, %Y, %H:%M:%S')
+            for k, v in scratch_load["_drive_served"].items()}
+        except Exception:
+          self._drive_served = {}
+      # AGENCY L2: persona routine library (persisted by the harvest pass)
+      if "routines" in scratch_load:
+        self.routines = scratch_load["routines"]
+      # Economy v2: employment rehydration
+      if "job" in scratch_load and isinstance(scratch_load["job"], dict):
+        self.job = scratch_load["job"]
+      # RL T1: VenueQ rehydration (type-guarded in from_dict; garbage
+      # degrades to an empty table, never a boot crash)
+      if "venue_q" in scratch_load:
+        try:
+          from rl_modules import VenueQ
+          self.venue_q = VenueQ.from_dict(scratch_load["venue_q"])
+        except Exception:
+          pass
 
       # Load economy layer (Phase 5) with backwards compatibility
       if "wallet" in scratch_load:
@@ -400,10 +427,35 @@ class Scratch:
     scratch["resource_goals"] = self.resource_goals if hasattr(self, "resource_goals") else []
     scratch["last_artifact_action"] = self.last_artifact_action if hasattr(self, "last_artifact_action") else None
     scratch["artifact_progress"] = self.artifact_progress if hasattr(self, "artifact_progress") else {}
+    # VILLE DOTS: long-term projects persist across checkpoints/forks.
+    scratch["active_projects"] = self.active_projects if hasattr(self, "active_projects") else []
 
     # Save economy layer (Phase 5)
     scratch["wallet"] = self.wallet if hasattr(self, "wallet") else 100.0
     scratch["financial_stress"] = self.financial_stress if hasattr(self, "financial_stress") else 0.0
+
+    # Economy v2 (Oct 2026): employment state persists across checkpoints
+    if getattr(self, "job", None):
+      scratch["job"] = self.job
+
+    # AGENCY L1: drive arbitration cooldowns persist across checkpoints
+    if getattr(self, "_drive_served", None):
+      scratch["_drive_served"] = {
+        k: v.strftime("%B %d, %Y, %H:%M:%S")
+        for k, v in self._drive_served.items() if isinstance(v, datetime.datetime)}
+
+    # AGENCY L2: routine library persists (harvest refreshes it hourly)
+    if getattr(self, "routines", None):
+      scratch["routines"] = self.routines
+
+    # RL T1 (Oct 2026): VenueQ table persists (Q-learning over venue
+    # transitions — the curiosity layer's learned self-model)
+    _vq = getattr(self, "venue_q", None)
+    if _vq is not None and hasattr(_vq, "to_dict"):
+      try:
+        scratch["venue_q"] = _vq.to_dict()
+      except Exception:
+        pass
 
     with open(out_json, "w") as outfile:
       json.dump(scratch, outfile, indent=2) 

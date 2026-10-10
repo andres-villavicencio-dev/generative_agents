@@ -3,6 +3,7 @@ Author: Joon Sung Park (joonspk@stanford.edu)
 File: views.py
 """
 import os
+import re
 import string
 import random
 import json
@@ -492,6 +493,355 @@ def artifact_viewer(request, sim_code):
     template = "artifacts/artifacts.html"
     context = {"sim_code": sim_code}
     return render(request, template, context)
+
+
+def _backend_proc_env_gates():
+    """Read the GA_* decision-engine gates from the live reverie backend's
+    /proc environ. Returns {} if no backend is running."""
+    import subprocess
+    try:
+        pids = subprocess.run(["pgrep", "-f", "reverie.py"],
+                              capture_output=True, text=True, timeout=5)
+        out = {}
+        for pid in pids.stdout.split():
+            try:
+                with open(f"/proc/{pid}/environ", "rb") as f:
+                    for ent in f.read().decode("utf-8", "replace").split("\0"):
+                        if ent.startswith("GA_"):
+                            k, _, v = ent.partition("=")
+                            out[k] = v
+            except (OSError, PermissionError):
+                continue
+        return out
+    except Exception:
+        return {}
+
+
+def _probe_service(port, path="/health"):
+    """Tiny HTTP probe of a local decision service; returns 'up'/'down'.
+    Laya's server only implements do_POST, so POST a minimal typed decision
+    when a bare GET would 501."""
+    import urllib.request
+    try:
+        urllib.request.urlopen(f"http://127.0.0.1:{port}{path}", timeout=2)
+        return "up"
+    except urllib.error.HTTPError as e:
+        # a response with ANY status means the service is listening
+        if 400 <= e.code < 600 and e.code not in (501, 502, 503, 504):
+            return "up"
+        if port == 8018:
+            # laya speaks POST-only /v1/systemone; 501/502/503 on GET are
+            # just the stdlib server refusing unsupported verbs
+            body = json.dumps({"model": "probe", "state": {"who": "probe", "event": "health check"},
+                              "questions": {"poignancy": {"type": "score", "instructions": "x",
+                                                          "criteria": ["1 = a", "10 = b"]}}}).encode()
+            req = urllib.request.Request(f"http://127.0.0.1:{port}/v1/systemone", data=body,
+                                          headers={"Content-Type": "application/json"})
+            try:
+                urllib.request.urlopen(req, timeout=3)
+                return "up"
+            except Exception:
+                return "down"
+        return "down"
+    except Exception:
+        return "down"
+
+
+def get_run_stats(request, sim_code):
+    """Live run stats for the simulator_home ops panel.
+
+    Sources (all cheap, no heavy loads):
+    - reverie/meta.json: checkpoint step + sim clock
+    - movement dir: latest step + step rate from the newest file mtimes
+    - /proc of the reverie backend: decision-engine gates in the live process
+    - decision services: laya :8018 / rizzo :8017 / ga-ollama :11436 probes
+    - nvidia-smi: GPU util + VRAM (if present)
+    - ga-sim.service: chain unit state via systemctl --user
+    """
+    import subprocess
+    import statistics
+
+    stats = {"sim_code": sim_code}
+
+    # --- checkpoint ---
+    try:
+        with open(f"storage/{sim_code}/reverie/meta.json") as f:
+            meta = json.load(f)
+        stats["checkpoint_step"] = meta.get("step")
+        stats["sim_time"] = meta.get("curr_time")
+    except (IOError, ValueError):
+        stats["checkpoint_step"] = None
+        stats["sim_time"] = None
+
+    # --- movement frontier + step rate (newest 60 mtimes) ---
+    mdir = f"storage/{sim_code}/movement"
+    latest_step, rate = None, None
+    try:
+        names = sorted((int(f[:-5]) for f in os.listdir(mdir)
+                        if f.endswith(".json") and f[:-5].isdigit()))
+        if names:
+            latest_step = names[-1]
+            recent = names[-60:]
+            mtimes = [os.path.getmtime(os.path.join(mdir, f"{n}.json")) for n in recent]
+            if len(mtimes) >= 10:
+                span = max(mtimes) - min(mtimes)
+                if span > 0:
+                    rate = round(len(recent) / span * 60, 1)
+    except OSError:
+        pass
+    stats["latest_step"] = latest_step
+    stats["steps_per_min"] = rate
+
+    # --- backend gates (live process env) ---
+    gates = _backend_proc_env_gates()
+    stats["engine"] = {
+        "laya_enabled": gates.get("GA_LAYA_POIGNANCY") == "1",
+        "rizzo_fallback": gates.get("GA_RIZZO_POIGNANCY") == "1",
+        "rizzo_reflex": gates.get("GA_RIZZO_REFLEX") == "1",
+        "cloudjev": gates.get("GA_CLOUDJEV") == "1",
+        "backend_pid": bool(gates),
+        "chat_model": gates.get("GA_CHAT_MODEL", ""),
+        "artifact_model": gates.get("GA_ARTIFACT_MODEL", ""),
+    }
+
+    # --- decision services ---
+    stats["services"] = {
+        "laya": _probe_service(8018, "/v1/systemone"),
+        "rizzo": _probe_service(8017, "/health"),
+        "ga_ollama": _probe_service(11436, "/api/version"),
+    }
+
+    # --- chain unit ---
+    try:
+        u = subprocess.run(["systemctl", "--user", "is-active", "ga-sim.service"],
+                           capture_output=True, text=True, timeout=5)
+        stats["chain_unit"] = u.stdout.strip()
+    except Exception:
+        stats["chain_unit"] = "unknown"
+
+    # --- GPU ---
+    try:
+        g = subprocess.run(["nvidia-smi", "--query-gpu=utilization.gpu,memory.used,memory.total",
+                            "--format=csv,noheader,nounits"],
+                           capture_output=True, text=True, timeout=5)
+        parts = g.stdout.strip().split(", ")
+        if len(parts) == 3:
+            stats["gpu"] = {"util": int(parts[0]), "vram_used": int(parts[1]),
+                            "vram_total": int(parts[2])}
+    except Exception:
+        stats["gpu"] = None
+
+    # --- backend log: [LAYA] errors in the last ~2000 lines ---
+    stats["laya_errors"] = None
+    try:
+        with open(f"/tmp/{sim_code}_backend.log", "rb") as f:
+            f.seek(max(0, os.path.getsize(f.name) - 200_000))
+            tail = f.read().decode("utf-8", "replace")
+        stats["laya_errors"] = tail.count("[LAYA]")
+    except OSError:
+        pass
+
+    return JsonResponse(stats)
+
+
+# ---------------------------------------------------------------------------
+# VILLE DOTS — per-persona simulated PC (workspace) viewer
+# ---------------------------------------------------------------------------
+
+_PC_SAFE_NAME = re.compile(r"^[\w][\w .'\-]*$")  # persona names: "Tamara Taylor"
+_PC_SAFE_FILE = re.compile(r"^[\w][\w.\-]*$")    # workspace filenames
+
+
+def _pc_workspace_dir(sim_code, persona_name):
+    """Validated path to a persona's workspace dir, or None."""
+    if not _PC_SAFE_NAME.match(persona_name or ""):
+        return None
+    return os.path.join(
+        PROJECT_ROOT, "environment", "frontend_server", "storage",
+        sim_code, "personas", persona_name, "workspace")
+
+
+def get_pc_workspace(request, sim_code, persona_name):
+    """JSON API: a persona's whole PC — files, projects, sessions, content."""
+    ws_dir = _pc_workspace_dir(sim_code, persona_name)
+    if not ws_dir or not os.path.isdir(ws_dir):
+        return JsonResponse({"error": "no workspace for this persona"}, status=404)
+    try:
+        with open(os.path.join(ws_dir, "index.json")) as f:
+            index = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        index = {"files": {}, "sessions": []}
+    files = [
+        {"name": n, **(meta or {})} for n, meta in (index.get("files") or {}).items()
+    ]
+    current = request.GET.get("file")
+    content = None
+    status = None
+    revisions = []
+    if current and _PC_SAFE_FILE.match(current):
+        path = os.path.join(ws_dir, "files", current)
+        if os.path.isfile(path):
+            try:
+                with open(path, encoding="utf-8", errors="replace") as f:
+                    content = f.read()
+            except OSError:
+                content = None
+            status = (index["files"].get(current) or {}).get("status")
+            rev_files = sorted(
+                (fn for fn in os.listdir(os.path.join(ws_dir, "files"))
+                 if fn.startswith(current[:-4] + ".r")),
+            )
+            revisions = rev_files
+    # active projects from the persona's scratch (checkpoint state)
+    projects = []
+    scratch_path = os.path.join(
+        PROJECT_ROOT, "environment", "frontend_server", "storage",
+        sim_code, "personas", persona_name, "bootstrap_memory", "scratch.json")
+    try:
+        with open(scratch_path) as f:
+            projects = json.load(f).get("active_projects", [])
+    except (OSError, json.JSONDecodeError):
+        pass
+    return JsonResponse({
+        "sim": sim_code, "persona": persona_name,
+        "files": files, "projects": projects,
+        "sessions": (index.get("sessions") or [])[-30:],
+        "current_file": current, "content": content,
+        "current_status": status, "revisions": revisions,
+    })
+
+
+def pc_viewer(request, sim_code, persona_name):
+    """HTML page: 'open the dot's computer' — file tree, doc viewer,
+    revision picker, session activity log."""
+    ws_dir = _pc_workspace_dir(sim_code, persona_name)
+    if not ws_dir:
+        return HttpResponse("invalid persona name", status=400)
+    error = None
+    index = {"files": {}, "sessions": []}
+    if os.path.isdir(ws_dir):
+        try:
+            with open(os.path.join(ws_dir, "index.json")) as f:
+                index = json.load(f)
+        except (OSError, json.JSONDecodeError):
+            pass
+    else:
+        error = (f"{persona_name} has no workspace yet — no work sessions "
+                 f"have fired in this sim.")
+    files = [
+        {"name": n, **(meta or {})} for n, meta in (index.get("files") or {}).items()
+    ]
+    current = request.GET.get("file")
+    if current and not _PC_SAFE_FILE.match(current):
+        current = None
+    content = None
+    current_status = None
+    revisions = []
+    if current and os.path.isdir(os.path.join(ws_dir, "files")):
+        path = os.path.join(ws_dir, "files", current)
+        if os.path.isfile(path):
+            try:
+                with open(path, encoding="utf-8", errors="replace") as f:
+                    content = f.read()
+                current_status = (index["files"].get(current) or {}).get("status")
+                revisions = sorted(
+                    fn for fn in os.listdir(os.path.join(ws_dir, "files"))
+                    if fn.startswith(current[:-4] + ".r"))
+            except OSError:
+                pass
+    projects = []
+    scratch_path = os.path.join(
+        PROJECT_ROOT, "environment", "frontend_server", "storage",
+        sim_code, "personas", persona_name, "bootstrap_memory", "scratch.json")
+    try:
+        with open(scratch_path) as f:
+            projects = json.load(f).get("active_projects", [])
+    except (OSError, json.JSONDecodeError):
+        pass
+    context = {
+        "sim_code": sim_code, "persona_name": persona_name,
+        "files": files, "projects": projects,
+        "sessions": (index.get("sessions") or [])[-15:][::-1],
+        "current_file": current, "content": content,
+        "current_status": current_status, "revisions": revisions,
+        "error": error,
+    }
+    return render(request, "pc/pc_viewer.html", context)
+
+
+def pc_note(request, sim_code, persona_name):
+    """Ville Dots Phase 4: 'leave a note' — POST a feedback message to the
+    persona's workspace inbox. The BACKEND ingests it into associative memory
+    in-step; this view only appends to a workspace file (single-writer rule).
+    POST-only; text length caps enforced here AND in the store."""
+    if request.method != "POST":
+        return HttpResponse("POST only", status=405)
+    ws_dir = _pc_workspace_dir(sim_code, persona_name)
+    if not ws_dir or not os.path.isdir(ws_dir):
+        return HttpResponse("no workspace for this persona", status=404)
+    text = (request.POST.get("text") or "").strip()[:600]
+    author = (request.POST.get("author") or "a reader").strip()[:40]
+    if not text:
+        return HttpResponse("empty note", status=400)
+    # sys.path juggling: reuse the backend's WorkspaceStore exactly as the sim
+    # does, so file formats can never drift between frontend and backend.
+    import sys as _sys
+    _BS = os.path.join(PROJECT_ROOT, "reverie", "backend_server")
+    if _BS not in _sys.path:
+        _sys.path.insert(0, _BS)
+    from ville_os import WorkspaceStore
+    store = WorkspaceStore(ws_dir)
+    store.push_note(author, text)
+    return redirect(f"/pc/{sim_code}/{persona_name}/?note=sent")
+
+
+def dots_index(request, sim_code):
+    """Ville Dots: index of every persona in this sim — with computers listed
+    first (files/projects/last session) and idle agents after (no workspace
+    yet — appears once their first PC work session fires)."""
+    personas = []
+    storage = os.path.join(
+        PROJECT_ROOT, "environment", "frontend_server", "storage", sim_code,
+        "personas")
+    if os.path.isdir(storage):
+        for name in sorted(os.listdir(storage)):
+            scratch_path = os.path.join(storage, name, "bootstrap_memory", "scratch.json")
+            if not os.path.isfile(scratch_path):
+                continue
+            projects = []
+            try:
+                with open(scratch_path) as f:
+                    projects = json.load(f).get("active_projects", [])
+            except (OSError, json.JSONDecodeError):
+                pass
+            entry = {
+                "name": name,
+                "files": 0, "chars": 0,
+                "projects": projects,
+                "last_session": None, "last_op": None,
+                "has_pc": False,
+            }
+            index_path = os.path.join(storage, name, "workspace", "index.json")
+            if os.path.isfile(index_path):
+                try:
+                    with open(index_path) as f:
+                        index = json.load(f)
+                    files = index.get("files") or {}
+                    sessions = index.get("sessions") or []
+                    entry.update({
+                        "has_pc": True,
+                        "files": len(files),
+                        "chars": sum((m or {}).get("chars", 0) for m in files.values()),
+                        "last_session": sessions[-1]["sim_time"] if sessions else None,
+                        "last_op": sessions[-1]["op"] if sessions else None,
+                    })
+                except (OSError, json.JSONDecodeError):
+                    pass
+            personas.append(entry)
+    # computers first, then idle agents
+    personas.sort(key=lambda p: (not p["has_pc"], p["name"]))
+    context = {"sim_code": sim_code, "personas": personas}
+    return render(request, "pc/dots_index.html", context)
 
 
 

@@ -684,6 +684,8 @@ def _parse_event_triple(action_description, persona_name):
     "showering": "shower", "bathing": "bathe", "exercising": "exercise",
     "gardening": "garden", "organizing": "organize", "typing": "type",
     "browsing": "browse", "preparing": "prepare", "making": "make",
+    "buying": "buy", "having": "have", "getting": "get", "going": "go",
+    "heading": "head", "spending": "spend", "exploring": "explore",
   }
 
   # Pattern: "<Name> is <verb>ing <rest>"
@@ -751,23 +753,63 @@ def generate_convo_summary(persona, convo):
 
 
 def generate_decide_to_talk(init_persona, target_persona, retrieved): 
-  # Rizzo reflex fast path (Sep 2026 redesign): typed yes/no choice,
-  # ~130ms, zero generated tokens. Falls open to the legacy LLM path.
+  # RL T2 (Oct 2026): offline-learned TalkPolicy from ga_traces — serves
+  # ONLY on high-support state patterns (conservative offline RL); thin
+  # support falls through to laya. Zero-cost dict lookup, fail-open.
   try:
-    from persona.prompt_template.rizzo_scoring import rizzo_decide_talk
+    import rl_modules as _rm
+    _tp = _rm.talk_policy()
+    if _tp is not None:
+      _lc0 = init_persona.a_mem.get_last_chat(target_persona.name)
+      _d = _tp.decide({
+          "who_activity": init_persona.scratch.act_description,
+          "other_activity": target_persona.scratch.act_description,
+          "needs": getattr(init_persona.scratch, 'needs', None),
+          "last_chat": _lc0.description if _lc0 else "no recent conversation",
+      })
+      if _d is not None:
+        if debug:
+          print(f"[RLTalk] decide_to_talk -> {_d['choice']} "
+                f"(conf {_d['confidence']:.2f}, support {_d['support']})")
+        return _d["choice"] == "yes"
+  except Exception as _rl_err:
+    print(f"[RLTalk] policy error ({_rl_err.__class__.__name__}) — cascading")
+  # Cloud Jev teacher path (Sep 2026 distillation harvest): typed choice from
+  # the cloud System One model; harvested answers feed the v3 training set.
+  if os.environ.get("GA_CLOUDJEV", "0") == "1":
+    try:
+      from persona.prompt_template.cloudjev_scoring import cloudjev_decide_talk
+      _lc = init_persona.a_mem.get_last_chat(target_persona.name)
+      _last_about = _lc.description if _lc else None
+      ans, conf = cloudjev_decide_talk(
+          init_persona.scratch.name, init_persona.scratch.act_description,
+          target_persona.name, target_persona.scratch.act_description,
+          last_chat_about=_last_about,
+          needs=getattr(init_persona.scratch, 'needs', None))
+      if ans is not None:
+        if debug: print(f"[CLOUDJEV] decide_to_talk -> {ans} (conf {conf:.2f})")
+        return ans == "yes"
+    except Exception as _cloud_err:
+      print(f"[CLOUDJEV] talk fast path error ({_cloud_err.__class__.__name__}: "
+            f"{_cloud_err}) — cascading")
+  # Laya v3 reflex fast path (rizzo handover, Sep 30 2026): typed yes/no
+  # choice from the cloud-distilled engine on :8018. Falls open to rizzo
+  # (if ever re-enabled) then the legacy LLM path.
+  try:
+    from persona.prompt_template.laya_scoring import laya_decide_talk
     last_chat = init_persona.a_mem.get_last_chat(target_persona.name)
     last_about = last_chat.description if last_chat else None
-    ans, conf = rizzo_decide_talk(
+    ans, conf = laya_decide_talk(
         init_persona.scratch.name, init_persona.scratch.act_description,
         target_persona.name, target_persona.scratch.act_description,
         last_chat_about=last_about,
         needs=getattr(init_persona.scratch, 'needs', None))
     if ans is not None:
-      if debug: print (f"[RIZZO] decide_to_talk -> {ans} (conf {conf:.2f})")
+      if debug: print (f"[LAYA] decide_to_talk -> {ans} (conf {conf:.2f})")
       return ans == "yes"
-  except Exception as _rizzo_err:
-    print(f"[RIZZO] talk fast path error ({_rizzo_err.__class__.__name__}: "
-          f"{_rizzo_err}) — falling back to legacy generation")
+  except Exception as _laya_err:
+    print(f"[LAYA] talk fast path error ({_laya_err.__class__.__name__}: "
+          f"{_laya_err}) — cascading")
 
   x =run_gpt_prompt_decide_to_talk(init_persona, target_persona, retrieved)[0]
   if debug: print ("GNS FUNCTION: <generate_decide_to_talk>")
@@ -781,30 +823,49 @@ def generate_decide_to_talk(init_persona, target_persona, retrieved):
 def generate_decide_to_react(init_persona, target_persona, retrieved): 
   if debug: print ("GNS FUNCTION: <generate_decide_to_react>")
 
+  # Cloud Jev teacher path (Sep 2026 distillation harvest).
+  if os.environ.get("GA_CLOUDJEV", "0") == "1":
+    try:
+      from persona.prompt_template.cloudjev_scoring import cloudjev_decide_react
+      _act = ((init_persona.scratch.act_address or "") + " "
+              + (init_persona.scratch.act_description or "")).lower()
+      _excl = any(w in _act for w in ("bathroom", "shower", "toilet"))
+      ans, conf = cloudjev_decide_react(
+          init_persona.scratch.name, init_persona.scratch.act_description,
+          target_persona.name, target_persona.scratch.act_description,
+          venue=init_persona.scratch.act_address,
+          exclusive=_excl)
+      if ans is not None:
+        if debug: print(f"[CLOUDJEV] decide_to_react -> {ans} (conf {conf:.2f})")
+        return ans
+    except Exception as _cloud_err:
+      print(f"[CLOUDJEV] react fast path error ({_cloud_err.__class__.__name__}: "
+            f"{_cloud_err}) — cascading")
+
   # Rizzo reflex fast path (Sep 2026 redesign): typed wait/continue choice.
   # NOTE: this replaces an unvalidated legacy path — the live decide_to_react
   # prompts offered only 2 options but asked for "three options", so the LLM
   # answered the nonexistent Option 3 on 81% of calls (runtime collapsed it
   # to False). Rizzo always answers a valid option or punts (None, None).
   try:
-    from persona.prompt_template.rizzo_scoring import rizzo_decide_react
+    from persona.prompt_template.laya_scoring import laya_decide_react
     # Layer 0: capacity-1 facilities (bathroom/shower) are exclusive — say so
     # in the prompt so the typed decision has the facts it needs. Check both
     # the address and the activity text (sim addresses can mismatch).
     _act = ((init_persona.scratch.act_address or "") + " "
             + (init_persona.scratch.act_description or "")).lower()
     _excl = any(w in _act for w in ("bathroom", "shower", "toilet"))
-    ans, conf = rizzo_decide_react(
+    ans, conf = laya_decide_react(
         init_persona.scratch.name, init_persona.scratch.act_description,
         target_persona.name, target_persona.scratch.act_description,
         venue=init_persona.scratch.act_address,
         exclusive=_excl)
     if ans is not None:
-      if debug: print (f"[RIZZO] decide_to_react -> {ans} (conf {conf:.2f})")
+      if debug: print (f"[LAYA] decide_to_react -> {ans} (conf {conf:.2f})")
       return ans
-  except Exception as _rizzo_err:
-    print(f"[RIZZO] react fast path error ({_rizzo_err.__class__.__name__}: "
-          f"{_rizzo_err}) — falling back to legacy generation")
+  except Exception as _laya_err:
+    print(f"[LAYA] react fast path error ({_laya_err.__class__.__name__}: "
+          f"{_laya_err}) — falling back to legacy generation")
 
   return run_gpt_prompt_decide_to_react(init_persona, target_persona, retrieved)[0]
 
@@ -880,6 +941,23 @@ def generate_new_decomp_schedule(persona, inserted_act, inserted_act_dur,  start
   # files). Scrub everything to the plain task head before any wrapping.
   def _scrub(t):
     return t.split("(")[0].strip()
+
+  # FIX (Oct 6 2026, live3d_n59 wedge): a degenerate schedule (e.g. a
+  # 370-min 'sleeping (on the way)' block from a malformed chat replan)
+  # can place start_hour/end_hour BEYOND the f_daily_schedule span, leaving
+  # truncated_act_dur empty — then [-1] raised IndexError and parked the
+  # backend at the console, freezing the whole town. Guard: fall back to
+  # the last schedule entry, or a synthetic sleep block if the day's
+  # schedule is entirely empty; never crash.
+  if len(truncated_act_dur) == 0:
+    if len(p.scratch.f_daily_schedule) > 0:
+      truncated_act_dur += [[p.scratch.f_daily_schedule[-1][0],
+                             max(1, (end_hour * 60 - today_min_pass))]]
+    else:
+      truncated_act_dur += [["sleep", max(1, end_hour * 60 - today_min_pass)]]
+    print("[Plan] truncated_act_dur was EMPTY — degenerate schedule "
+          f"(start_hour={start_hour}, end_hour={end_hour}, "
+          f"today_min_pass={today_min_pass}); inserted fallback block")
 
   prev_head = _scrub(truncated_act_dur[-1][0])
   prev_sub = (truncated_act_dur[-1][0].split("(")[-1].rsplit(")", 1)[0].strip()
@@ -1028,6 +1106,37 @@ def _long_term_planning(persona, new_day, maze=None):
           f"{'REGENERATED' if persona.scratch.daily_req is _new_req else 'KEPT'}"
           f" ({len(persona.scratch.daily_req)} items, fail_safe={_new_is_fs})")
 
+    # AGENCY L2 (Voyager routines + self-curriculum, env-gated): seed one
+    # routine-refresh goal and/or one never-visited arena into daily_req.
+    try:
+      import routines as _rt
+      # roster for curriculum person-arena filtering: read the LIVE sim's
+      # meta (curr_sim_code.json → meta.json persona_names), cached on persona
+      try:
+        import json as _json
+        _backend = os.path.dirname(os.path.abspath(__file__))
+        _code = _json.load(open(os.path.join(
+            _backend, '../../environment/frontend_server/temp_storage',
+            'curr_sim_code.json')))['sim_code']
+        _p = (os.path.join(_backend, '../../environment/frontend_server/storage/',
+                           _code, 'reverie', 'meta.json'))
+        persona._roster_names = list(getattr(persona, '_roster_names', [])
+                                     or _json.load(open(_p))['persona_names'])
+      except Exception:
+        persona._roster_names = []
+      _rg = _rt.routine_goal(persona, maze)
+      if _rg and _rg not in persona.scratch.daily_req:
+        persona.scratch.daily_req.append(_rg)
+        print(f"[Routines] {persona.name} daily_req += '{_rg}'")
+      _cg = _rt.curriculum_goal(persona, maze)
+      if _cg:
+        _cgoal = f"explore the {_cg['arena_name']} in {_cg.get('sector', 'the ville')} for the first time"
+        if _cgoal not in persona.scratch.daily_req:
+          persona.scratch.daily_req.append(_cgoal)
+          print(f"[Curriculum] {persona.name} daily_req += '{_cgoal}'")
+    except Exception as _rt_err:
+      print(f"[Routines] error ({type(_rt_err).__name__}: {_rt_err}) — day proceeds without")
+
   # Based on the daily_req, we create an hourly schedule for the persona, 
   # which is a list of todo items with a time duration (in minutes) that 
   # add up to 24 hours.
@@ -1070,27 +1179,84 @@ def _determine_action(persona, maze):
     persona: Current <Persona> instance whose action we are determining.
     maze: Current <Maze> instance.
   """
-  # Check resource goals first — these take priority over normal replanning
-  # FIX (needs-driven urgency): needs_critical was a dead threshold — nothing
-  # ever read it. When a need crosses the critical line, inject an urgent
-  # resource goal so the persona actually ACTS on its body instead of
-  # following the daily plan while desperate.
-  if hasattr(persona.scratch, "needs") and persona.scratch.needs:
-    critical = getattr(persona.scratch, "needs_critical", 20)
-    urgent_map = {
-      "bladder": "go to the nearest bathroom to relieve themselves",
-      "hygiene": "take a shower in the bathroom",
-      "hunger": "eat a meal or get food from Hobbs Cafe",
-      "energy": "go home and take a rest",
-      "hydration": "get a drink of water",
-    }
-    for need, goal in urgent_map.items():
-      val = persona.scratch.needs.get(need, 100)
-      if val < critical:
-        # Don't stack duplicates of the same urgent goal
-        if goal not in persona.scratch.resource_goals:
-          persona.scratch.resource_goals.insert(0, goal)
-        break  # one urgent need at a time — highest urgency order above
+  # AGENCY L1 (PIANO-style drives, env-gated): when GA_DRIVES=1, continuous
+  # drive salience arbitrates FIRST and injects its winning goal; the legacy
+  # needs-urgency thresholds below are subsumed (they stay for fallback).
+  _drives_active = False
+  try:
+    from agentic_drives import arbitrate as _drv_arbitrate, DRIVE_GOALS as _DRIVE_GOALS
+    # AGENCY L3 (Schmidhuber curiosity, env-gated): learning progress and
+    # boredom translate into a curiosity salience BOOST fed into arbitration
+    # — curiosity can then WIN when life has become predictable.
+    _cboost = 0.0
+    try:
+      import curiosity as _cu
+      # RL T1 (Oct 2026): the VenueQ layer provides a TD-error-grounded
+      # learning signal (default ON since Oct 7 2026; GA_QCURIOSITY=0 opts
+      # out); the incumbent frequency-
+      # heuristic remains the fallback (gate OFF or Q-data empty).
+      _qp = _rb = None
+      try:
+        import rl_modules as _rm
+        _qsig = _rm.q_learning_progress(persona)
+        if _qsig is not None:
+          _qp, _rb = _qsig
+      except Exception:
+        pass
+      if _qp is not None:
+        _prog, _bored = _qp, _rb
+      else:
+        _prog, _bored = _cu.learning_progress(persona)
+      if _bored >= 1.0:
+        _cboost = 0.5
+      elif _prog >= 0.30:
+        _cboost = 0.3
+      if _cboost > 0:
+        print(f"[Curiosity] {persona.name} lp={_prog:.2f} boredom={_bored:.0f} "
+              f"boost=+{_cboost}" + (" [Q]" if _qp is not None else ""))
+    except Exception:
+      pass
+    _winner = _drv_arbitrate(persona, maze, curiosity_boost=_cboost)
+    if _winner is not None:
+      _drives_active = True
+      _goal = _DRIVE_GOALS[_winner]
+      _now = persona.scratch.curr_time
+      _served = getattr(persona.scratch, "_drive_served", {})
+      _last = _served.get(_winner)
+      _cooldown_h = 3.0
+      _cd_ok = (_last is None or _now is None or
+                (_now - _last).total_seconds() / 3600.0 >= _cooldown_h)
+      if (_cd_ok and _goal not in persona.scratch.resource_goals
+          and hasattr(persona.scratch, "resource_goals")):
+        persona.scratch.resource_goals.insert(0, _goal)
+        _served[_winner] = _now
+        persona.scratch._drive_served = _served
+        print(f"[Drives] {persona.name} drive={_winner} -> '{_goal}'")
+  except Exception as _drv_err:
+    print(f"[Drives] arbitration error ({type(_drv_err).__name__}: {_drv_err}) — falling back to legacy")
+
+  if not _drives_active:
+    # Check resource goals first — these take priority over normal replanning
+    # FIX (needs-driven urgency): needs_critical was a dead threshold — nothing
+    # ever read it. When a need crosses the critical line, inject an urgent
+    # resource goal so the persona actually ACTS on its body instead of
+    # following the daily plan while desperate.
+    if hasattr(persona.scratch, "needs") and persona.scratch.needs:
+      critical = getattr(persona.scratch, "needs_critical", 20)
+      urgent_map = {
+        "bladder": "go to the nearest bathroom to relieve themselves",
+        "hygiene": "take a shower in the bathroom",
+        "hunger": "eat a meal or get food from Hobbs Cafe",
+        "energy": "go home and take a rest",
+        "hydration": "get a drink of water",
+      }
+      for need, goal in urgent_map.items():
+        val = persona.scratch.needs.get(need, 100)
+        if val < critical:
+          # Don't stack duplicates of the same urgent goal
+          if goal not in persona.scratch.resource_goals:
+            persona.scratch.resource_goals.insert(0, goal)
+          break  # one urgent need at a time — highest urgency order above
 
   # PROACTIVE GROCERY SHOPPING (Sep 2026 economy revival): inject a
   # shopping goal before hunger goes critical, with a cooldown, so money
@@ -1107,7 +1273,7 @@ def _determine_action(persona, maze):
       except Exception:
         _hours = None
     _cooldown_ok = (_last_shop is None) or (_hours is None) or (_hours >= 6)
-    _shop_goal = "buy groceries at the Harvey Oak Supply Store"
+    _shop_goal = "buying groceries at the Harvey Oak Supply Store"
     _already = _shop_goal in getattr(persona.scratch, "resource_goals", [])
     if (_hunger < 45 and _cooldown_ok and _wallet >= 30
         and not _already and hasattr(persona.scratch, "resource_goals")):
@@ -1379,10 +1545,13 @@ def _should_react(persona, retrieved, personas):
       if init_persona.scratch.chatting_with_buffer[target_persona.name] > 0: 
         return False
 
-    # Social attention budget: banal events (low poignancy) never reach the
-    # LLM — the decide prompt embeds the same context the poig score graded.
+    # Social attention budget (quota-era suppressor, 2026-10-05 reversal):
+    # banal-event ignore gate now defaults OFF — laya grades talk decisions
+    # at ~100ms, so the LLM-budget rationale is gone. Set
+    # GA_POIG_IGNORE_FLOOR back to 3 (and restart) to restore old behavior.
+    _poig_floor = int(os.environ.get("GA_POIG_IGNORE_FLOOR", "0"))
     _curr = retrieved.get("curr_event") if isinstance(retrieved, dict) else None
-    if _curr is not None and getattr(_curr, "poignancy", 10) < 3:
+    if _curr is not None and getattr(_curr, "poignancy", 10) < _poig_floor:
       return False
 
     # Cap concurrent social-decision LLM calls (see _SOCIAL_THINK_SEM note).
@@ -1537,14 +1706,19 @@ def _chat_react(maze, persona, focused_event, reaction_mode, personas):
       act_address = f"<persona> {target_persona.name}"
       act_event = (p.name, "chat with", target_persona.name)
       chatting_with = target_persona.name
+      # Re-chat cooldown (quota-era suppressor, 2026-10-05 reversal): 800
+      # muted a pair for most of a sim-day after ONE chat — brutal for
+      # small-registry towns. Env-overridable, default now 120 (1 sim-hour).
       chatting_with_buffer = {}
-      chatting_with_buffer[target_persona.name] = 800
-    elif role == "target": 
+      chatting_with_buffer[target_persona.name] = int(
+          os.environ.get("GA_RECHAT_COOLDOWN_STEPS", "120"))
+    elif role == "target":
       act_address = f"<persona> {init_persona.name}"
       act_event = (p.name, "chat with", init_persona.name)
       chatting_with = init_persona.name
       chatting_with_buffer = {}
-      chatting_with_buffer[init_persona.name] = 800
+      chatting_with_buffer[init_persona.name] = int(
+          os.environ.get("GA_RECHAT_COOLDOWN_STEPS", "120"))
 
     act_pronunciatio = "💬" 
     act_obj_description = None

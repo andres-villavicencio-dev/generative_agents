@@ -36,6 +36,8 @@ from concurrent.futures import ThreadPoolExecutor
 # Pool the per-persona move() calls; conversations serialize on CONVO_LOCK
 # (shared object lives in concurrency_utils.py so plan.py can import it too).
 from concurrency_utils import CONVO_LOCK
+# Chat-time accounting: conversations charge the world clock per reply.
+import chat_time as _chat_time
 
 # LLM concurrency: 3-4 decode slots fit the 8GB 3070 with the 4b lane model
 # (q8_0 KV cache). Threads beyond this just queue at the daemon.
@@ -47,9 +49,11 @@ from global_methods import *
 from utils import *
 from maze import *
 from persona.persona import *
+from persona.prompt_template.gpt_structure import set_persona_call_context
 from resource_manager import WorldResourceManager, ACTION_RESOURCE_MAPPINGS, PRODUCTION_MAPPINGS, get_persona_decay_multiplier, match_production
 from artifact_manager import (ArtifactManager, ARTIFACT_EMOJI, ARTIFACT_TYPES,
                               CREATION_ACTION_PATTERNS)
+from ville_os import (WorkspaceStore, run_work_session, matches_pc_session)
 from chronicle import chronicle_milestone
 
 ##############################################################################
@@ -72,7 +76,15 @@ class ReverieServer:
     # reverie/meta/json's fork variable. 
     self.sim_code = sim_code
     sim_folder = f"{fs_storage}/{self.sim_code}"
-    copyanything(fork_folder, sim_folder)
+    # GA_FORK_SKIP_COPY=1: the operator pre-built <sim_code> outside the
+    # backend (e.g. a roster-trimmed fork with persona_names edited before
+    # boot); continue that storage as-is instead of re-copying the origin.
+    # Fail-open: if the pre-built folder is missing/incomplete, copy anyway.
+    if (os.environ.get("GA_FORK_SKIP_COPY") == "1"
+        and os.path.isfile(f"{sim_folder}/reverie/meta.json")):
+      print(f"[Fork] GA_FORK_SKIP_COPY=1 — continuing pre-built {sim_code}")
+    else:
+      copyanything(fork_folder, sim_folder)
 
     with open(f"{sim_folder}/reverie/meta.json") as json_file:  
       reverie_meta = json.load(json_file)
@@ -143,6 +155,11 @@ class ReverieServer:
                 os.remove(os.path.join(cleanup_folder, fname))
             except ValueError:
               pass
+    # Boot-race sync point (Oct 2026): run_live3d_resume waits for this line
+    # before starting the headless driver — starting it earlier let the
+    # driver's fresh environment/<step+1>.json land BEFORE this cleanup and
+    # get deleted, wedging the fork in a silent mutual deadlock.
+    print("[reverie] stale-file cleanup complete — driver may start")
 
     # SETTING UP PERSONAS IN REVERIE
     # <personas> is a dictionary that takes the persona's full name as its 
@@ -232,9 +249,50 @@ class ReverieServer:
     # Attach to maze for easy access throughout the cognitive modules
     self.maze.resource_manager = self.resource_manager
 
+    # Economy v2 (Oct 2026): the 25-agent town economy — per-venue tills,
+    # owner draws, restock job, student stipends, LLM hiring market.
+    # Gate GA_ECONOMY2 (default ON; =0 opts out). Fail-open everywhere.
+    self.economy = None
+    if os.environ.get("GA_ECONOMY2", "1") != "0":
+      try:
+        from economy import EconomyManager
+        from persona.prompt_template.gpt_structure import ChatGPT_single_request
+        self.economy = EconomyManager(sim_folder)
+        # the delivery path needs the economy for wholesale routing
+        self.resource_manager.economy = self.economy
+        def _econ_llm(prompt):
+          return ChatGPT_single_request(prompt) or ""
+        def _econ_bulletin(text):
+          # Post to the community board the same way death notices do.
+          if self.bulletin_tile:
+            bx, by = self.bulletin_tile
+            self.maze.tiles[by][bx]["events"].add(
+              ("community bulletin board", "announces", text, text))
+        self.economy.attach(
+          llm=_econ_llm,
+          personas=self.personas,
+          bulletin=_econ_bulletin)
+        print(f"[Economy] v2 active: {self.economy}")
+      except Exception as _econ_err:
+        print(f"[Economy] v2 init failed ({_econ_err.__class__.__name__}) "
+              f"— continuing without economy")
+        self.economy = None
+
     # Initialize the artifact manager (Phase 6: Artifact Creation)
     self.artifact_manager = ArtifactManager(sim_folder)
     self.maze.artifact_manager = self.artifact_manager
+    # VILLE DOTS: per-persona simulated PC workspaces. Lazily created on first
+    # session (a fresh sim has no workspace dirs until someone works).
+    self.sim_folder = sim_folder
+    self._workspace_stores = {}
+    self._pc_session_counter = {}   # per-agent: matching actions since last session
+    # Rate guard: fire a session on every Nth matching action TRANSITION.
+    # Default 1 — transitions are rare (an agent enters a given writing action
+    # once per sim-day; the 100+ step occurrences of one description collapse
+    # to a single transition), so every=3 starved sessions in n47: 7 agents
+    # matched 945 times but only Tamara hit 3 transitions. Raise only if the
+    # artifact lane ever shows load.
+    self._pc_session_every = int(os.environ.get("GA_PC_SESSION_EVERY", "1"))
     # Restore artifact events on maze tiles from saved state
     self._restore_artifact_tiles()
 
@@ -404,6 +462,130 @@ class ReverieServer:
 
     print(f"[Reverie] {persona.name} created artifact: {artifact['name']} ({artifact['type']}, quality={artifact['quality']})")
     return artifact
+
+  def _get_workspace(self, persona_name):
+    """Ville Dots: lazily get (or create) a persona's WorkspaceStore."""
+    if persona_name not in self._workspace_stores:
+      ws_dir = os.path.join(self.sim_folder, "personas", persona_name, "workspace")
+      self._workspace_stores[persona_name] = WorkspaceStore(ws_dir)
+    return self._workspace_stores[persona_name]
+
+  def _drain_pc_notes_for(self, persona):
+    """Ville Dots Phase 4: ingest pending external feedback notes (from the
+    PC viewer's 'leave a note' form) into the persona's associative memory
+    through the REAL memory path — real schema, real embedding. In-step only
+    (the frontend only appends to a workspace file; never touches memory)."""
+    store = self._get_workspace(persona.name)
+    notes = store.drain_notes()
+    if not notes:
+      return
+    from persona.prompt_template.gpt_structure import get_embedding
+    for note in notes:
+      author = (note.get("author") or "a reader").strip() or "a reader"
+      text = note.get("text", "").strip()
+      if not text:
+        continue
+      desc = f"{author} left a note for {persona.name} about their work: {text}"
+      keywords = set(["note", "feedback", author.lower()])
+      if desc in persona.a_mem.embeddings:
+        embedding = persona.a_mem.embeddings[desc]
+      else:
+        embedding = get_embedding(desc)
+      persona.a_mem.add_event(
+        persona.scratch.curr_time, None,
+        persona.name, "received", "a note about their work",
+        desc, keywords, 6, (desc, embedding), [])
+      print(f"[VilleOS] {persona.name} ingested a feedback note from {author}: "
+            f"\"{text[:60]}\"")
+    return len(notes)
+
+  def _run_pc_session_for(self, persona, act_description):
+    """Ville Dots: run one bounded work session against the persona's
+    simulated PC (workspace) when their action is project work.
+    Rate-guarded: only every GA_PC_SESSION_EVERY-th matching action fires
+    an LLM session so step rate isn't taxed by every 5-30min subtask."""
+    try:
+      name = persona.name
+      counter = self._pc_session_counter.get(name, 0) + 1
+      self._pc_session_counter[name] = counter
+      if counter < self._pc_session_every:
+        return None
+      self._pc_session_counter[name] = 0
+      # Pick or seed the persona's current project.
+      scratch = persona.scratch
+      projects = getattr(scratch, "active_projects", None) or []
+      project = None
+      for p in projects:
+        if p.get("status") in (None, "drafting", "revising"):
+          project = p
+          break
+      if project is None:
+        # Seed a new project from the action itself (identity-driven: the
+        # action already names the work — e.g. Tamara's novel series).
+        # Strip leading motion verbs so the title reads like a work, not
+        # an action ("continue writing X" -> "X").
+        import re as _re
+        raw_title = act_description.split("@")[0].strip()[:80]
+        # strip trailing task-decomp parentheticals BEFORE verb cleanup —
+        # decomp annotations like "begin writing X (X with courage)" leak
+        # the paren text into the title otherwise
+        raw_title = _re.sub(r"\s*\(.*$", "", raw_title).strip()
+        raw_title = _re.sub(
+          r"^(continue|resume|begin|start|finish|work on|working on)\s+"
+          r"(the\s+)?(writing|drafting|focused writing)?\s*", "", raw_title,
+          flags=_re.IGNORECASE).strip(" .,:()-") or raw_title
+        slug = _re.sub(r"[^a-z0-9]+", "_", raw_title.lower()).strip("_")[:30]
+        project = {
+          "title": raw_title[:60] or "untitled",
+          "type": "book", "file": (slug + ".txt") if slug else "",
+          "status": "drafting",
+          "sessions_done": 0, "target_revs": 8,
+        }
+        scratch.active_projects.append(project)
+      project["sessions_done"] = project.get("sessions_done", 0) + 1
+      store = self._get_workspace(name)
+
+      def model_call(prompt):
+        from persona.prompt_template.gpt_structure import ChatGPT_request
+        return ChatGPT_request(prompt, model_hint="artifact")
+
+      result = run_work_session(
+        store, name, project, act_description, model_call,
+        sim_time=self.curr_time.strftime("%B %d, %Y, %H:%M:%S"))
+      if result:
+        op, file_name = result
+        print(f"[VilleOS] {name} session: {op} {file_name} "
+              f"(project '{project['title']}' session {project['sessions_done']})")
+        # A finished project feeds the existing artifact pipeline: promote
+        # the workspace file into a real artifact the town can see.
+        if op == "FINISH":
+          scratch.active_projects = [
+            p for p in scratch.active_projects if p is not project] + [project]
+          try:
+            # The workspace file IS the finished work — promote its actual
+            # text (never re-generate; the project's evolution is the artifact).
+            content = store.read(file_name)
+            if content:
+              artifact = self.artifact_manager.create_artifact(
+                artifact_type=project.get("type", "book"),
+                name=project["title"],
+                description=f"Finished project by {persona.name}",
+                content_summary=content[:200],
+                creator=persona.name,
+                created_time=self.curr_time.strftime("%B %d, %Y, %H:%M:%S"),
+                quality=7,
+                location=persona.scratch.act_address or "unknown",
+                materials_consumed=None,
+              )
+              artifact["content_full"] = content
+              print(f"[VilleOS] {name} promoted finished project to artifact: "
+                    f"{artifact['name']}")
+          except Exception as e:
+            print(f"[VilleOS] Warning: artifact promotion failed: {e}")
+      return result
+    except Exception as e:
+      print(f"[VilleOS] Warning: PC session failed: {e}")
+      return None
 
   def process_artifact_interaction(self, persona, act_description):
     """Check if an action involves interacting with an artifact."""
@@ -682,7 +864,7 @@ class ReverieServer:
       # Remove the fulfilled shopping goal
       if hasattr(s, "resource_goals"):
         s.resource_goals = [g for g in s.resource_goals
-                            if "grocery shopping" not in g.lower()]
+                            if "grocer" not in g.lower()]
 
       # Memory event so the purchase is part of the agent's lived experience
       summary = ", ".join(f"{qty} {item}" for item, qty in bought)
@@ -778,6 +960,8 @@ class ReverieServer:
               "counter" in address.lower() or
               "cafe" in address.lower() or
               "supply store" in address.lower() or
+              "rose and crown pub" in address.lower() or
+              "willows market" in address.lower() or
               ("shelves" in address.lower() and "store" in address.lower())
             )
             # Bug 2: Owner using their own café stock is COGS, not a sale
@@ -795,17 +979,43 @@ class ReverieServer:
               ("supply store" in (persona.scratch.act_address or "").lower()
                or "harvey oak supply store" in (persona.scratch.act_address or "").lower())
             )
+            # Economy v2 (Oct 2026): same COGS guard for the pub and
+            # market owners consuming their own venue's stock.
+            OWN_VENUE_GUARDS = [
+              ("Arthur Burton", "rose and crown pub"),
+              ("John Lin", "willows market"),
+            ]
+            is_owner_at_own_venue = any(
+              persona.name == _on and _vk in (persona.scratch.act_address or "").lower()
+              for _on, _vk in OWN_VENUE_GUARDS)
             if is_commercial and not is_owner_at_own_cafe \
                 and not is_owner_at_own_store \
+                and not is_owner_at_own_venue \
                 and hasattr(self.resource_manager, 'purchase'):
               success = self.resource_manager.purchase(address, item, amount, persona.scratch)
               if success:
                 consumed = True
+                # Economy v2 (Oct 2026): venue-routed sale credit — every
+                # commercial purchase feeds the OWNING venue's till (weekly
+                # owner draw replaces direct per-sale wallet credits).
+                if self.economy is not None:
+                  try:
+                    _vid = self.economy.venue_of_address(address)
+                    if _vid is not None:
+                      _price = self.economy.item_price(item) * amount
+                      self.economy.credit_sale(
+                        _vid, item, amount, persona.name, _price)
+                  except Exception as _econ_err:
+                    print(f"[Economy] sale credit failed "
+                          f"({_econ_err.__class__.__name__})")
                 # CAFÉ-ONLY credit (Sep 2026 fix): store sales already
                 # credit the till inside purchase(); crediting Isabella here
                 # too paid her twice — once with the store's own money.
+                # Economy v2 (Oct 2026): owners are paid by weekly till
+                # draw instead — this per-sale credit is superseded when
+                # the v2 economy is active.
                 addr_l = address.lower()
-                if "cafe" in addr_l or "hobbs" in addr_l:
+                if self.economy is None and ("cafe" in addr_l or "hobbs" in addr_l):
                   self._credit_cafe_sale(item, amount, persona.name)
                 break
               else:
@@ -928,7 +1138,12 @@ class ReverieServer:
       return 0.0
 
   def _check_and_do_payday(self):
-    """Phase 5: Weekly payday — credit each agent a role-based income every 7 sim-days."""
+    """Phase 5: Weekly payday — credit each agent a role-based income every
+    7 sim-days. DISABLED by default (Oct 2026, user call): env
+    GA_PAYDAY=1 re-enables. The store-owner till sweep is part of payday,
+    so it is off with it; store income still flows through normal sales."""
+    if os.environ.get("GA_PAYDAY", "0") != "1":
+      return
     WEEKLY_INCOME = {
       "Isabella Rodriguez": 400.0,
       "Klaus Mueller": 200.0,
@@ -1032,17 +1247,17 @@ class ReverieServer:
         # run so home fridges can actually restock. The store exists, is fully
         # stocked, and purchase() works; there was simply no path that ever
         # sent an agent to buy.
-        goal = "go to Hobbs Cafe to have breakfast"
+        goal = "having breakfast at Hobbs Cafe"
         if goal not in persona.scratch.resource_goals:
           persona.scratch.resource_goals.append(goal)
-        shopping_goal = "go grocery shopping at Harvey Oak Supply Store"
+        shopping_goal = "buying groceries at Harvey Oak Supply Store"
         if shopping_goal not in persona.scratch.resource_goals:
           persona.scratch.resource_goals.append(shopping_goal)
       elif item == "coffee_beans":
-        goal = "go to Hobbs Cafe to get coffee"
+        goal = "getting coffee at Hobbs Cafe"
         if goal not in persona.scratch.resource_goals:
           persona.scratch.resource_goals.append(goal)
-        shopping_goal = "go grocery shopping at Harvey Oak Supply Store"
+        shopping_goal = "buying groceries at Harvey Oak Supply Store"
         if shopping_goal not in persona.scratch.resource_goals:
           persona.scratch.resource_goals.append(shopping_goal)
       elif item == "hot_water":
@@ -1261,6 +1476,9 @@ class ReverieServer:
 
           def _move_one(args):
             persona_name, persona = args
+            # Layer 1: attribute all LLM calls on this worker thread to this
+            # persona (per-persona temperature/think from town_model_settings)
+            set_persona_call_context(persona_name)
             # Skip deceased personas
             if persona.scratch.is_deceased:
                 return None
@@ -1270,9 +1488,22 @@ class ReverieServer:
                 return persona_name  # handled serially below
             # Track previous action to detect transitions
             prev_act_description = persona.scratch.act_description
-            next_tile, pronunciatio, description = persona.move(
+            # Fail-open guard (Oct 6 2026): ONE agent's LLM failure (timeout
+            # past all retries, provider blip) must never wedge the whole
+            # town — ex.map propagates any worker exception to reverie's
+            # catch-all, which dumps the backend to the menu. Instead: log,
+            # and reuse this agent's PREVIOUS move result so the step still
+            # completes; the agent's plan retries naturally next tick.
+            try:
+              next_tile, pronunciatio, description = persona.move(
               self.maze, self.personas, self.personas_tile[persona_name],
               self.curr_time)
+            except Exception as _mv_err:
+              import traceback as _tb
+              _tb.print_exc()
+              print(f"[MoveFail] {persona_name}: {_mv_err.__class__.__name__} "
+                    f"— agent skips this tick, town continues")
+              return None
             return (persona_name, persona, prev_act_description,
                     next_tile, pronunciatio, description)
 
@@ -1338,6 +1569,17 @@ class ReverieServer:
                 self.process_artifact_interaction(persona, curr_act_description)
               except Exception as e:
                 print(f"[Reverie] Warning: artifact processing failed: {e}")
+              # Ville Dots: simulated-PC work session on matching actions
+              try:
+                if matches_pc_session(curr_act_description):
+                  self._run_pc_session_for(persona, curr_act_description)
+              except Exception as e:
+                print(f"[VilleOS] Warning: PC session hook failed: {e}")
+              # Ville Dots: ingest external feedback notes into memory
+              try:
+                self._drain_pc_notes_for(persona)
+              except Exception as e:
+                print(f"[VilleOS] Warning: note ingestion failed: {e}")
 
             movements["persona"][persona_name] = {}
             movements["persona"][persona_name]["movement"] = next_tile
@@ -1383,8 +1625,18 @@ class ReverieServer:
 
           # After this cycle, the world takes one step forward, and the 
           # current time moves by <sec_per_step> amount. 
+          # Chat-time accounting (Oct 2026): conversations generated during
+          # this tick charged extra sim-seconds (every reply = 1 sim-minute
+          # by default) — drain the debt so the world clock reflects how
+          # long agents actually spent talking. Other agents keep moving
+          # every step; the chat eats clock, not the tick.
+          _chat_debt, _chat_utts = _chat_time.drain_tick()
+          if _chat_debt:
+            print(f"[ChatTime] step {self.step}: +{_chat_debt:.0f}s from "
+                  f"{_chat_utts} replies")
           self.step += 1
-          self.curr_time += datetime.timedelta(seconds=self.sec_per_step)
+          self.curr_time += datetime.timedelta(
+            seconds=self.sec_per_step + _chat_debt)
 
           # Keep curr_step.json up to date so the frontend can re-initialize
           # correctly on page refresh (instead of always starting from step 0).
@@ -1401,6 +1653,15 @@ class ReverieServer:
               print(f"[Reverie] Checkpoint saved at step {self.step}")
             except Exception as e:
               print(f"[Reverie] Warning: periodic checkpoint failed: {e}")
+            # AGENCY L2: refresh per-persona routine libraries from real
+            # movement history (LLM-free mining, atomic writes).
+            try:
+              import routines as _rt
+              _n = _rt.write_routines()
+              if _n:
+                print(f"[Routines] harvested for {_n} personas at step {self.step}")
+            except Exception as _rt_err:
+              print(f"[Routines] harvest failed: {_rt_err}")
 
           int_counter -= 1
 
@@ -1412,6 +1673,26 @@ class ReverieServer:
             self.resource_manager.tick(self.curr_time)
           except Exception as e:
             print(f"[Reverie] Warning: resource_manager.tick failed: {e}")
+
+          # Economy v2 (Oct 2026): calendar flows + hiring encounters.
+          # All paths fail-open internally; the guard here is belt+braces.
+          if self.economy is not None:
+            try:
+              self.economy.pay_restock_worker(self.curr_time)
+              self.economy.weekly_flows(self.curr_time)
+              self.economy.consider_hiring(self.curr_time)
+              self.economy.pay_employees(self.curr_time)
+              # hiring encounters: co-located applicant+owner
+              _paths = {}
+              for _pn, _p in self.personas.items():
+                try:
+                  _paths[_pn] = self.maze.get_tile_path(
+                    _p.scratch.curr_tile, "arena")
+                except Exception:
+                  pass
+              self.economy.try_hire_encounters(_paths)
+            except Exception as _econ_err:
+              print(f"[Economy] tick failed ({_econ_err.__class__.__name__})")
 
           # Phase 5: Weekly payday check
           try:

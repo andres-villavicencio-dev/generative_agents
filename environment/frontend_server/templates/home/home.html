@@ -33,6 +33,73 @@
 		<hr style="border-color:#999999">
 		<br>
 
+		<!-- Run stats ops panel (Sep 2026): live engine/health readout, polls /api/run_stats/ every 15s -->
+		<div id="run-stats-panel" class="media" style="background-color:#EEEEEE; padding:1em 2em; border-radius:10px; margin-bottom:1.5em">
+			<div class="row" style="margin-bottom:0.4em">
+				<h3 style="font-size:1.3em; margin-top:0.2em">
+					<i class="glyphicon glyphicon-dashboard"></i> Run Stats
+					&nbsp;<span id="rs-chain" style="font-size:0.6em" class="label label-default">…</span>
+					&nbsp;<span id="rs-engine" style="font-size:0.6em" class="label label-default">…</span>
+				</h3>
+			</div>
+			<div class="row" style="font-size:1.1em">
+				<div class="col-md-3"><strong>Sim clock:</strong> <span id="rs-simtime">…</span></div>
+				<div class="col-md-3"><strong>Step:</strong> <span id="rs-step">…</span></div>
+				<div class="col-md-3"><strong>Rate:</strong> <span id="rs-rate">…</span></div>
+				<div class="col-md-3"><strong>GPU:</strong> <span id="rs-gpu">…</span></div>
+			</div>
+			<div class="row" style="margin-top:0.4em; font-size:0.95em; color:#555">
+				<div class="col-md-4">Engine: <span id="rs-enginedetail">…</span></div>
+				<div class="col-md-4">Services: <span id="rs-services">…</span></div>
+				<div class="col-md-4">Laya fallbacks: <span id="rs-layaerr">…</span></div>
+			</div>
+		</div>
+		<script>
+		(function() {
+			var SIM = "{{ sim_code }}";
+			function fmt0(x) { return (x === null || x === undefined) ? "—" : x; }
+			function tick() {
+				fetch("/api/run_stats/" + SIM + "/").then(function(r){ return r.json(); }).then(function(s) {
+					var chain = document.getElementById("rs-chain");
+					chain.textContent = "chain: " + fmt0(s.chain_unit);
+					chain.className = "label " + (s.chain_unit === "active" ? "label-success" : "label-danger");
+
+					var eng = s.engine || {};
+					var chip = document.getElementById("rs-engine");
+					var mode = eng.laya_enabled ? "laya v3" : (eng.cloudjev ? "cloud jev" : (eng.rizzo_fallback ? "rizzo" : "legacy"));
+					chip.textContent = "engine: " + mode;
+					chip.className = "label " + (mode === "legacy" ? "label-warning" : "label-primary");
+
+					document.getElementById("rs-simtime").textContent = fmt0(s.sim_time);
+					document.getElementById("rs-step").textContent =
+						fmt0(s.latest_step) + (s.checkpoint_step ? " (ckpt " + s.checkpoint_step + ")" : "");
+					var rate = s.steps_per_min;
+					var rateEl = document.getElementById("rs-rate");
+					rateEl.textContent = rate === null ? "—" : rate + " steps/min";
+					rateEl.style.color = (rate !== null && rate < 3) ? "#B22222" : "";
+
+					var g = s.gpu;
+					document.getElementById("rs-gpu").textContent = g ? (g.util + "% · " + g.vram_used + "/" + g.vram_total + " MB") : "—";
+
+					var svc = s.services || {};
+					document.getElementById("rs-enginedetail").textContent =
+						"laya " + (eng.laya_enabled ? "ON" : "off") +
+						" · chat: " + (eng.chat_model || "default") +
+						" · artifact: " + (eng.artifact_model || "default");
+					document.getElementById("rs-services").textContent =
+						"laya " + (svc.laya === "up" ? "✓" : "✗") +
+						" · rizzo " + (svc.rizzo === "up" ? "✓" : "✗") +
+						" · ollama " + (svc.ga_ollama === "up" ? "✓" : "✗");
+					var le = document.getElementById("rs-layaerr");
+					le.textContent = s.laya_errors === null ? "log n/a" : (s.laya_errors + " in recent log");
+					le.style.color = (s.laya_errors > 5) ? "#B22222" : "";
+				}).catch(function(){ });
+			}
+			tick();
+			setInterval(tick, 15000);
+		})();
+		</script>
+
 		<div style="margin-bottom: 1em;">
 			<a href="{% url 'artifact_viewer' sim_code %}" class="btn btn-primary">
 				<i class="glyphicon glyphicon-picture"></i> View Artifacts Gallery
@@ -43,7 +110,9 @@
 			<div class="media" style="background-color:#EEEEEE; padding:1em; padding-left:3.5em; padding-right:2em; border-radius:10px">
 			  <div class="media-left media-middle">
 			    <a href="#">
-			      <img class="media-object" src="{% static 'img/atlas.png' %}" style="width:5em">
+			      {% with 'assets/characters/profile/'|add:p_name_os|add:'.png' as profile_static %}
+			      <img class="media-object" src="{% static profile_static %}" alt="{{ p_name }}" style="width:5em">
+			      {% endwith %}
 			    </a>
 			  </div>
 			  <div class="media-body" style='padding-left:3em; padding-top:0.5em; padding-bottom:1em'>

@@ -24,6 +24,7 @@ Description: Wrapper functions for calling local Ollama APIs instead of OpenAI.
 # =============================================================================
 import json
 import os
+import threading
 import time
 import urllib.request
 import urllib.error
@@ -63,6 +64,59 @@ def _resolve_model(model_hint):
     """Return (model_name, num_ctx) for a call-family hint (or None for fast lane)."""
     model = OLLAMA_MODEL_ROUTES.get(model_hint, OLLAMA_CHAT_MODEL)
     return model, _NUM_CTX_BY_MODEL.get(model, 8192)
+
+
+# --- Per-persona generation settings (Layer 1, Oct 2026) ------------------
+# A move-worker thread handles ONE agent's whole move(), so a thread-local
+# carries call attribution without touching the call signatures. Set in
+# reverie.py's _move_one; read here to override temperature/think per persona.
+_PERSONA_SETTINGS = {}       # name -> settings dict (loaded once, lazily)
+_PERSONA_CTX = threading.local()   # .name set by _move_one for this thread
+
+
+def set_persona_call_context(name):
+    """reverie.py calls this at the top of _move_one to attribute all LLM
+    calls on this worker thread to the given persona."""
+    _PERSONA_CTX.name = name
+
+
+def _persona_settings():
+    """Return this thread's persona settings dict (or {}). Loads
+    town_model_settings.json once; missing names/keys are absent."""
+    name = getattr(_PERSONA_CTX, "name", None)
+    if not name:
+        return {}
+    if "loaded" not in _PERSONA_SETTINGS:
+        try:
+            import json as _json
+            _path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                  "..", "..", "town_model_settings.json")
+            with open(_path) as f:
+                data = _json.load(f)
+            _PERSONA_SETTINGS.update({k: v for k, v in data.items()
+                                      if not k.startswith("_")})
+            _PERSONA_SETTINGS["loaded"] = True
+            print(f"[ModelSettings] loaded {len(data)-1} persona settings")
+        except Exception as e:
+            _PERSONA_SETTINGS["loaded"] = True
+            print(f"[ModelSettings] settings load failed ({e}); defaults apply")
+    return _PERSONA_SETTINGS.get(name) or {}
+
+
+def _persona_temperature(default):
+    """Persona temperature override, clamped 0.1-1.2."""
+    t = _persona_settings().get("temperature")
+    if t is None:
+        return default
+    return max(0.1, min(1.2, float(t)))
+
+
+def _persona_think(lane_think):
+    """Per-persona reasoning override (True/False), or the lane default."""
+    p = _persona_settings().get("think")
+    if p is None:
+        return lane_think
+    return bool(p)
 
 
 _LANE_THINK_ENV = {
@@ -234,7 +288,9 @@ def _ollama_generate(prompt, retries=5, free_form=False, model_hint=None):
         # Modern-model compatibility: suppress/enable reasoning explicitly.
         # Default think=False — GA call formats need the answer at position 1.
         # Quality-critical lanes may set GA_<LANE>_THINK=1 to opt in.
-        "think": _lane_think(model_hint),
+        # Per-persona overrides (Layer 1): temperature + reasoning toggle
+        # from town_model_settings.json via this worker thread's context.
+        "think": _persona_think(_lane_think(model_hint)),
         "messages": [
             {
                 "role": "user",
@@ -243,7 +299,13 @@ def _ollama_generate(prompt, retries=5, free_form=False, model_hint=None):
         ],
         "options": {
             "num_ctx": num_ctx,
-            "temperature": 0.7,
+            "temperature": _persona_temperature(0.7),
+            # Runaway-generation cap (Oct 6 2026): the ollama redesign
+            # dropped the legacy max_tokens cap, so a memo_on_convo call
+            # generated 5,000+ tokens (one JSON sentence was the ask) while
+            # the whole town waited behind CONVO_LOCK. 2048 = 2x the longest
+            # legit output shape (daily plan); GA_NUM_PREDICT adjusts.
+            "num_predict": int(os.environ.get("GA_NUM_PREDICT", "2048")),
         }
     }
     if not free_form:
@@ -265,8 +327,16 @@ def _ollama_generate(prompt, retries=5, free_form=False, model_hint=None):
         )
     data = json.dumps(request_body).encode('utf-8')
 
+    # Runaway-class guard (Oct 6 2026): a think=True persona's reasoning
+    # phase swallowed the whole num_predict cap — content came back empty,
+    # 5 doomed retries froze the town ~6 min per call. On the FIRST empty
+    # response, retry with think FORCED OFF so the answer lands in content.
+    _forced_think = False
     for attempt in range(retries):
         try:
+            if _forced_think:
+                request_body["think"] = False
+                data = json.dumps(request_body).encode('utf-8')
             req = urllib.request.Request(
                 url,
                 data=data,
@@ -274,9 +344,13 @@ def _ollama_generate(prompt, retries=5, free_form=False, model_hint=None):
             )
             # local model, but bounded: an unbounded timeout let a wedged
             # ollama worker hang the whole backend silently (Sep 2026).
-            # 180s is generous for local inference; on timeout the retry
-            # loop gives the call 5 more chances.
-            with urllib.request.urlopen(req, timeout=180) as response:
+            # 300s: measured Oct 8 (econ1) — ornith-1.5:9b under 6-way load
+            # generates ~5 t/s; a 750-token planning call brushes 180s, and
+            # every timeout retry DISCARDS the partial generation and
+            # re-queues it, feeding a saturation death-spiral (553 errors,
+            # 3 steps/hour). Give big calls room to complete instead.
+            # On timeout the retry loop gives the call 5 more chances.
+            with urllib.request.urlopen(req, timeout=300) as response:
                 result = json.loads(response.read().decode('utf-8'))
                 # /api/chat response: content lives under message.content.
                 # If a model still emits reasoning inline (think=false
@@ -298,13 +372,22 @@ def _ollama_generate(prompt, retries=5, free_form=False, model_hint=None):
                     except (json.JSONDecodeError, ValueError):
                         pass  # not JSON — use as-is
                     return text
-                # Empty response — wait and retry with backoff
+                # Empty response — flip think off after the first miss (an
+                # empty content at think=True means reasoning ate the cap),
+                # then wait and retry with backoff
+                _forced_think = True
                 wait = 2 ** attempt
                 print(f"[Ollama] Empty response on attempt {attempt+1}/{retries}, retrying in {wait}s...")
                 if attempt < retries - 1:
                     time.sleep(wait)
                     continue
-        except (urllib.error.URLError, urllib.error.HTTPError, json.JSONDecodeError) as e:
+        except (urllib.error.URLError, urllib.error.HTTPError,
+                json.JSONDecodeError, TimeoutError) as e:
+            # TimeoutError: a mid-response read timeout (getresponse)
+            # raises TimeoutError, NOT URLError — without it in the tuple
+            # the timeout escaped the retry loop and killed the worker
+            # thread (measured Oct 6: both A/B forks wedged on Eddy Lin's
+            # revise_identity during the midnight burst).
             wait = 2 ** attempt
             print(f"[Ollama] Error on attempt {attempt+1}/{retries}: {e}, retrying in {wait}s...")
             if attempt < retries - 1:

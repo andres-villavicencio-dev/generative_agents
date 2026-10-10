@@ -1,0 +1,506 @@
+{
+ "buckets": {
+  "[\"somewh\", \"somewh\", \"social\", \"recent\"]": {
+   "yes": 1,
+   "no": 2,
+   "conf": [
+    0.5109080898799078,
+    0.5109080898799078,
+    0.6933140980996916
+   ],
+   "choices": [
+    "no",
+    "no",
+    "yes"
+   ]
+  },
+  "[\"explor\", \"grocer\", \"social\", \"recent\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.7213093791957036
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"tidyin\", \"contin\", \"social\", \"conver\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.858197523509638
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"watch\", \"discus\", \"social\", \"conver\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.7103251414990323
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"open\", \"hobbs\", \"social\", \"recent\"]": {
+   "yes": 2,
+   "no": 0,
+   "conf": [
+    0.5377805229565575,
+    0.7250274106988286
+   ],
+   "choices": [
+    "yes",
+    "yes"
+   ]
+  },
+  "[\"assist\", \"grocer\", \"social\", \"recent\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.5816036705265457
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"contin\", \"grocer\", \"social\", \"conver\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.763218106486921
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"run\", \"open\", \"social\", \"conver\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.8587080575211139
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"open\", \"run\", \"social\", \"conver\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.8343616224040407
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"grocer\", \"explor\", \"social\", \"conver\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.7449960420671717
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"grocer\", \"lunch\", \"social\", \"recent\"]": {
+   "yes": 2,
+   "no": 0,
+   "conf": [
+    0.6756016577397542,
+    0.6630281474213527
+   ],
+   "choices": [
+    "yes",
+    "yes"
+   ]
+  },
+  "[\"run\", \"lunch\", \"social\", \"recent\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.7463958881785132
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"grocer\", \"hobbs\", \"social\", \"conver\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.7498058984370605
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"grocer\", \"study\", \"social\", \"recent\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.6457821713060496
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"hobbs\", \"explor\", \"social\", \"conver\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.8179365444544371
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"somewh\", \"somewh\", \"social\", \"conver\"]": {
+   "yes": 3,
+   "no": 0,
+   "conf": [
+    0.6747764037325239,
+    0.6747764037325239,
+    0.840324118207817
+   ],
+   "choices": [
+    "yes",
+    "yes",
+    "yes"
+   ]
+  },
+  "[\"explor\", \"hobbs\", \"social\", \"conver\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.8282851953834436
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"somewh\", \"grocer\", \"social\", \"recent\"]": {
+   "yes": 3,
+   "no": 0,
+   "conf": [
+    0.7403720042923572,
+    0.7038492816481432,
+    0.531483240602524
+   ],
+   "choices": [
+    "yes",
+    "yes",
+    "yes"
+   ]
+  },
+  "[\"prepar\", \"open\", \"social\", \"recent\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.6514221614791511
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"grocer\", \"lunch\", \"social\", \"conver\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.6701101257187408
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"open\", \"contin\", \"social\", \"recent\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.7959609382242961
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"hobbs\", \"grocer\", \"social\", \"conver\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.7991116710620442
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"bake\", \"relaxi\", \"social\", \"conver\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.7923527674941515
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"watch\", \"grocer\", \"social\", \"recent\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.6875859310551709
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"lunch\", \"eat\", \"social\", \"conver\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.8393012593581336
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"study\", \"hobbs\", \"social\", \"conver\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.7564509108997077
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"study\", \"hobbs\", \"social\", \"recent\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.5187379647459636
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"contin\", \"somewh\", \"social\", \"conver\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.7849695916594265
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"grocer\", \"review\", \"social\", \"conver\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.7674103291014421
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"study\", \"somewh\", \"social\", \"conver\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.7671063987177907
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"grocer\", \"attend\", \"social\", \"recent\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.6086956521739131
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"visit\", \"travel\", \"social\", \"conver\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.7745848906317016
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"hobbs\", \"hobbs\", \"social\", \"conver\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.8461982231452637
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"grocer\", \"run\", \"social\", \"conver\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.7411090828979668
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"grocer\", \"grocer\", \"social\", \"conver\"]": {
+   "yes": 4,
+   "no": 0,
+   "conf": [
+    0.7434818118992272,
+    0.6499257459160255,
+    0.6748823958126283,
+    0.61735222951953
+   ],
+   "choices": [
+    "yes",
+    "yes",
+    "yes",
+    "yes"
+   ]
+  },
+  "[\"grocer\", \"prepar\", \"social\", \"conver\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.8384249041700546
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"hobbs\", \"lunch\", \"social\", \"conver\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.753583447588184
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"hobbs\", \"rest\", \"social\", \"conver\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.8539995415998166
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"begin\", \"begin\", \"desper\", \"conver\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.94
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"wake\", \"read\", \"social\", \"conver\"]": {
+   "yes": 0,
+   "no": 1,
+   "conf": [
+    0.41
+   ],
+   "choices": [
+    "no"
+   ]
+  },
+  "[\"open\", \"read\", \"lonely\", \"recent\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.37
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"drink\", \"read\", \"desper\", \"conver\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.92
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"immers\", \"close\", \"desper\", \"recent\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.9
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"mannin\", \"browsi\", \"desper\", \"recent\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.82
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"work\", \"lunch\", \"desper\", \"recent\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.91
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"relaxi\", \"gentle\", \"desper\", \"conver\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.92
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"nap\", \"close\", \"desper\", \"recent\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.87
+   ],
+   "choices": [
+    "yes"
+   ]
+  },
+  "[\"read\", \"edit\", \"social\", \"conver\"]": {
+   "yes": 1,
+   "no": 0,
+   "conf": [
+    0.27
+   ],
+   "choices": [
+    "yes"
+   ]
+  }
+ }
+}

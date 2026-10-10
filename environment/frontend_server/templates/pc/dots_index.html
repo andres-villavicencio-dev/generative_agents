@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Dots — {{ sim_code }}{% endblock %}
+{% block content %}
+<div class="dots-shell">
+  <div class="dots-head">
+    <h2>✦ Dots of {{ sim_code }}</h2>
+    <div class="dots-meta"><a href="/simulator_home">← back to town</a></div>
+  </div>
+
+  {% if personas %}
+  <p class="dots-note">Agents with a lit computer are working on projects. Idle agents get a computer the moment they start project work — roughly 5-6 of the 25 actually do (the rest are busy reading in the bathtub, per long-standing Ville tradition).</p>
+  <ul class="dots-list">
+    {% for p in personas %}
+    <li class="dot-card {% if p.has_pc and p.projects %}dot-busy{% elif not p.has_pc %}dot-idle{% endif %}">
+      <a href="/pc/{{ sim_code }}/{{ p.name|urlencode }}/" class="dot-link">
+        <span class="dot-name">{{ p.name }} {% if p.has_pc %}<span class="dot-lamp on">🖥️</span>{% else %}<span class="dot-lamp off">💤</span>{% endif %}</span>
+        {% if p.has_pc %}
+        <span class="dot-stats">{{ p.files }} file{{ p.files|pluralize }} · {{ p.chars }} chars
+          {% if p.last_session %} · last: {{ p.last_op }} @ {{ p.last_session }}{% endif %}
+        </span>
+        {% else %}
+        <span class="dot-stats dot-idle-stats">no computer yet — hasn't done project work</span>
+        {% endif %}
+        {% for pr in p.projects %}
+        <span class="dot-project">
+          <span class="pc-badge {{ pr.status }}">{{ pr.status }}</span>
+          {{ pr.title }} <em>({{ pr.sessions_done }} sessions)</em>
+        </span>
+        {% endfor %}
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="pc-empty">No dots with computers yet in this sim — work sessions fire when personas do project work.</p>
+  {% endif %}
+</div>
+<style>
+.dots-shell { max-width: 900px; margin: 20px auto; padding: 0 16px; color: #e8e6e3; font-family: monospace; }
+.dots-head h2 { margin: 0 0 4px; }
+.dots-meta { margin-bottom: 16px; font-size: 12px; }
+.dots-meta a { color: #6fb3ff; }
+.dots-list { list-style: none; padding: 0; display: grid; gap: 10px; }
+.dot-card { border: 1px solid #333; border-radius: 8px; background: #16171a; }
+.dot-card:hover { border-color: #555; }
+.dot-busy { border-color: #3a6ea5; }
+.dot-idle { opacity: 0.55; }
+.dots-note { color: #888; font-size: 12px; margin-bottom: 14px; }
+.dot-idle-stats { font-style: italic; }
+.dot-link { display: block; padding: 12px 14px; color: #e8e6e3; text-decoration: none; }
+.dot-name { font-size: 15px; font-weight: bold; display: block; }
+.dot-stats { color: #888; font-size: 11px; display: block; margin: 3px 0; }
+.dot-project { display: block; font-size: 12px; margin-top: 4px; color: #c9d7e4; }
+.dot-project em { color: #777; }
+.pc-badge { font-size: 10px; padding: 2px 6px; border-radius: 8px; background: #3c4043; color: #ddd; margin-right: 6px; }
+.pc-badge.drafting { background: #4a3f14; color: #ffd75f; }
+.pc-badge.revising { background: #4a2f14; color: #ffab40; }
+.pc-badge.done { background: #1e4620; color: #7ee787; }
+.pc-empty { color: #777; font-style: italic; font-size: 12px; }
+body { background: #111214; }
+</style>
+{% endblock %}

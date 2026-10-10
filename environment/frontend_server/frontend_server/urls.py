@@ -34,6 +34,11 @@ urlpatterns = [
     url(r'^api/resources/(?P<sim_code>[\w-]+)/$', translator_views.get_world_resources, name='get_world_resources'),
     url(r'^api/artifacts/(?P<sim_code>[\w-]+)/$', translator_views.get_artifacts, name='get_artifacts'),
     url(r'^api/artifacts/(?P<sim_code>[\w-]+)/(?P<artifact_type>[\w-]+)/(?P<filename>[\w._-]+)/$', translator_views.get_artifact_content, name='get_artifact_content'),
+    url(r'^api/run_stats/(?P<sim_code>[\w-]+)/$', translator_views.get_run_stats, name='get_run_stats'),
     url(r'^artifacts/(?P<sim_code>[\w-]+)/$', translator_views.artifact_viewer, name='artifact_viewer'),
+    url(r'^pc/(?P<sim_code>[\w-]+)/(?P<persona_name>[\w .\'\-]+)/$', translator_views.pc_viewer, name='pc_viewer'),
+    url(r'^pc/(?P<sim_code>[\w-]+)/(?P<persona_name>[\w .\'\-]+)/note/$', translator_views.pc_note, name='pc_note'),
+    url(r'^api/pc/(?P<sim_code>[\w-]+)/(?P<persona_name>[\w .\'\-]+)/$', translator_views.get_pc_workspace, name='get_pc_workspace'),
+    url(r'^dots/(?P<sim_code>[\w-]+)/$', translator_views.dots_index, name='dots_index'),
     path('admin/', admin.site.urls),
 ]

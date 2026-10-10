@@ -1,0 +1,1 @@
+ga-sim.service override (Oct 1 2026): GA_CHAT_MODEL + GA_ARTIFACT_MODEL now ornith-1.5:9b, GA_TARGET=172800. ornith A/B verdict: prose quality wins over nemotron loop-collapse. laya stays CPU (override on ga-laya.service).

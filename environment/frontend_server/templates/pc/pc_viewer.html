@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}{{ persona_name }}'s Computer{% endblock %}
+{% block content %}
+<div class="pc-shell">
+  <div class="pc-head">
+    <h2>🖥️ {{ persona_name }}'s Computer</h2>
+    <div class="pc-meta">sim: {{ sim_code }} · <a href="/simulator_home">← back to town</a></div>
+  </div>
+
+  {% if error %}
+    <div class="pc-error">{{ error }}</div>
+  {% endif %}
+
+  <div class="pc-layout">
+    <aside class="pc-sidebar">
+      <h3>Files</h3>
+      {% if files %}
+      <ul class="pc-filelist">
+        {% for f in files %}
+        <li>
+          <a href="/pc/{{ sim_code }}/{{ persona_name }}/?file={{ f.name|urlencode }}"
+             class="pc-file {% if f.name == current_file %}pc-active{% endif %}">
+            <span class="pc-fname">{{ f.name }}</span>
+            <span class="pc-badge {{ f.status }}">{{ f.status }}</span>
+            {% if f.revs %}<span class="pc-revs">r{{ f.revs }}</span>{% endif %}
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="pc-empty">No files yet — {{ persona_name }} hasn't started any work on their computer.</p>
+      {% endif %}
+
+      <h3>Projects</h3>
+      {% if projects %}
+      <ul class="pc-projects">
+        {% for p in projects %}
+        <li>
+          <span class="pc-ptitle">{{ p.title }}</span>
+          <span class="pc-badge {{ p.status }}">{{ p.status }}</span>
+          <span class="pc-sessions">{{ p.sessions_done }} sessions</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="pc-empty">No active projects.</p>
+      {% endif %}
+    </aside>
+
+    <section class="pc-main">
+      {% if current_file %}
+        <div class="pc-doc-head">
+          <h3>{{ current_file }}</h3>
+          <span class="pc-badge {{ current_status }}">{{ current_status }}</span>
+          {% if revisions %}<span class="pc-revs">{{ revisions|length }} revisions on disk</span>{% endif %}
+        </div>
+        {% if revisions %}
+        <div class="pc-revslider">
+          <label>Revision: </label>
+          <select id="pc-rev-select">
+            <option value="current" selected>current</option>
+            {% for r in revisions %}
+            <option value="{{ r }}">{{ r }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        {% endif %}
+        <div class="pc-doctext" id="pc-doc">{{ content|escape }}</div>
+      {% else %}
+        <div class="pc-empty-main">Select a file on the left to open it.</div>
+      {% endif %}
+
+      <div class="pc-log">
+        <h3>Leave a note for {{ persona_name }}</h3>
+        <form method="post" action="/pc/{{ sim_code }}/{{ persona_name }}/note/">
+          {% csrf_token %}
+          <input type="text" name="author" placeholder="Your name" class="pc-note-author" maxlength="40">
+          <textarea name="text" rows="2" placeholder="Feedback on their work — they'll remember it..." class="pc-note-text" maxlength="600"></textarea>
+          <button type="submit" class="pc-note-send">Send note</button>
+        </form>
+        {% if note_sent %}<div class="pc-note-ok">✓ Note delivered — {{ persona_name }} will read it on their next step.</div>{% endif %}
+      </div>
+
+      <div class="pc-log">
+        <h3>Recent sessions</h3>
+        {% if sessions %}
+        <ul class="pc-sessions">
+          {% for s in sessions %}
+          <li>
+            <span class="pc-log-time">{{ s.sim_time }}</span>
+            <span class="pc-badge">{{ s.op }}</span>
+            <span class="pc-log-file">{{ s.file }}</span>
+            <span class="pc-log-chars">{{ s.chars }} chars</span>
+            <span class="pc-log-note">{{ s.note }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="pc-empty">No work sessions logged yet.</p>
+        {% endif %}
+      </div>
+    </section>
+  </div>
+</div>
+<style>
+.pc-shell { max-width: 1100px; margin: 20px auto; padding: 0 16px; color: #e8e6e3; font-family: monospace; }
+.pc-head h2 { margin: 0 0 4px; }
+.pc-meta { color: #888; font-size: 12px; margin-bottom: 16px; }
+.pc-meta a { color: #6fb3ff; }
+.pc-layout { display: flex; gap: 18px; align-items: flex-start; }
+.pc-sidebar { min-width: 260px; max-width: 300px; }
+.pc-sidebar h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #9aa0a6; margin: 12px 0 6px; }
+.pc-filelist { list-style: none; padding: 0; margin: 0; }
+.pc-file { display: block; padding: 8px 10px; border-radius: 6px; color: #e8e6e3; text-decoration: none; border: 1px solid transparent; }
+.pc-file:hover { background: #2a2a2e; }
+.pc-active { background: #2a2a2e; border-color: #555; }
+.pc-fname { display: block; font-size: 13px; overflow-wrap: anywhere; }
+.pc-badge { font-size: 10px; padding: 2px 6px; border-radius: 8px; background: #3c4043; color: #ddd; margin-left: 6px; }
+.pc-badge.drafting, .pc-badge.draft { background: #4a3f14; color: #ffd75f; }
+.pc-badge.revising { background: #4a2f14; color: #ffab40; }
+.pc-badge.final, .pc-badge.done { background: #1e4620; color: #7ee787; }
+.pc-revs { font-size: 10px; color: #888; margin-left: 4px; }
+.pc-projects { list-style: none; padding: 0; }
+.pc-projects li { padding: 6px 0; border-bottom: 1px solid #333; font-size: 12px; }
+.pc-ptitle { display: block; overflow-wrap: anywhere; }
+.pc-sessions { color: #888; font-size: 10px; }
+.pc-main { flex: 1; min-width: 0; }
+.pc-doc-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.pc-doc-head h3 { margin: 0; overflow-wrap: anywhere; }
+.pc-doctext { white-space: pre-wrap; background: #16171a; border: 1px solid #333; border-radius: 8px; padding: 16px; font-size: 13px; line-height: 1.55; min-height: 200px; overflow-wrap: anywhere; }
+.pc-empty, .pc-empty-main { color: #777; font-size: 12px; font-style: italic; }
+.pc-empty-main { padding: 60px 0; text-align: center; }
+.pc-revslider { margin: 8px 0; font-size: 12px; }
+.pc-revslider select { background: #16171a; color: #e8e6e3; border: 1px solid #444; border-radius: 4px; padding: 4px; }
+.pc-log { margin-top: 24px; }
+.pc-log h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #9aa0a6; margin: 12px 0 6px; }
+.pc-sessions { list-style: none; padding: 0; margin: 0; font-size: 12px; }
+.pc-sessions li { padding: 6px 0; border-bottom: 1px solid #2a2a2e; display: flex; gap: 8px; flex-wrap: wrap; align-items: baseline; }
+.pc-log-time { color: #888; min-width: 210px; }
+.pc-log-file, .pc-log-note { overflow-wrap: anywhere; }
+.pc-log-chars { color: #6fb3ff; }
+.pc-note-author { background: #16171a; color: #e8e6e3; border: 1px solid #444; border-radius: 4px; padding: 6px 8px; width: 180px; margin-bottom: 6px; display: block; }
+.pc-note-text { background: #16171a; color: #e8e6e3; border: 1px solid #444; border-radius: 4px; padding: 8px; width: 100%; max-width: 640px; font-family: monospace; }
+.pc-note-send { margin-top: 6px; background: #264a6e; color: #cfe4ff; border: 1px solid #3a6ea5; border-radius: 6px; padding: 6px 14px; cursor: pointer; }
+.pc-note-send:hover { background: #33597f; }
+.pc-note-ok { color: #7ee787; font-size: 12px; margin-top: 8px; }
+body { background: #111214; }
+</style>
+{% endblock %}

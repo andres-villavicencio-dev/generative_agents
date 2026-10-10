@@ -87,12 +87,37 @@ def main():
     say(f"backend pid={rev.pid} (log /tmp/{new_sim}_backend.log)")
 
     # -- driver: start at checkpoint step ------------------------------------
+    # Boot-race fix (Oct 2026, distill2 wedge): the driver used to start as
+    # soon as the movement dir existed — for a PRE-BUILT fork that's instant,
+    # so the driver consumed movement/<start_step>.json and wrote
+    # environment/<start_step+1>.json BEFORE the backend finished init. The
+    # backend's stale-file cleanup then DELETED that fresh env file → both
+    # sides waited forever (backend for env/<step+1>, driver for
+    # movement/<step+1>) — a silent mutual deadlock, all-nanosleep, zero
+    # traffic. Fix: wait for the backend log's "resume checkpoint override"
+    # line (printed AFTER cleanup) before starting the driver.
     mov_dir = os.path.join(STORAGE, new_sim, "movement")
     waited = 0
     while not os.path.isdir(mov_dir) and waited < 600:
         time.sleep(2)
         waited += 2
     say(f"movement dir ready after {waited}s")
+
+    backend_log_path = f"/tmp/{new_sim}_backend.log"
+    if os.environ.get("GA_FORK_SKIP_COPY") == "1" and start_step > 0:
+        marker = "stale-file cleanup complete"
+        waited = 0
+        while waited < 1200:
+            try:
+                with open(backend_log_path) as f:
+                    if marker in f.read():
+                        break
+            except OSError:
+                pass
+            time.sleep(2)
+            waited += 2
+        say(f"backend cleanup done (marker seen after {waited}s)"
+            f" — safe to start driver")
 
     def start_driver():
         dl = open(f"/tmp/{new_sim}_driver.log", "a")

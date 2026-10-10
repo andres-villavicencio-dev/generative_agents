@@ -1,0 +1,112 @@
+{
+  "_comment": "Per-persona cognitive settings. Layer 1 (generation): temperature, think (reasoning override, null = lane default). Layer 3 (temperament, laya decision biases): poignancy_shift (-2..+2), talk_bias (-0.5..+0.5, + = initiates chats), patience (+ = waits in venue collisions, - = barges on). All optional; absent = defaults (temp 0.7, lane think, no bias).",
+  "Tamara Taylor": {
+    "temperature": 0.95,
+    "poignancy_shift": 1
+  },
+  "Hailey Johnson": {
+    "temperature": 0.95,
+    "poignancy_shift": 1
+  },
+  "Carlos Gomez": {
+    "temperature": 1.0,
+    "poignancy_shift": 2,
+    "talk_bias": -0.3,
+    "patience": -0.2
+  },
+  "Abigail Chen": {
+    "temperature": 0.9
+  },
+  "Jennifer Moore": {
+    "temperature": 0.9,
+    "poignancy_shift": 1,
+    "talk_bias": 0.15,
+    "patience": 0.15
+  },
+  "Rajiv Patel": {
+    "temperature": 0.9,
+    "talk_bias": -0.15
+  },
+  "Eddy Lin": {
+    "temperature": 0.85
+  },
+  "Latoya Williams": {
+    "temperature": 0.85
+  },
+  "Maria Lopez": {
+    "temperature": 0.85
+  },
+  "Francisco Lopez": {
+    "temperature": 0.85,
+    "talk_bias": 0.15
+  },
+  "Adam Smith": {
+    "temperature": 0.8
+  },
+  "Arthur Burton": {
+    "temperature": 0.8,
+    "talk_bias": 0.25,
+    "patience": 0.15
+  },
+  "Isabella Rodriguez": {
+    "temperature": 0.8,
+    "talk_bias": 0.2
+  },
+  "Sam Moore": {
+    "temperature": 0.8,
+    "poignancy_shift": 1,
+    "talk_bias": 0.2
+  },
+  "Tom Moreno": {
+    "temperature": 0.75,
+    "poignancy_shift": 1,
+    "talk_bias": -0.3,
+    "patience": -0.3
+  },
+  "Ayesha Khan": {
+    "temperature": 0.6
+  },
+  "Wolfgang Schulz": {
+    "temperature": 0.6
+  },
+  "Jane Moreno": {
+    "temperature": 0.6,
+    "talk_bias": 0.1,
+    "patience": 0.2
+  },
+  "Carmen Ortiz": {
+    "temperature": 0.7,
+    "talk_bias": 0.1
+  },
+  "Mei Lin": {
+    "temperature": 0.5,
+    "talk_bias": 0.1,
+    "patience": 0.2
+  },
+  "John Lin": {
+    "temperature": 0.5
+  },
+  "Klaus Mueller": {
+    "temperature": 0.5,
+    "think": false
+  },
+  "Giorgio Rossi": {
+    "temperature": 0.35,
+    "think": true,
+    "poignancy_shift": -2,
+    "talk_bias": -0.25
+  },
+  "Ryan Park": {
+    "temperature": 0.35,
+    "think": true,
+    "poignancy_shift": -1,
+    "talk_bias": -0.15
+  },
+  "Yuriko Yamamoto": {
+    "temperature": 0.35,
+    "think": true,
+    "poignancy_shift": -2,
+    "talk_bias": -0.1,
+    "patience": 0.2
+  }
+}

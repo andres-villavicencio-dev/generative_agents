@@ -61,6 +61,31 @@ def generate_poig_score(persona, event_type, description):
     return score
 
   if event_type == "event":
+    # Laya v3 fast path (Sep 2026 promotion — cloud-Jev-distilled, gold-standard
+    # scorer: MAE 0.53 vs rizzo 0.85 on the 85-event blind gold set, 44ms).
+    # Served by ga-laya.service on :8018 (/v1/systemone, same wire as rizzo).
+    # Fail-open: (None, None) -> rizzo -> legacy generation.
+    if os.environ.get("GA_LAYA_POIGNANCY", "0") == "1":
+      try:
+        from persona.prompt_template.laya_scoring import laya_score_poignancy
+        ls, lc = laya_score_poignancy(persona.scratch.name,
+                                      persona.scratch.get_str_iss(), description)
+        if ls is not None:
+          return ls
+      except Exception as _laya_err:
+        print(f"[LAYA] poignancy fast path error ({_laya_err}) — cascading")
+    # Cloud Jev teacher path (OpenRouter typesafe/jev-1.13): the gold-standard
+    # scorer for the Sep 2026 distillation harvest. Harvested answers become
+    # the v3 training set. Fail-open -> rizzo -> legacy generation.
+    if os.environ.get("GA_CLOUDJEV", "0") == "1":
+      try:
+        from persona.prompt_template.cloudjev_scoring import cloudjev_score_poignancy
+        cs, cc = cloudjev_score_poignancy(persona.scratch.name,
+                                          persona.scratch.get_str_iss(), description)
+        if cs is not None:
+          return cs
+      except Exception as _cloud_err:
+        print(f"[CLOUDJEV] poignancy fast path error ({_cloud_err}) — cascading")
     # Rizzo Flow fast path (local Jev, Sep 2026 A/B winner): typed 1-10
     # decision from a single forward pass, ~130ms, zero generated tokens.
     # Fail-open: (None, None) -> the gemma3-J / legacy generation path below.

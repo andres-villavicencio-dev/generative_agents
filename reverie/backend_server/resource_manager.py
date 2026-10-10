@@ -69,6 +69,20 @@ class WorldResourceManager:
             "eggs": 100, "bread": 50, "milk": 40, "coffee_beans": 30,
             "last_delivery": "February 13, 2023, 06:00:00"
         },
+        # Economy v2 (Oct 2026): the pub's bar stock
+        "the Ville:The Rose and Crown Pub:pub:shelf": {
+            "beer": 40, "wine": 15, "juice": 20,
+            "last_delivery": "February 13, 2023, 06:00:00"
+        },
+        # Economy v2 (Oct 2026): the market's grocery + pharmacy stock
+        "the Ville:The Willows Market and Pharmacy:store:grocery store shelf": {
+            "eggs": 60, "bread": 30, "milk": 25,
+            "last_delivery": "February 13, 2023, 06:00:00"
+        },
+        "the Ville:The Willows Market and Pharmacy:store:pharmacy store shelf": {
+            "medicine": 15,
+            "last_delivery": "February 13, 2023, 06:00:00"
+        },
         "common bathroom:bathroom:hot_water": {
             "level": 80.0, "max": 100, "refill_rate": 1.0
         },
@@ -100,6 +114,28 @@ class WorldResourceManager:
         "the Ville:Harvey Oak Supply Store:supply store:shelves"
     ]
 
+    # Economy v2 (Oct 2026): ALL commercial venues restock daily at 6 AM.
+    # venue_id -> (address, {item: max_stock}, {item: wholesale_unit_cost}).
+    # The wholesale bill is debited from the VENUE's v2 till.
+    VENUE_STOCK = {
+        "grocery": (
+            "the Ville:Harvey Oak Supply Store:supply store:shelves",
+            {"eggs": 100, "bread": 50, "milk": 40, "coffee_beans": 30},
+            {"eggs": 0.25, "bread": 0.75, "milk": 0.60, "coffee_beans": 1.00}),
+        "pub": (
+            "the Ville:The Rose and Crown Pub:pub:shelf",
+            {"beer": 40, "wine": 15, "juice": 20},
+            {"beer": 1.75, "wine": 2.25, "juice": 1.00}),
+        "cafe": (
+            "the Ville:Hobbs Cafe:cafe:counter",
+            {"sandwiches": 20, "pastries": 20},
+            {"sandwiches": 2.25, "pastries": 1.50}),
+        "market": (
+            "the Ville:The Willows Market and Pharmacy:store:grocery store shelf",
+            {"eggs": 60, "bread": 30, "milk": 25},
+            {"eggs": 0.25, "bread": 0.75, "milk": 0.60}),
+    }
+
     # Ledger file for the store till (recovered from Sep 25 pyc)
     TILL_FILE_NAME = "economy_ledger.json"
 
@@ -122,6 +158,9 @@ class WorldResourceManager:
         self.resources_file = os.path.join(sim_folder, "resources", "world_state.json")
         self.last_tick_time = None
         self.last_delivery_date = None
+        # Economy v2 (Oct 2026): attached by reverie after init; the
+        # daily delivery routes wholesale bills through it.
+        self.economy = None
 
         # Load existing state or initialize with defaults
         if os.path.exists(self.resources_file):
@@ -268,9 +307,14 @@ class WorldResourceManager:
         # Sale -> till (Sep 2026 reconstruction): store purchases land in
         # the store till — money previously vanished here. Café counter
         # sales credit Isabella in reverie.py instead.
+        # Economy v2 (Oct 2026): with the v2 economy active the VENUE
+        # tills carry all money; this legacy single till is superseded
+        # (its consumer, _check_and_do_payday, is off by default).
         addr_l = address.lower()
         is_store = ("supply store" in addr_l
                     or ("shelves" in addr_l and "store" in addr_l))
+        if is_store and os.environ.get("GA_ECONOMY2", "1") != "0":
+            is_store = False  # v2 owns grocery money routing
         if is_store:
             buyer_name = getattr(buyer_scratch, 'name', 'Unknown')
             self.credit_store_till(price, item, amount, buyer_name, address)
@@ -409,7 +453,7 @@ class WorldResourceManager:
             # Check if it's 6:00 AM and we haven't delivered today
             if current_hour == 6:
                 if self.last_delivery_date != current_date:
-                    self._do_daily_delivery(sim_time)
+                    self._do_daily_delivery(sim_time, economy=self.economy)
                     self.last_delivery_date = current_date
 
             self.last_tick_time = sim_time
@@ -417,13 +461,39 @@ class WorldResourceManager:
         except Exception as e:
             print(f"[ResourceManager] Error in tick: {e}")
 
-    def _do_daily_delivery(self, sim_time):
-        """Perform daily store restocking. Each delivered unit debits the
-        store till at wholesale cost (50% of retail) — the store is a going
-        concern whose restocking has a visible price (Sep 2026 reconstruction,
-        verified against the Sep 25 pyc bytecode)."""
+    def _do_daily_delivery(self, sim_time, economy=None):
+        """Perform daily store restocking. Economy v2 (Oct 2026): ALL
+        commercial venues restock at 6 AM; each venue's wholesale bill is
+        debited from its own v2 till (legacy single-store path retained
+        for GA_ECONOMY2=0 runs). Tom Moreno's delivery wage is paid by
+        the economy layer (pay_restock_worker) — this method only moves
+        stock and money-to-supplier."""
         time_str = sim_time.strftime("%B %d, %Y, %H:%M:%S")
 
+        if economy is not None:
+            for vid, (addr, maxes, wholesale) in self.VENUE_STOCK.items():
+                normalized = self._normalize_address(addr)
+                if not (normalized and normalized in self.world_state):
+                    # Pub/market addresses may not exist in an older
+                    # world_state — seed them on first contact.
+                    if normalized:
+                        self.world_state[normalized] = dict(maxes)
+                    else:
+                        continue
+                location = self.world_state[normalized]
+                cost = 0.0
+                for item, max_stock in maxes.items():
+                    delivered = max(0, max_stock - location.get(item, 0))
+                    location[item] = max_stock
+                    cost += wholesale.get(item, 1.0) * delivered
+                location["last_delivery"] = time_str
+                if cost > 0:
+                    economy.debit_restock(vid, cost, sim_time)
+                print(f"[ResourceManager] Daily delivery to {normalized} "
+                      f"(wholesale ${cost:.2f})")
+            return
+
+        # Legacy single-store path (v2 off)
         for store_addr in self.STORE_ADDRESSES:
             normalized = self._normalize_address(store_addr)
             if not (normalized and normalized in self.world_state):
@@ -717,6 +787,20 @@ ACTION_RESOURCE_MAPPINGS = {
     # mapping is what turns that action into a real paid purchase from the
     # store's shelves (location-matched in reverie.py's consumption loop).
     "groceries": [("shelves", "eggs", 5), ("shelves", "bread", 3), ("shelves", "milk", 2)],
+
+    # Economy v2 (Oct 2026): pub drinks and pharmacy purchases.
+    "drinking beer": [("shelf", "beer", 1)],
+    "drink beer": [("shelf", "beer", 1)],
+    "having a beer": [("shelf", "beer", 1)],
+    "having a drink": [("shelf", "beer", 1), ("shelf", "wine", 0.5)],
+    "drinking wine": [("shelf", "wine", 1)],
+    "drink wine": [("shelf", "wine", 1)],
+    "ordering a drink": [("shelf", "beer", 1)],
+    "buying medicine": [("pharmacy store shelf", "medicine", 1)],
+    "picking up medicine": [("pharmacy store shelf", "medicine", 1)],
+    "buying groceries at the market": [("grocery store shelf", "eggs", 5), ("grocery store shelf", "bread", 3), ("grocery store shelf", "milk", 2)],
+    "groceries at the market": [("grocery store shelf", "eggs", 5), ("grocery store shelf", "bread", 3), ("grocery store shelf", "milk", 2)],
+    "market groceries": [("grocery store shelf", "eggs", 5), ("grocery store shelf", "bread", 3), ("grocery store shelf", "milk", 2)],
 }
 
 # Production mappings - when consuming resources produces other resources

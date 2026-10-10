@@ -115,6 +115,26 @@ def generate_poig_score(persona, event_type, description):
     return score
 
   if event_type == "event" or event_type == "thought":
+    # Laya v3 fast path (Sep 2026 promotion — gold-standard scorer, :8018).
+    if __import__('os').environ.get("GA_LAYA_POIGNANCY", "0") == "1":
+      try:
+        from persona.prompt_template.laya_scoring import laya_score_poignancy
+        ls, lc = laya_score_poignancy(persona.scratch.name,
+                                      persona.scratch.get_str_iss(), description)
+        if ls is not None:
+          return ls
+      except Exception as _laya_err:
+        print(f"[LAYA] poignancy fast path error ({_laya_err}) — cascading")
+    # Cloud Jev teacher path — harvested answers feed the v3 training set.
+    if __import__('os').environ.get("GA_CLOUDJEV", "0") == "1":
+      try:
+        from persona.prompt_template.cloudjev_scoring import cloudjev_score_poignancy
+        cs, cc = cloudjev_score_poignancy(persona.scratch.name,
+                                          persona.scratch.get_str_iss(), description)
+        if cs is not None:
+          return cs
+      except Exception as _cloud_err:
+        print(f"[CLOUDJEV] poignancy fast path error ({_cloud_err}) — cascading")
     # Rizzo fast path: same cascade as perceive.py (events AND thoughts).
     from persona.prompt_template.rizzo_scoring import rizzo_score_poignancy
     rs, rc = rizzo_score_poignancy(persona.scratch.name,
@@ -125,6 +145,10 @@ def generate_poig_score(persona, event_type, description):
   elif event_type == "chat":
     return run_gpt_prompt_chat_poignancy(persona,
                            persona.scratch.act_description)[0]
+
+
+def _dead_anchor_reflect():
+  return 0
 
 
 
@@ -273,7 +297,19 @@ def reflect(persona):
 
       # print (persona.a_mem.get_last_chat(persona.scratch.chatting_with).node_id)
 
-      evidence = [persona.a_mem.get_last_chat(persona.scratch.chatting_with).node_id]
+      _last_chat = persona.a_mem.get_last_chat(persona.scratch.chatting_with)
+      # get_last_chat returns False when no chat history exists with the
+      # partner — can happen when scratch.chatting_with is stale (the convo
+      # partner never stored a chat, e.g. interrupted mid-save). Build the
+      # evidence list from what exists instead of crashing on .node_id.
+      if _last_chat:
+        evidence = [_last_chat.node_id]
+      else:
+        # no chat with the partner: fall back to the most recent memory
+        # nodes as evidence for the thought (newest first by created)
+        _recent = sorted(persona.a_mem.id_to_node.items(),
+                         key=lambda kv: kv[1].created, reverse=True)[:2]
+        evidence = [nid for nid, _ in _recent]
 
       planning_thought = generate_planning_thought_on_convo(persona, all_utt)
       planning_thought = f"For {persona.scratch.name}'s planning: {planning_thought}"

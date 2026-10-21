@@ -839,8 +839,9 @@ class ReverieServer:
     try:
       s = persona.scratch
       curr = (s.act_address or "").lower()
-      if "supply store" not in curr and "shelves" not in curr:
-        return  # not at the store
+      at_market = "willows market" in curr
+      if "supply store" not in curr and "shelves" not in curr and not at_market:
+        return  # not at a grocery
       act_lower = (act_description or "").lower()
       if not any(k in act_lower for k in ("grocery", "groceries", "shopping", "buy")):
         return  # not a shopping action
@@ -860,8 +861,14 @@ class ReverieServer:
       # (the legacy 'store:shelves:groceries' shadow store), silently
       # draining phantom stock instead of the real one.
       store_addr = None
+      if at_market:
+        store_addr = next((a for a in self.resource_manager.world_state
+                           if "willows market" in a.lower()
+                           and "grocery store shelf" in a.lower()), None)
+        if not store_addr:
+          return
       canonical = self.resource_manager.STORE_ADDRESSES[0]
-      norm = self.resource_manager._normalize_address(canonical)
+      norm = None if at_market else self.resource_manager._normalize_address(canonical)
       if norm:
         store_addr = norm
       if not store_addr:
@@ -883,6 +890,18 @@ class ReverieServer:
           if self.resource_manager.purchase(store_addr, item, qty, s):
             bought.append((item, qty))
             self.resource_manager.restock(home_fridge, item, qty)
+            # Money leak fix (Oct 22 2026): under economy v2 purchase() no
+            # longer credits any till, and this bulk path never called
+            # credit_sale — the wallet was debited and the money vanished.
+            if self.economy is not None:
+              try:
+                _vid = self.economy.venue_of_address(store_addr)
+                if _vid is not None:
+                  self.economy.credit_sale(
+                    _vid, item, qty, persona.name,
+                    self.economy.item_price(item) * qty)
+              except Exception as _ce:
+                print(f"[Economy] bulk-shop credit failed ({_ce.__class__.__name__})")
       if not bought:
         return
 
@@ -930,10 +949,18 @@ class ReverieServer:
 
     all_success = True
 
-    # Find matching action keywords
-    for keyword, consumptions in ACTION_RESOURCE_MAPPINGS.items():
+    # Find matching action keywords. Longest match wins: "buying groceries
+    # at the market" also contains "groceries at the market" and
+    # "groceries", and every matching key used to fire — one visit, two or
+    # three charges (Oct 22 2026).
+    _matched = []
+    for keyword, consumptions in sorted(ACTION_RESOURCE_MAPPINGS.items(),
+                                        key=lambda kv: -len(kv[0])):
       if keyword not in act_lower:
         continue
+      if any(keyword in longer for longer in _matched):
+        continue
+      _matched.append(keyword)
 
       for resource_pattern, item, amount in consumptions:
         # Find matching resource address based on pattern and persona location
@@ -954,9 +981,12 @@ class ReverieServer:
           location_match = False
           if curr_location:
             curr_loc_lower = curr_location.lower()
-            # Check if in same building/area
+            # Same building = same SECTOR. This compared loc_parts[:2], whose
+            # first part is the world name ("the ville") — present in every
+            # address, so ANY shelf matched from anywhere (Oct 22 2026).
             loc_parts = curr_loc_lower.split(":")
-            if any(part in address_lower for part in loc_parts[:2]):
+            sector = loc_parts[1].strip() if len(loc_parts) > 1 else ""
+            if sector and sector in address_lower:
               location_match = True
 
           # Prioritize home resources, then location matches

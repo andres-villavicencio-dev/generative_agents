@@ -21,6 +21,13 @@ ITEM_PRICES = {
     "coffee_beans": 2.00,
     "sandwiches": 4.50,
     "pastries": 3.00,
+    # Pub + pharmacy (keep in sync with economy.ECONOMY_ITEM_PRICES): these
+    # were missing, so purchase() charged the $1.00 default while the venue
+    # till was credited the economy price — every pint minted money.
+    "beer": 3.50,
+    "wine": 4.50,
+    "juice": 2.50,
+    "medicine": 8.00,
 }
 
 
@@ -313,10 +320,11 @@ class WorldResourceManager:
         addr_l = address.lower()
         is_store = ("supply store" in addr_l
                     or ("shelves" in addr_l and "store" in addr_l))
-        # Stamp the shopping cooldown for EVERY store purchase — it used to
-        # live inside the legacy-till branch below, which economy v2 (the
-        # default) disables, so no purchase ever started the cooldown.
-        if is_store:
+        # Stamp the shopping cooldown for EVERY grocery purchase (either
+        # store) — it used to live inside the legacy-till branch below,
+        # which economy v2 (the default) disables, so no purchase ever
+        # started the cooldown.
+        if is_store or "willows market" in addr_l:
             try:
                 buyer_scratch.last_grocery_shop = self.last_tick_time
             except Exception:

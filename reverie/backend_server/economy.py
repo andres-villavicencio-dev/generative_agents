@@ -94,7 +94,9 @@ RESTOCK_WORKER = "Tom Moreno"
 RESTOCK_WAGE_SHARE = 0.10     # of previous day's combined sales
 EMPLOYEE_WAGE_SHARE = 0.10    # of venue's daily sales, per employee
 EMPLOYE_WAGE_FLOOR = 5.0      # a shift always pays at least this
-WAGE_HOUR = 22                # 10 PM: employee payday within the day
+WAGE_HOUR = 22                # 10 PM: employee payday + daily owner draw
+RESTOCK_HOUR = 6              # 6 AM: delivery wage + daily-intake rollover
+HIRING_HOUR = 7               # 7 AM: owners consider posting openings
 STIPEND_DAY_HOUR = (0, 6)     # Mondays 6 AM
 STIPEND_AMOUNT = 60.0
 STIPEND_STUDENTS = [
@@ -120,6 +122,7 @@ class EconomyManager:
         self.state = {
             "tills": {k: 200.0 for k in VENUES},
             "daily_intake": {k: 0.0 for k in VENUES},   # today's sales
+            "yesterday_intake": {k: 0.0 for k in VENUES},
             "employees": {k: [] for k in VENUES},       # lists of names
             "postings": {},            # venue -> {"posted_day": N, "reason": str}
             "hire_log": [],            # [{day, venue, owner, applicant, hired}]
@@ -235,10 +238,17 @@ class EconomyManager:
         """Tom's delivery wage: 10% of yesterday's combined sales, split
         across venues proportional to their intake. 6 AM."""
         try:
+            # Hour gate (Oct 22 2026): this ran on the FIRST step after
+            # midnight and reset daily_intake there — so pay_employees, called
+            # right after it in the same step, always saw intake 0 and paid no
+            # wages, ever. ">=" (not "==") because chat-time can skip hours.
+            if sim_time.hour < RESTOCK_HOUR:
+                return
             day = sim_time.toordinal()
             if self.state["last_restock_wage_day"] == day:
                 return
             self.state["last_restock_wage_day"] = day
+            self.state["yesterday_intake"] = dict(self.state["daily_intake"])
             sales = sum(self.state["daily_intake"].values())
             self.state["yesterday_sales"] = round(sales, 2)
             wage = round(RESTOCK_WAGE_SHARE * sales, 2)
@@ -275,6 +285,8 @@ class EconomyManager:
         intake (floor $5), from the till — owner tops up from wallet if
         the till can't cover."""
         try:
+            if sim_time.hour < WAGE_HOUR:   # was never checked (see restock)
+                return
             day = sim_time.toordinal()
             if self.state["last_wage_day"] == day or not self._personas:
                 return
@@ -305,14 +317,16 @@ class EconomyManager:
                     print(f"[Economy] {name} earned ${per:.2f} shift wage "
                           f"at {VENUES[vid]['name']} "
                           f"(wallet ${s.wallet:.0f})")
+            self._owner_draws(sim_time)
             self.save()
         except Exception as e:
             print(f"[Economy] employee wages failed: {e}")
 
     def weekly_flows(self, sim_time):
-        """Monday 6 AM: stipends + owner draws."""
+        """Monday from 6 AM: student stipends. (Owner draws are daily now —
+        see _owner_draws.)"""
         try:
-            if sim_time.weekday() != 0 or sim_time.hour != 6:
+            if sim_time.weekday() != STIPEND_DAY_HOUR[0] or sim_time.hour < STIPEND_DAY_HOUR[1]:
                 return
             day = sim_time.toordinal()
             # Stipends
@@ -327,27 +341,35 @@ class EconomyManager:
                         self._log_pay("stipend", name, STIPEND_AMOUNT, None)
                         print(f"[Economy] {name} received ${STIPEND_AMOUNT:.0f} "
                               f"student stipend (wallet ${s.wallet:.0f})")
-            # Owner draws
-            if self.state["last_draw_day"] != day:
-                self.state["last_draw_day"] = day
-                for vid, cfg in VENUES.items():
-                    owner = cfg["owner"]
-                    if not self._personas or owner not in self._personas:
-                        continue
-                    till = self.state["tills"][vid]
-                    draw = round(max(0.0, till - cfg["float"]), 2)
-                    if draw > 0:
-                        self.state["tills"][vid] = round(till - draw, 2)
-                        s = self._personas[owner].scratch
-                        s.wallet = round(getattr(s, "wallet", 0.0) + draw, 2)
-                        self._relax_stress(s)
-                        self._log_pay("owner_draw", owner, draw, vid)
-                        print(f"[Economy] {owner} drew ${draw:.2f} weekly "
-                              f"profit from {cfg['name']} "
-                              f"(wallet ${s.wallet:.0f})")
             self.save()
         except Exception as e:
             print(f"[Economy] weekly flows failed: {e}")
+
+    def _owner_draws(self, sim_time):
+        """Daily (with wages, 10 PM): each owner draws the till surplus above
+        the float. Weekly draws left a successful owner broke all week —
+        Isabella ended fresh25_1 with $2.60 while Hobbs Cafe held $314."""
+        day = sim_time.toordinal()
+        if self.state["last_draw_day"] == day or not self._personas:
+            return
+        self.state["last_draw_day"] = day
+        for vid, cfg in VENUES.items():
+            owner = cfg["owner"]
+            if owner not in self._personas:
+                continue
+            till = self.state["tills"][vid]
+            # Leave tomorrow-morning's delivery wage (Tom: 10% of today's
+            # intake, paid at 6 AM from the till surplus) in the till.
+            reserve = RESTOCK_WAGE_SHARE * self.state["daily_intake"].get(vid, 0.0)
+            draw = round(max(0.0, till - cfg["float"] - reserve), 2)
+            if draw > 0:
+                self.state["tills"][vid] = round(till - draw, 2)
+                s = self._personas[owner].scratch
+                s.wallet = round(getattr(s, "wallet", 0.0) + draw, 2)
+                self._relax_stress(s)
+                self._log_pay("owner_draw", owner, draw, vid)
+                print(f"[Economy] {owner} drew ${draw:.2f} daily profit from "
+                      f"{cfg['name']} (wallet ${s.wallet:.0f})")
 
     # -- hiring market ------------------------------------------------------
     def consider_hiring(self, sim_time):
@@ -356,7 +378,7 @@ class EconomyManager:
         a newly-broke agent can find work within a day — a weekly-only
         window starves broke agents out of the economy."""
         try:
-            if sim_time.hour != 7:
+            if sim_time.hour < HIRING_HOUR:
                 return
             day = sim_time.toordinal()
             if self.state["last_hirepost_day"] == day:
@@ -371,7 +393,9 @@ class EconomyManager:
                 if not self._llm:
                     continue
                 owner = self._personas[cfg["owner"]]
-                intake = self.state["daily_intake"].get(vid, 0.0)
+                # Yesterday's takings (the live counter was reset at 6 AM).
+                intake = self.state.get("yesterday_intake", {}).get(
+                    vid, self.state["daily_intake"].get(vid, 0.0))
                 prompt = (
                     f"You are {cfg['owner']}, owner of {cfg['name']} in a "
                     f"small town. Yesterday your venue took in "

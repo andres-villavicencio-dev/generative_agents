@@ -614,6 +614,12 @@ def generate_action_game_object(act_desp, act_address, persona, maze):
   return run_gpt_prompt_action_game_object(act_desp, persona, maze, act_address)[0]
 
 
+def _zlib_pref(name, n):
+  """Deterministic per-persona bucket in [0, n)."""
+  import zlib
+  return zlib.crc32(name.encode()) % n
+
+
 def _laya_shadow_location(act_desp, persona, maze, sector, arena):
   """Keep laya's spatial training pairs flowing under the unified call:
   ask laya (off-thread, shadow) the same three questions; its picks land in
@@ -1339,6 +1345,12 @@ def _determine_action(persona, maze):
     if _winner is not None:
       _drives_active = True
       _goal = _DRIVE_GOALS[_winner]
+      # Evening social life (Oct 22 2026): the pub made 3 sales in 3.5 days.
+      # After 6 PM the social drive heads there — "having a drink" is the
+      # resource mapping that turns the visit into a real, paid round.
+      _hr = getattr(persona.scratch.curr_time, "hour", 12)
+      if _winner == "social" and 18 <= _hr < 23:
+        _goal = "having a drink with friends at The Rose and Crown Pub"
       _now = persona.scratch.curr_time
       _served = getattr(persona.scratch, "_drive_served", {})
       _last = _served.get(_winner)
@@ -1434,6 +1446,23 @@ def _determine_action(persona, maze):
     import zlib as _zlib
     _threshold = 40 + _zlib.crc32(persona.name.encode()) % 11   # 40..50
     _shop_goal = "buying groceries at the Harvey Oak Supply Store"
+    # Second grocery (Oct 22 2026): The Willows Market sells the same
+    # staples but made $0 in fresh25_1 — nothing ever sent anyone there.
+    # Use it whenever Harvey Oak is short (it sold out on day 1), and as the
+    # regular store for a crc32 bucket of residents (3 of the 25: Hailey
+    # Johnson, Tom Moreno, Sam Moore).
+    try:
+      _ws = maze.resource_manager.world_state
+      _harvey = next((v for k, v in _ws.items()
+                      if "harvey oak supply store" in k.lower()
+                      and "shelves" in k.lower()), {})
+      _short = (_harvey.get("eggs", 0) < 5 or _harvey.get("bread", 0) < 3
+                or _harvey.get("milk", 0) < 2)
+    except Exception:
+      _short = False
+    if _short or _zlib_pref(persona.name, 3) == 0:
+      _shop_goal = ("buying groceries at the market "
+                    "(The Willows Market and Pharmacy)")
     _already = any("grocer" in g.lower()
                    for g in getattr(persona.scratch, "resource_goals", []))
     if (_hunger < _threshold and _cooldown_ok and _open and _wallet >= 30

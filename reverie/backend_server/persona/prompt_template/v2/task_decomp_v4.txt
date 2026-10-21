@@ -1,0 +1,41 @@
+task_decomp_v4.txt
+
+Oct 21 2026: v3's single worked example (Kelly planning a kindergarten
+lesson) leaked into 27% of minimax's decompositions of UNRELATED activities
+("eat breakfast" -> curriculum/worksheet steps). v4 keeps the same inputs and
+answer shape, but labels the example as format-only, uses a neutral
+household activity, and restates the real activity + rule right before the
+answer.
+
+Variables:
+!<INPUT 0>! -- Commonset
+!<INPUT 1>! -- Surrounding schedule description
+!<INPUT 2>! -- Persona first name
+!<INPUT 3>! -- Persona first name
+!<INPUT 4>! -- Current action
+!<INPUT 5>! -- curr time range
+!<INPUT 6>! -- Current action duration in min
+!<INPUT 7>! -- Persona first names
+
+<commentblockmarker>###</commentblockmarker>
+Task: break ONE activity of the person described below into subtasks in 5 min increments.
+
+=== FORMAT EXAMPLE ONLY (a different, unrelated person and activity — copy the line format, never the content) ===
+Activity: doing the laundry (total duration in minutes: 30)
+1) Pat is sorting the dirty clothes by color. (duration in minutes: 5, minutes left: 25)
+2) Pat is loading the washing machine and starting it. (duration in minutes: 5, minutes left: 20)
+3) Pat is moving the wet clothes to the dryer. (duration in minutes: 10, minutes left: 10)
+4) Pat is folding the dry clothes and putting them away. (duration in minutes: 10, minutes left: 0)
+=== END OF EXAMPLE ===
+
+The person:
+!<INPUT 0>!
+!<INPUT 1>!
+
+Activity to break down: !<INPUT 4>! from !<INPUT 5>! (total duration in minutes !<INPUT 6>!)
+Rules:
+* Every subtask must be a concrete step of "!<INPUT 4>!" itself, done by !<INPUT 3>!, fitting who they are.
+* Nothing from the format example (no laundry, no other person).
+* Durations are multiples of 5 and add up to exactly !<INPUT 6>! minutes.
+In 5 min increments, list the subtasks !<INPUT 2>! does to complete the following activity: !<INPUT 4>! from !<INPUT 5>! (total duration in minutes !<INPUT 6>!):
+1) !<INPUT 7>! is

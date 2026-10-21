@@ -935,7 +935,9 @@ def run_gpt_prompt_task_decomp(persona,
   gpt_param = {"engine": "text-davinci-003", "max_tokens": 1000,
              "temperature": 0, "top_p": 1, "stream": False,
              "frequency_penalty": 0, "presence_penalty": 0, "stop": None}
-  prompt_template = "persona/prompt_template/v2/task_decomp_v3.txt"
+  # v4 (Oct 21 2026): v3's kindergarten-lesson example leaked into 27% of
+  # minimax decompositions of unrelated activities; see the v4 header.
+  prompt_template = "persona/prompt_template/v2/task_decomp_v4.txt"
   prompt_input = create_prompt_input(persona, task, duration)
   prompt = generate_prompt(prompt_input, prompt_template)
   fail_safe = get_fail_safe()

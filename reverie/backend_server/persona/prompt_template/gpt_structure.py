@@ -57,6 +57,10 @@ OLLAMA_MODEL_ROUTES = {
 }
 _NUM_CTX_BY_MODEL = {
     "gemma3:latest": 8192,
+    # LFM2.5-24B-A2B thinking lane (Oct 15 2026): reasoning tokens + long
+    # persona prompts need ctx headroom; the conv-hybrid arch (30 gated
+    # short-conv + 10 GQA layers) carries a tiny KV, so 16384 is cheap.
+    "hf.co/LiquidAI/LFM2.5-24B-A2B-GGUF:Q4_K_M": 16384,
     # default 8192 keeps KV VRAM in check on the 8GB card
 }
 
@@ -146,6 +150,43 @@ string ::= "\"" char* "\""
 char   ::= [^"\\] | "\\" (["\\/bfnrt] | "u" [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F])
 ws     ::= [ \t\n]*'''
 
+# YAML lane (Oct 2026): qwen3.5-family models drift less with a minimal YAML
+# shape than with JSON objects (A/B probe Oct 10: 12/12 vs 10/12 on the event
+# triple). Grammar-constrain the output so YAML is as hard a guarantee as the
+# old format:"json" — a single "output: <value>" line.
+_GBNF_YAML_OUTPUT = r'''root   ::= "output: " value
+value ::= [^\n]+'''
+
+# _parse_yaml_output: stdlib-only parser for the grammar-constrained single
+# key/value YAML lane. Handles "output: value", optional surrounding quotes,
+# and falls back to json.loads when the model ignored the grammar (defense:
+# the GBNF grammar makes that impossible via ollama, but direct callers and
+# llama.cpp paths bypass it). Returns the plain value string.
+def _parse_yaml_output(text):
+    if not text:
+        return text
+    stripped = text.strip()
+    # JSON fallback: a model that ignored the YAML instruction
+    try:
+        parsed = json.loads(stripped)
+        if isinstance(parsed, dict) and "output" in parsed:
+            return str(parsed["output"])
+    except (json.JSONDecodeError, ValueError):
+        pass
+    # YAML single-key shape
+    for line in stripped.splitlines():
+        line = line.strip()
+        if line.startswith("output:"):
+            val = line[len("output:"):].strip()
+            val = val.strip('"').strip("'").strip()
+            if val:
+                return val
+    # free-form: return first non-empty line (grammar guarantees one)
+    for line in stripped.splitlines():
+        if line.strip():
+            return line.strip()
+    return stripped
+
 
 def temp_sleep(seconds=0.1):
     time.sleep(seconds)
@@ -161,6 +202,15 @@ def _strip_markdown(text):
     text = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL)
     # Strip </think> tag remnants without opening tag
     text = re.sub(r'</think>', '', text)
+    # Truncated thinking (Oct 15 2026, LFM2.5): an OPEN tag with NO close
+    # means generation died mid-reasoning at the num_predict cap —
+    # everything from the OPEN onward is reasoning fragments, not an
+    # answer. Cut back to the pre-OPEN text (usually empty) so the
+    # caller's empty-content handling (think-native budget ladder in
+    # _ollama_generate) sees it as empty instead of returning a bare
+    # marker as if it were the answer.
+    if "<think>" in text and "</think>" not in text:
+        text = text.split("<think>")[0]
     # Remove bold/italic: **text** -> text, *text* -> text, __text__ -> text
     text = re.sub(r'\*{1,3}([^*]+)\*{1,3}', r'\1', text)
     text = re.sub(r'_{1,2}([^_]+)_{1,2}', r'\1', text)
@@ -197,8 +247,9 @@ def _llama_cpp_generate(prompt, retries=5, free_form=False):
     )
     if not free_form:
         system_msg += (
-            "Output valid JSON exactly matching the example format in the prompt. "
-            "Do not add any explanation, markdown, or extra keys."
+            "Output ONLY one line in the exact YAML format shown in the prompt: "
+            "output: <value> "
+            "No explanation, no markdown, no extra keys or lines."
         )
     else:
         system_msg += (
@@ -217,7 +268,7 @@ def _llama_cpp_generate(prompt, retries=5, free_form=False):
         "temperature": 0.7,
     }
     if not free_form:
-        request_body["grammar"] = _GBNF_JSON_OUTPUT
+        request_body["grammar"] = _GBNF_YAML_OUTPUT
 
     data = json.dumps(request_body).encode('utf-8')
 
@@ -282,15 +333,31 @@ def _ollama_generate(prompt, retries=5, free_form=False, model_hint=None):
         return _llama_cpp_generate(prompt, retries=retries, free_form=free_form)
     url = f"{OLLAMA_BASE_URL}/api/chat"
     model, num_ctx = _resolve_model(model_hint)
+    # Think-native budgets (Oct 15 2026): modern reasoning models burn
+    # 600-2500 reasoning tokens BEFORE the answer. A flat cap truncates
+    # mid-reasoning (content arrives empty, done_reason=length) and the
+    # old code answered that by suppressing thinking entirely. Adapt
+    # instead: when the resolved call thinks, scale the answer budget by
+    # GA_THINK_MULT (default 3x = 6144: reasoning headroom + the 2x-longest
+    # legit answer shape). GA_THINK_MULT set explicitly applies even with
+    # think off — always-think checkpoints (LFM2.5 family) ignore think=false
+    # and need the headroom regardless of what we request.
+    resolved_think = _persona_think(_lane_think(model_hint))
+    _base_np = int(os.environ.get("GA_NUM_PREDICT", "2048"))
+    _think_mult_env = os.environ.get("GA_THINK_MULT")
+    if _think_mult_env is not None:
+        num_predict = int(_base_np * float(_think_mult_env))
+    elif resolved_think:
+        num_predict = _base_np * 3
+    else:
+        num_predict = _base_np
     request_body = {
         "model": model,
         "stream": False,
         # Modern-model compatibility: suppress/enable reasoning explicitly.
-        # Default think=False — GA call formats need the answer at position 1.
-        # Quality-critical lanes may set GA_<LANE>_THINK=1 to opt in.
-        # Per-persona overrides (Layer 1): temperature + reasoning toggle
-        # from town_model_settings.json via this worker thread's context.
-        "think": _persona_think(_lane_think(model_hint)),
+        # Lane default is env-controlled (GA_<LANE>_THINK); per-persona
+        # overrides come from town_model_settings.json (Layer 1).
+        "think": resolved_think,
         "messages": [
             {
                 "role": "user",
@@ -303,18 +370,25 @@ def _ollama_generate(prompt, retries=5, free_form=False, model_hint=None):
             # Runaway-generation cap (Oct 6 2026): the ollama redesign
             # dropped the legacy max_tokens cap, so a memo_on_convo call
             # generated 5,000+ tokens (one JSON sentence was the ask) while
-            # the whole town waited behind CONVO_LOCK. 2048 = 2x the longest
-            # legit output shape (daily plan); GA_NUM_PREDICT adjusts.
-            "num_predict": int(os.environ.get("GA_NUM_PREDICT", "2048")),
+            # the whole town waited behind CONVO_LOCK. The think-native
+            # num_predict above keeps the cap; GA_NUM_PREDICT adjusts the
+            # base (think lanes scale it via GA_THINK_MULT / resolved think).
+            "num_predict": num_predict,
         }
     }
     if not free_form:
-        request_body["format"] = "json"  # Ollama 0.18+ supports "json" string
+        # YAML lane (Oct 2026): "output: <value>" replaces format:"json".
+        # NOTE: ollama's format field accepts ONLY "json" or a JSON schema —
+        # a raw GBNF string 500s the request (verified live Oct 11: HTTP 500).
+        # The YAML shape is enforced instruction-only here, which the A/B probe
+        # showed is actually MORE reliable with qwen3.5-family models than
+        # grammar-constrained JSON (12/12 vs 10/12 on the event triple).
         request_body["system"] = (
             "You are a simulation assistant. "
             "IMPORTANT: Respond in English only. "
-            "Output valid JSON exactly matching the example format in the prompt. "
-            "Do not add any explanation, markdown, or extra keys."
+            "Output ONLY one line in the exact YAML format shown in the prompt: "
+            "output: <value> "
+            "No explanation, no markdown, no extra keys or lines."
         )
     else:
         request_body["system"] = (
@@ -327,14 +401,21 @@ def _ollama_generate(prompt, retries=5, free_form=False, model_hint=None):
         )
     data = json.dumps(request_body).encode('utf-8')
 
-    # Runaway-class guard (Oct 6 2026): a think=True persona's reasoning
-    # phase swallowed the whole num_predict cap — content came back empty,
-    # 5 doomed retries froze the town ~6 min per call. On the FIRST empty
-    # response, retry with think FORCED OFF so the answer lands in content.
+    # Think-native retry ladder (Oct 15 2026): a reasoning phase can outgrow
+    # any fixed cap — content arrives empty with done_reason=length. The old
+    # code suppressed thinking on the first miss (lazy think=false). Adapt
+    # instead, in order: (1) ONE budget escalation (2x) when the response
+    # died mid-reasoning at the cap — the reasoning may simply need more
+    # room; (2) only on the NEXT empty response fall back to think=False —
+    # last resort so a thinking checkpoint that ignores think=false still
+    # can't freeze the town; (3) legacy backoff retries after that.
+    # Trigger on done_reason=length regardless of the think flag: always-
+    # think checkpoints (LFM2.5) reason even when told not to.
+    _budget_escalated = False
     _forced_think = False
     for attempt in range(retries):
         try:
-            if _forced_think:
+            if _forced_think and request_body.get("think"):
                 request_body["think"] = False
                 data = json.dumps(request_body).encode('utf-8')
             req = urllib.request.Request(
@@ -355,26 +436,39 @@ def _ollama_generate(prompt, retries=5, free_form=False, model_hint=None):
                 # /api/chat response: content lives under message.content.
                 # If a model still emits reasoning inline (think=false
                 # unsupported or ignored), the reasoning field is separate —
-                # we only ever consume message.content.
+                # we only ever consume message.content, and _strip_markdown
+                # removes the inline <think>-style block as a second line of
+                # defense.
                 msg = result.get("message", {})
                 text = msg.get("content", "")
                 if not text.strip() and result.get("response", ""):
                     text = result["response"]  # legacy/generate-shape fallback
                 text = _strip_markdown(text)
-                # Extract ["output"] value from schema-constrained JSON.
-                # The format enforcement always wraps responses as {"output": "..."},
-                # but most func_clean_up callers expect plain text, not JSON.
+                # YAML lane: unwrap "output: <value>" (grammar-constrained) or
+                # fall back to JSON parsing if a caller bypassed the grammar.
                 if text.strip():
-                    try:
-                        parsed = json.loads(text)
-                        if isinstance(parsed, dict) and "output" in parsed:
-                            text = str(parsed["output"])
-                    except (json.JSONDecodeError, ValueError):
-                        pass  # not JSON — use as-is
+                    text = _parse_yaml_output(text)
                     return text
-                # Empty response — flip think off after the first miss (an
-                # empty content at think=True means reasoning ate the cap),
-                # then wait and retry with backoff
+                # Empty content. If the generation died AT the cap, the
+                # reasoning phase swallowed the budget — adapt: double the
+                # budget once before ever suppressing thinking.
+                if (not _budget_escalated
+                        and result.get("done_reason") == "length"):
+                    _budget_escalated = True
+                    request_body["options"]["num_predict"] = \
+                        int(request_body["options"]["num_predict"]) * 2
+                    data = json.dumps(request_body).encode('utf-8')
+                    print(f"[Ollama] Reasoning outgrew the cap on attempt "
+                          f"{attempt+1}/{retries}; retrying with 2x budget "
+                          f"({request_body['options']['num_predict']} tokens)...")
+                    if attempt < retries - 1:
+                        time.sleep(1)
+                        continue
+                # Still empty (or died for another reason) — fall back to
+                # think=False so the answer lands in content, then retry
+                # with backoff. A checkpoint that ignores the toggle will
+                # simply run the ladder's escalated budget with thinking
+                # anyway, which is the best it can do.
                 _forced_think = True
                 wait = 2 ** attempt
                 print(f"[Ollama] Empty response on attempt {attempt+1}/{retries}, retrying in {wait}s...")
@@ -460,9 +554,9 @@ def GPT4_safe_generate_response(prompt,
                                 func_clean_up=None,
                                 verbose=False):
     prompt = 'GPT-3 Prompt:\n"""\n' + prompt + '\n"""\n'
-    prompt += f"Output the response to the prompt above in json. {special_instruction}\n"
-    prompt += "Example output json:\n"
-    prompt += '{"output": "' + str(example_output) + '"}'
+    prompt += f"Output the response to the prompt above in yaml. {special_instruction}\n"
+    prompt += "Example output yaml:\n"
+    prompt += 'output: "' + str(example_output) + '"'
 
     if verbose:
         print("OLLAMA PROMPT")
@@ -499,9 +593,11 @@ def ChatGPT_safe_generate_response(prompt,
                                    verbose=False,
                                    model_hint=None):
     prompt = '"""' + '\n' + prompt + '\n' + '"""' + '\n'
-    prompt += f"Output the response to the prompt above in json. {special_instruction}\n"
-    prompt += "Example output json:\n"
-    prompt += '{"output": "' + str(example_output) + '"}'
+    # YAML lane (Oct 2026): the in-prompt example switches from JSON to the
+    # minimal YAML shape; transport grammar enforces it at the sampler.
+    prompt += f"Output the response to the prompt above in yaml. {special_instruction}\n"
+    prompt += "Example output yaml:\n"
+    prompt += 'output: "' + str(example_output) + '"'
 
     # FIX (vector 2 — deterministic call cache): many GA prompts are fully
     # deterministic (temp 0) and repeat identically every step — sleeping

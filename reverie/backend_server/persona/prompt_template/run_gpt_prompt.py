@@ -3372,13 +3372,31 @@ def run_gpt_generate_safety_score(persona, comment, test_input=None, verbose=Fal
     return prompt_input
 
   def __chat_func_clean_up(gpt_response, prompt=""):
-    gpt_response = json.loads(gpt_response)
-    return gpt_response["output"]
+    # YAML lane: "output: <int>" line; fall back to JSON (legacy)
+    try:
+      gpt_response = json.loads(gpt_response)
+      return gpt_response["output"]
+    except (json.JSONDecodeError, ValueError, TypeError, KeyError):
+      pass
+    for line in gpt_response.strip().splitlines():
+      line = line.strip()
+      if line.lower().startswith("output:"):
+        try:
+          return int(line[len("output:"):].strip())
+        except ValueError:
+          continue
+    return None
 
   def __chat_func_validate(gpt_response, prompt=""):
     try:
       fields = ["output"]
-      response = json.loads(gpt_response)
+      try:
+        response = json.loads(gpt_response)
+      except (json.JSONDecodeError, ValueError):
+        # YAML shape: "output: <int>"
+        return any(l.strip().lower().startswith("output:")
+                   and l.strip()[len("output:"):].strip().isdigit()
+                   for l in gpt_response.strip().splitlines())
       for field in fields:
         if field not in response:
           return False
@@ -3482,8 +3500,12 @@ def run_gpt_generate_iterative_chat_utt(maze, init_persona, target_persona, retr
     return prompt_input
 
   def __chat_func_clean_up(gpt_response, prompt=""):
-    # After schema extraction, gpt_response may be plain text (the utterance itself).
-    # Try JSON parse first (original format), fall back to treating as utterance.
+    # YAML lane (Oct 2026): grammar is still free_form for this seam — the
+    # template instructs a two-line YAML block:
+    #   utterance: <text>
+    #   end: <bool>
+    # Parse that first; fall back to the legacy JSON dict; last resort plain
+    # text (the utterance itself).
 
     def _strip_schema_leakage(text):
       """Remove prompt schema artifacts that leak into utterances."""
@@ -3499,6 +3521,19 @@ def run_gpt_generate_iterative_chat_utt(maze, init_persona, target_persona, retr
       # Strip surrounding quotes
       text = text.strip().strip('"').strip("'").strip()
       return text
+
+    # YAML shape: leading "utterance:" line + "end:" line
+    stripped = gpt_response.strip()
+    if stripped.lower().startswith("utterance"):
+      utterance, end_val = "", False
+      for line in stripped.splitlines():
+        line = line.strip()
+        if line.lower().startswith("utterance:"):
+          utterance = line[len("utterance:"):].strip().strip('"').strip("'").strip()
+        elif line.lower().startswith("end:"):
+          end_val = line[len("end:"):].strip().strip('"').strip("'").lower() == "true"
+      if utterance:
+        return {"utterance": _strip_schema_leakage(utterance), "end": end_val}
 
     parsed = extract_first_json_dict(gpt_response)
     if parsed is None or not isinstance(parsed, dict):

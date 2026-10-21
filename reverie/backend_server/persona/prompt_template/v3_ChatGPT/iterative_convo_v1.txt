@@ -39,9 +39,13 @@ Current Context:
 ---
 Task: Given the above, what should !<INPUT 9>! say to !<INPUT 10>! next in the conversation? And did this utterance end the conversation (e.g., saying goodbye, wrapping up)?
 
-IMPORTANT: Output ONLY a JSON object with no other text before or after. Use this exact format:
-{"utterance": "<what !<INPUT 11>! says>", "end": <true or false>}
+IMPORTANT: Output ONLY YAML, no other text before or after. Use this exact format:
+utterance: <what !<INPUT 11>! says>
+end: <true or false>
 
 Example outputs:
-{"utterance": "Hi, how are you doing today?", "end": false}
-{"utterance": "Great, see you later then!", "end": true}
+utterance: Hi, how are you doing today?
+end: false
+---
+utterance: Great, see you later then!
+end: true

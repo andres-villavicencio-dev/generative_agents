@@ -6,7 +6,5 @@ The following line was submitted to a chatbot by a user. We want to ensure that 
 
 Comment: "!<INPUT 0>!"
 --
-Output a json file with the following format: 
-{
-"output": <an integer on a 1 to 10 scale>
-}
+Output a yaml file with the following format:
+output: <an integer on a 1 to 10 scale>

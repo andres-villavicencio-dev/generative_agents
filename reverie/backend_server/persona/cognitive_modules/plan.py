@@ -6,6 +6,7 @@ Description: This defines the "Plan" module for generative agents.
 """
 import datetime
 import math
+import os
 import random 
 import re
 import sys
@@ -22,6 +23,44 @@ import threading
 #   2. lets_talk() short-circuits on low-poignancy events (poig < 3) before any
 #      LLM call — banal stimuli never reach the model.
 _SOCIAL_THINK_SEM = threading.Semaphore(2)
+
+# DURABLE CONVERSATION JOURNAL (Oct 21 2026): scratch chat state only hits
+# disk at checkpoint saves (every 360 steps); a crash mid-conversation
+# destroyed the only copy — the n68 first-real-conversation (Ayesha Khan /
+# Latoya Williams, 10 exchanges) died with the process at 14:05 and was
+# unrecoverable. generate_convo is atomic (one call returns the full turn
+# list), so journaling the completed conversation at _chat_react time makes
+# every chat crash-proof and gives the information-transfer objective a
+# first-class dataset: who told what to whom, when. Fail-open: journaling
+# must never cost the sim a conversation.
+import json as _json
+_CONVO_JOURNAL_PATH = os.environ.get(
+    "GA_CONVO_JOURNAL",
+    os.path.abspath(os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "..", "..", "..", "..", "ga_traces", "conversations.jsonl")))
+_CONVO_JOURNAL_LOCK = threading.Lock()
+
+def _journal_conversation(init_persona, target_persona, convo, summary,
+                          duration_min):
+  """Append one completed conversation to ga_traces/conversations.jsonl."""
+  try:
+    rec = {
+        "ts": time.time(),
+        "sim_time": str(init_persona.scratch.curr_time),
+        "init": init_persona.name,
+        "target": target_persona.name,
+        "summary": summary,
+        "duration_min": duration_min,
+        "turns": [[row[0], row[1]] for row in (convo or [])],
+    }
+    line = _json.dumps(rec, ensure_ascii=False)
+    with _CONVO_JOURNAL_LOCK:
+      with open(_CONVO_JOURNAL_PATH, "a", encoding="utf-8") as f:
+        f.write(line + "\n")
+  except Exception as _e:
+    print(f"[ConvoJournal] write failed (fail-open): {_e}")
+
 sys.path.append('../../')
 
 from global_methods import *
@@ -1339,10 +1378,15 @@ def _determine_action(persona, maze):
   # encounter -> 0 conversations for entire sim-days. Now UNCONDITIONAL and
   # placed after the drives insert, so its insert(0) wins the resource_goals
   # pop. Goals are progressive-tense (goal strings render as "X is <goal>")
-  # and home-anchored: the maze has NO bathroom venues, so 'nearest
-  # bathroom' could never resolve; 'home' always does, and
-  # satisfy_needs_for_action reads the DESCRIPTION keyword ('bathroom'),
-  # not the venue.
+  # and home-anchored. CORRECTION (Oct 21, same day): the original diagnosis
+  # claimed the maze has NO bathroom venues — wrong file (maze_meta_info.json
+  # carries no arena names). special_blocks/arena_blocks.csv shows 18
+  # bathroom arenas, every one fully tiled (15-22 tiles), all rendered to the
+  # location picker via the s_mem tree — so 'using the bathroom at home'
+  # resolves to the persona's REAL home bathroom arena, and
+  # satisfy_needs_for_action's keyword relief ('bathroom' -> +70) fires on
+  # the act DESCRIPTION. The venue layer was never the problem; the
+  # dead-code gate was the whole defect.
   if hasattr(persona.scratch, "needs") and persona.scratch.needs:
     critical = getattr(persona.scratch, "needs_critical", 20)
     urgent_map = {
@@ -1789,6 +1833,8 @@ def _chat_react(maze, persona, focused_event, reaction_mode, personas):
   # Actually creating the conversation here. 
   convo, duration_min = generate_convo(maze, init_persona, target_persona)
   convo_summary = generate_convo_summary(init_persona, convo)
+  _journal_conversation(init_persona, target_persona, convo, convo_summary,
+                        duration_min)
   inserted_act = convo_summary
   inserted_act_dur = duration_min
 

@@ -20,7 +20,51 @@ cd reverie/backend_server && python reverie.py
 python simstart.py --fork base_the_ville_isabella_maria_klaus --steps 100 --auto
 ```
 
-**Prerequisites:** Ollama running locally (`http://localhost:11434`) with models `qwen3.5:9b` (chat) and `embeddinggemma` (embeddings).
+**Prerequisites:** Ollama with a chat model and `embeddinggemma` (embeddings). The code default is `qwen3.5:2b` on `http://localhost:11434` (`GA_CHAT_MODEL` / `GA_OLLAMA_URL` override). Live runs currently use a dedicated instance — see "Live Run Operations" below.
+
+## Live Run Operations (as of Oct 21 2026)
+
+**Current run: `fresh25_1`** (unit `ga-fresh25`, started Oct 21 2026 15:00) — fresh 25-agent fork of `base_the_ville_n25`, target 25,920 steps (3 sim-days), minimax-m3.1-flash:cloud. All earlier sims (live3d_n17..n68, Apr/Mar tests, compressed_storage) were deleted Oct 21; their `/tmp/*_backend.log` are gzipped. `ga_traces/` (the training data) was kept.
+
+- **Fresh run:** `systemd-run --user --unit <unit> --setenv=... venv/bin/python run_live3d.py <sim> <steps> <fork>` (cold start = day-one planning for all 25 agents, no movement dir until it finishes).
+- **Resume from checkpoint:** `run_live3d_resume.py <old_sim> <new_sim> <start_step> <target_step>` (`run N` is relative). Checkpoints every 360 steps.
+- Live env: `GA_OLLAMA_URL=http://127.0.0.1:11436 GA_CHAT_MODEL=GA_ARTIFACT_MODEL=minimax-m3.1-flash:cloud GA_THINK_MULT=4 GA_MOVE_WORKERS=12 GA_CALL_TRACE=1 GA_JEV_SCORING=1 GA_LAYA_POIGNANCY=1 GA_RIZZO_POIGNANCY=1 GA_RIZZO_REFLEX=1 GA_DRIVES=1 GA_ROUTINES=1 GA_CURRICULUM=1 GA_CURIOSITY=1`.
+- Backend log `/tmp/<sim>_backend.log` is block-buffered (lags minutes) — judge liveness by the movement frontier or `ga_traces/calls/*.jsonl`, not log size. Progress: `logs/<sim>.log` / `journalctl --user -u <unit>`.
+- **Viewer:** `/simulator_home` is read-only follow mode by default (`?drive=1` = legacy browser-driven mode; never use it while headless_driver runs). It auto-reloads on sim change, checkpoint rollback, or >60 steps of lag, and polls ~3x/s. The ops card's **Activity** line (from `ga_traces/calls`) shows in-step work — a minutes-long step (conversation + re-plan) reads as busy, red only after 3 min without a completed LLM call.
+
+| Service | Port | Purpose |
+|---------|------|---------|
+| `ga-ollama` (user unit) | 11436 | Sim LLM endpoint. Proxies `minimax-m3.1-flash:cloud` (free until ~Oct 22) + local `embeddinggemma`. `OLLAMA_NUM_PARALLEL=5`. |
+| system `ollama` | 11434 | Default instance; not used by live runs. |
+| `ga-laya` (user unit) | 8018 | Laya v3 local fine-tuned decision server (poignancy / talk / react). POST only. |
+| Django `runserver` | 8000 | Frontend; two PIDs is normal (autoreloader parent + worker). `/api/run_stats/<sim>/` feeds the simulator_home ops card (rate = steps written in a trailing 10-min window; unit resolved from the backend's cgroup). |
+| `~/Scripts/m31_teacher_harvest.py` | — | Blind teacher-labels `ga_traces/{poignancy,talk,react}.jsonl` with minimax → `ga_traces/m31_teacher/`. |
+
+**Purpose of the minimax runs:** harvest cloud-teacher data to fine-tune the local sLM. Data products:
+- `ga_traces/{poignancy,talk,react}.jsonl` — sim decision traces (`ga_trace.py`).
+- `ga_traces/m31_teacher/*.jsonl` — blind teacher labels for those.
+- `ga_traces/calls/<model>.jsonl` — **every** chat call (prompt, system, content, thinking, tokens, latency, caller, persona) (default on; `GA_CALL_TRACE=0` disables — `gpt_structure._trace_call`). Includes empty/overflow attempts — filter on `content`/`done_reason`.
+
+**Performance facts (measured Oct 21, n68):**
+- minimax **always reasons, even with `think=false`** (~300-2000 hidden tokens per call). p50 latency ~7s, p90 ~35s, worst ~100s.
+- Steps are a barrier over all personas (`ThreadPoolExecutor(GA_MOVE_WORKERS)` in `reverie.py`); the slowest persona sets step time.
+- Conversations were the bottleneck: generation ran entirely under the global `CONVO_LOCK` (~24 serial calls) → whole town frozen ~5-10 min per chat, ~1.6 mean calls in flight. Fixed: lock now covers only the decision + claiming both speakers (`concurrency_utils.CHAT_BUSY`); relationship summary computed once per side per chat (`converse.agent_chat_v2`).
+- `GA_THINK_MULT` scales `num_predict` (base 2048). At 2 (4096) minimax overflowed often, wasting a full attempt before the 2x retry; use 4.
+- The endpoint handles ≥12 concurrent calls (queues at NUM_PARALLEL=5); `GA_MOVE_WORKERS=12` is safe.
+- **Format-retry storms were the other big cost** (found via the call log): `_ollama_generate` ran the single-line YAML unwrap on `free_form` answers too, cutting every task decomposition to its first line → validation failed → 5 retries × ~40s → fail-safe anyway (45% of all call time). Fixed (free_form skips the unwrap) + `parse_loose_task_decomp` accepts minimax's markdown/numbered/table/time-range shapes. Focal points: minimax answers YAML block lists (`output:` + items) → now returned as a JSON list string; previously all 3 retries failed into `["Who am I"]*n`.
+- **JEV (`GA_JEV_SCORING=1`) is served by laya** (`GA_JEV_BACKEND=laya`, default): `jev_decide` / `jev_score_choice` → laya `choice`, `jev_score_digit` → laya `score` (poignancy rubric). `GA_JEV_LAYA_MODE=shadow` (default) asks laya off-thread and traces to `ga_traces/{spatial,jev_decide,jev_digit}.jsonl` while the teacher still decides; `live` lets laya decide. Shadow is the default because laya-v3 is untrained on spatial choice (Oct 21 eval vs minimax: sector 6/11 with confident misses, objects 6-7/8, arenas 2/2) and poignancy/talk/react only reach JEV after laya already deferred. Pair shadow traces with `ga_traces/calls` (persona + timestamp) for spatial fine-tuning data. `GA_JEV_BACKEND=ollama` = legacy logprob path; ollama returns no logprobs for `:cloud` models, so a breaker disables it after 3 misses.
+- `new_decomp_schedule` (re-plan after every chat) never validated for ANY model: the validator read the time window from the prompt's first line, which `generate_prompt` now fills with "IMPORTANT: Respond in English only" → 5 retries (~60s each with minimax) per participant per chat. Fixed (window via `_SCHED_WINDOW_RE`) + `parse_revised_schedule` tolerates minimax's restated/markdown schedules and makes them contiguous over the window.
+- Task names could arrive exponentially nested (`X (X) (X (X)) ...`); `run_gpt_prompt_task_decomp` now cleans its input task with `_clean_action_text`.
+- `wake_up_hour` parser did `int(resp.split("am")[0])` → failed on "9:00 AM" → every agent got the fail-safe 8am after 5 retries. Fixed (regex, am/pm aware).
+- Drives had no time-of-day sense: on an empty event history curiosity won at 00:00 and sent agents "exploring" at midnight. Fixed: while the scheduled activity is sleep, only hunger/energy drives inject goals (`plan.py`, `_determine_action`).
+- Diagnose slowness from `ga_traces/calls/*.jsonl`: group by `caller` for latency share; identical `(caller, prompt)` pairs = validation retries.
+
+**Restart gotchas:**
+- Restarting a transient unit = `systemctl --user stop <unit>` then a new `systemd-run` (plain `systemctl start` fails: the transient unit file is gone after stop). `n68_stall_watch.py`'s self-heal uses `start` and therefore cannot actually restart.
+- Before restarting, delete `movement/` and `environment/` files above `reverie/meta.json`'s `step` (checkpoint). Don't fork a shell per file — there are ~90k files; use a single Python/`find` pass.
+- Other agents (Hermes) run watchers that treat "unit inactive" as completion; any stop triggers a false COMPLETE report.
+
+**Known behavior issues (n68, sim day Feb 23 — watch whether they recur in fresh25_1):** daytime sleeping/napping at 11am, "prepare dinner" before noon, clock times leaking into object/book names ("12:00 am Logic Stirrer"), activity/location mismatch (reading at the bathroom sink), references to non-existent people ("Jamie"), Isabella with "no café service scheduled".
 
 ## Running Tests
 

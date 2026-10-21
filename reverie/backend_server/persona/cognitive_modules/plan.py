@@ -867,6 +867,12 @@ def generate_convo(maze, init_persona, target_persona):
     all_utt += f"{speaker}: {utt}\n"
 
   convo_length = math.ceil(int(len(all_utt)/8) / 30)
+  # A conversation takes its participants' time: at least one sim-minute
+  # per reply (GA_CHAT_SECONDS_PER_REPLY). This sets chatting_end_time —
+  # the pair stays in "chat with X" for that long; the world clock is
+  # untouched (Oct 22 2026; replies used to push the GLOBAL clock).
+  import chat_time as _chat_time
+  convo_length = max(convo_length, _chat_time.conversation_minutes(len(convo)))
 
   if debug: print ("GNS FUNCTION: <generate_convo>")
   return convo, convo_length
@@ -1473,6 +1479,35 @@ def _determine_action(persona, maze):
             f"(hunger {_hunger:.0f} < {_threshold}, wallet ${_wallet:.0f})")
   except Exception:
     pass  # economy must never crash the plan loop
+
+  # LUXURY PURCHASE (Oct 22 2026): the "status" need never forces a replan;
+  # it only becomes a plan when the agent has actually SAVED enough — the
+  # most expensive luxury good it can buy while keeping a reserve, at most
+  # once a day, during shop hours. Until then it lingers (needs summary in
+  # the daily-plan prompt + recurring thoughts, reverie._status_thoughts).
+  try:
+    from economy import LUXURY_GOODS, LUXURY_RESERVE
+    _needs = getattr(persona.scratch, "needs", None) or {}
+    _status = _needs.get("status", 100)
+    _now = persona.scratch.curr_time
+    _wallet = getattr(persona.scratch, "wallet", 0) or 0
+    _last = getattr(persona.scratch, "last_luxury_attempt", None)
+    _cool = _last is None or (_now - _last).total_seconds() >= 24 * 3600
+    _goals = getattr(persona.scratch, "resource_goals", None)
+    if (_status < 35 and _now is not None and 10 <= _now.hour < 19 and _cool
+        and _goals is not None
+        and not any("luxury" in g.lower() for g in _goals)):
+      _affordable = [(p, i) for i, p in LUXURY_GOODS.items()
+                     if _wallet - p >= LUXURY_RESERVE]
+      if _affordable:
+        _price, _item = max(_affordable)
+        _goals.insert(0, f"buying a {_item} at The Willows Market and "
+                         f"Pharmacy (a luxury purchase)")
+        persona.scratch.last_luxury_attempt = _now
+        print(f"[Status] {persona.name} saved enough (${_wallet:.0f}) — "
+              f"going to buy a {_item} (${_price:.0f}), status {_status:.0f}")
+  except Exception:
+    pass  # status must never crash the plan loop
 
   if hasattr(persona.scratch, "resource_goals") and persona.scratch.resource_goals:
     resource_goal = persona.scratch.resource_goals.pop(0)

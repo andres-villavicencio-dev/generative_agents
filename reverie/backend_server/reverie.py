@@ -813,6 +813,85 @@ class ReverieServer:
         s.needs[need] = max(0, min(100, current_val))
 
 
+  def _on_luxury_purchase(self, persona, item):
+    """A luxury good satisfies the status need and becomes a memorable
+    event (Oct 22 2026). No-op for ordinary items."""
+    try:
+      from economy import LUXURY_GOODS
+      if item not in LUXURY_GOODS:
+        return
+      s = persona.scratch
+      if isinstance(getattr(s, "needs", None), dict):
+        s.needs["status"] = min(100, s.needs.get("status", 50) + 70)
+      s.last_luxury_purchase = self.curr_time
+      price = LUXURY_GOODS[item]
+      desc = (f"{persona.name} bought a {item} at The Willows Market for "
+              f"${price:.0f} — a reward for saving up, and a sign of how far "
+              f"{persona.name.split()[0]} has come.")
+      from persona.prompt_template.gpt_structure import get_embedding
+      try:
+        emb = get_embedding(desc)
+      except Exception:
+        emb = [0.0] * 768
+      persona.a_mem.add_event(
+        self.curr_time, None, persona.name, "bought", item, desc,
+        {persona.name, item, "luxury", "status"}, 7, (desc, emb), [])
+      print(f"[Status] {persona.name} bought a {item} (${price:.0f}); "
+            f"status -> {s.needs.get('status', 0):.0f}")
+    except Exception as e:
+      print(f"[Status] luxury purchase hook failed: {e}")
+
+  def _status_thoughts(self):
+    """The status need LINGERS instead of forcing action (Oct 22 2026):
+    once per sim-day (from 9 AM), an agent whose status is low gets a
+    thought about the luxury good it is saving for — retrieval then brings
+    it into planning and conversation. A purchase only happens once the
+    agent can afford it (plan.py luxury rule)."""
+    try:
+      from economy import LUXURY_GOODS, LUXURY_RESERVE
+    except Exception:
+      return
+    if self.curr_time is None or self.curr_time.hour < 9:
+      return
+    today = self.curr_time.date()
+    by_price = sorted(LUXURY_GOODS.items(), key=lambda kv: kv[1])
+    for name, persona in self.personas.items():
+      s = persona.scratch
+      try:
+        status = (getattr(s, "needs", None) or {}).get("status", 100)
+        if status >= 40 or getattr(s, "last_status_thought_day", None) == today:
+          continue
+        act = (s.act_description or "").lower()
+        if "sleep" in act or s.chatting_with:
+          continue
+        s.last_status_thought_day = today
+        first = name.split()[0]
+        wallet = getattr(s, "wallet", 0) or 0
+        affordable = [kv for kv in by_price if wallet - kv[1] >= LUXURY_RESERVE]
+        if affordable:
+          item, price = affordable[-1]
+          thought = (f"{first} keeps thinking about the {item} at The Willows "
+                     f"Market (${price:.0f}) — with ${wallet:.0f} saved, "
+                     f"{first} could finally afford it.")
+        else:
+          item, price = next(((i, p) for i, p in by_price if p + LUXURY_RESERVE > wallet),
+                             by_price[-1])
+          thought = (f"{first} keeps thinking about the {item} in The Willows "
+                     f"Market window (${price:.0f}); with only ${wallet:.0f} "
+                     f"saved, {first} wants to earn more and get ahead.")
+        from persona.prompt_template.gpt_structure import get_embedding
+        try:
+          emb = get_embedding(thought)
+        except Exception:
+          emb = [0.0] * 768
+        persona.a_mem.add_thought(
+          self.curr_time, self.curr_time + datetime.timedelta(days=2),
+          name, "wants", item, thought, {name, item, "luxury", "status"},
+          4, (thought, emb), [])
+        print(f"[Status] {name} (status {status:.0f}): {thought}")
+      except Exception as e:
+        print(f"[Status] thought for {name} failed: {e}")
+
   def _queue_grocery_run(self, persona):
     """Queue ONE grocery run, honoring the same attempt cooldown (4h) as the
     proactive economy rule in plan.py — this empty-fridge path used to push
@@ -1063,6 +1142,7 @@ class ReverieServer:
                   except Exception as _econ_err:
                     print(f"[Economy] sale credit failed "
                           f"({_econ_err.__class__.__name__})")
+                self._on_luxury_purchase(persona, item)
                 # CAFÉ-ONLY credit (Sep 2026 fix): store sales already
                 # credit the till inside purchase(); crediting Isabella here
                 # too paid her twice — once with the store's own money.
@@ -1693,18 +1773,16 @@ class ReverieServer:
 
           # After this cycle, the world takes one step forward, and the 
           # current time moves by <sec_per_step> amount. 
-          # Chat-time accounting (Oct 2026): conversations generated during
-          # this tick charged extra sim-seconds (every reply = 1 sim-minute
-          # by default) — drain the debt so the world clock reflects how
-          # long agents actually spent talking. Other agents keep moving
-          # every step; the chat eats clock, not the tick.
+          # Conversations do NOT move the world clock (Oct 22 2026): they
+          # take the participants' time — each reply lengthens the chat
+          # activity (plan.generate_convo / chat_time.conversation_minutes)
+          # and the pair's turns pass in conversation like any activity.
           _chat_debt, _chat_utts = _chat_time.drain_tick()
-          if _chat_debt:
-            print(f"[ChatTime] step {self.step}: +{_chat_debt:.0f}s from "
-                  f"{_chat_utts} replies")
+          if _chat_utts:
+            print(f"[ChatTime] step {self.step}: {_chat_utts} replies "
+                  f"generated (participants' time, not the world clock)")
           self.step += 1
-          self.curr_time += datetime.timedelta(
-            seconds=self.sec_per_step + _chat_debt)
+          self.curr_time += datetime.timedelta(seconds=self.sec_per_step)
 
           # Keep curr_step.json up to date so the frontend can re-initialize
           # correctly on page refresh (instead of always starting from step 0).
@@ -1735,6 +1813,8 @@ class ReverieServer:
 
           # Tick agent needs each step
           self.tick_needs()
+          # Status need: lingering thoughts, never an emergency replan
+          self._status_thoughts()
 
           # Tick world resources (hot water refill, daily deliveries)
           try:

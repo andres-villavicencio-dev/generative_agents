@@ -1,25 +1,20 @@
 """
-Chat-time accounting (Oct 2026): conversations cost sim-time.
+Chat-time accounting: conversations take the PARTICIPANTS' time.
 
-Real life: long conversations take time. The stock sim charges a chat
-nothing while it happens — the world clock only moves once per step, and
-one step is spent generating the whole conversation anyway. With the
-worker-pool backend, a 6-round convo still freezes BOTH chatters for its
-wall-clock duration while the rest of the town moves on a clock that
-pretends the conversation was instant.
+A conversation is an activity like any other: while two agents talk, their
+turns pass in conversation — "chat with X" lasts as long as the exchange
+would take, then they resume their day. The world clock is NOT touched; it
+advances sec_per_step every step for everyone.
 
-This module keeps a per-tick, thread-safe "chat-time debt": every
-generated utterance charges CHAT_SECONDS_PER_REPLY (default 60 sim-sec =
-1 sim-minute — about how long a real spoken reply takes). reverie.py
-drains the debt when the step completes and advances the world clock by
-sec_per_step + debt. The clock keeps moving during long conversations,
-other agents' schedules reflect that the chat ate real time, and the
-chatting pair's chatting_end_time already covers the conversational
-block via the normal react path.
+(Oct 22 2026: the first version charged every reply to a GLOBAL clock
+"debt" that reverie added to the world clock, so the whole town jumped
+forward while two agents talked — skipped hours, a clock running ahead of
+the step count. Replies now set the conversation's duration instead, via
+conversation_minutes() in plan.generate_convo.)
 
 Env knobs:
-  GA_CHAT_TIME=1     feature on (default ON; 0 opts out)
-  GA_CHAT_SECONDS_PER_REPLY  sim-seconds charged per utterance (default 60)
+  GA_CHAT_TIME=1     feature on (default ON; 0 = stock length estimate only)
+  GA_CHAT_SECONDS_PER_REPLY  sim-seconds one spoken reply takes (default 60)
 """
 
 import os
@@ -42,14 +37,17 @@ def _per_reply_seconds():
         return 60
 
 
-def charge_reply(seconds=None):
-    """Charge the world clock for one conversational reply.
+def conversation_minutes(n_replies):
+    """How long a conversation of n replies takes its participants, in
+    whole sim-minutes (0 when the feature is off)."""
+    if not chat_time_enabled() or n_replies <= 0:
+        return 0
+    return -(-n_replies * _per_reply_seconds() // 60)   # ceil
 
-    Called by agent_chat_v2 after EVERY generated utterance — 'every
-    reply of an agent to its interlocutor allows the clock to continue'.
-    Thread-safe: conversations for different pairs run on different
-    worker threads inside the same tick.
-    """
+
+def charge_reply(seconds=None):
+    """Count one generated reply (observability only — the world clock is
+    no longer charged; see the module docstring)."""
     global _DEBT, _UTTERANCES
     if not chat_time_enabled():
         return 0.0
@@ -62,12 +60,8 @@ def charge_reply(seconds=None):
 
 
 def drain_tick():
-    """Consume the accumulated chat-time debt for this tick.
-
-    Returns (seconds, utterance_count) and resets the counters.
-    Called ONCE by the reverie step loop, after all persona moves
-    complete — the clock advance is a main-thread serial side effect.
-    """
+    """Read-and-reset this tick's reply counters: (seconds, utterances).
+    Reverie logs them; it does NOT advance the world clock with them."""
     global _DEBT, _UTTERANCES
     with _LOCK:
         debt, utts = _DEBT, _UTTERANCES

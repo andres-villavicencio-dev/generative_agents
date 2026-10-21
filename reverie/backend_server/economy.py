@@ -90,6 +90,22 @@ ECONOMY_ITEM_PRICES = {
     "beer": 3.50, "wine": 4.50, "juice": 2.50, "medicine": 8.00,
 }
 
+# Luxury goods (Oct 22 2026): sold only at The Willows Market's luxury
+# display, priced so that only agents who have saved considerably can buy
+# one (typical wallets are ~$40-$180). Buying one satisfies the "status"
+# need — a slow craving that never triggers an emergency replan but keeps
+# surfacing in the agent's thoughts and daily planning.
+LUXURY_GOODS = {
+    "silk scarf": 180.00,
+    "gold watch": 320.00,
+    "designer handbag": 420.00,
+    "diamond necklace": 650.00,
+}
+LUXURY_WHOLESALE_SHARE = 0.55   # supplier cost as a share of retail
+LUXURY_RESERVE = 60.0           # never spend the last $60 on a luxury
+LUXURY_STOCK = 2                # units of each on display after delivery
+ECONOMY_ITEM_PRICES.update(LUXURY_GOODS)
+
 RESTOCK_WORKER = "Tom Moreno"
 RESTOCK_WAGE_SHARE = 0.10     # of previous day's combined sales
 EMPLOYEE_WAGE_SHARE = 0.10    # of venue's daily sales, per employee
@@ -241,7 +257,8 @@ class EconomyManager:
             # Hour gate (Oct 22 2026): this ran on the FIRST step after
             # midnight and reset daily_intake there — so pay_employees, called
             # right after it in the same step, always saw intake 0 and paid no
-            # wages, ever. ">=" (not "==") because chat-time can skip hours.
+            # wages, ever. ">=" (not "==") so a missed step at the exact hour
+            # can't skip the day's payment.
             if sim_time.hour < RESTOCK_HOUR:
                 return
             day = sim_time.toordinal()
@@ -449,7 +466,12 @@ class EconomyManager:
             is_owner = any(cfg["owner"] == name for cfg in VENUES.values())
             if is_owner:
                 continue
-            if stress >= STRESS_APPLY_THRESHOLD or wallet < BROKE_APPLY_WALLET:
+            # Ambition (Oct 22 2026): a strong status craving also sends an
+            # agent looking for work — the need's one channel into action
+            # short of an affordable luxury purchase.
+            status = (getattr(s, "needs", None) or {}).get("status", 100)
+            if (stress >= STRESS_APPLY_THRESHOLD or wallet < BROKE_APPLY_WALLET
+                    or status < 30):
                 out.append(name)
         return out
 

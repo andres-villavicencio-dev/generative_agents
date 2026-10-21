@@ -62,6 +62,7 @@ python simstart.py --fork base_the_ville_isabella_maria_klaus --steps 100 --auto
 - **Object state templated** (default, `GA_OBJ_DESC_LLM=1` = LLM): act_obj_desc → "being used"/"being slept in"/"being cleaned"/"being fixed", triple `(object, is, state)`.
 - **Async conversations** (default, `GA_ASYNC_CHAT=0` = in-step): a chat decided in step N is queued (`concurrency_utils.PENDING_CHATS`), started after the step's pool on its own thread, and both speakers are frozen (move skipped, 💬, `ASYNC_FROZEN`) until it's written back; the town keeps stepping. `save()` joins chat threads first.
 - `GA_JEV_LAYA_LIVE_KINDS=sector,arena,object` lets laya decide those kinds on the legacy per-level path (default empty; object JEV is skipped anyway while the tool registry is loaded).
+- **task_decomp few-shot leak**: `task_decomp_v3.txt`'s single worked example (Kelly's kindergarten lesson plan) leaked into ~27% of minimax decompositions of unrelated activities ("eat breakfast" → curriculum/worksheet steps). `task_decomp_v4.txt` (format-only labelled neutral example + the real activity restated with rules before the answer) leaked 0/12 on the same inputs (v3: 12/12). Exclude v3-era contaminated records from fine-tuning sets via `python pipelines/flag_decomp_leak.py` → `ga_traces/calls/flags/task_decomp_example_leak.jsonl` (join on ts + persona).
 - Diagnose slowness from `ga_traces/calls/*.jsonl`: group by `caller` for latency share; identical `(caller, prompt)` pairs = validation retries.
 
 **Restart gotchas:**

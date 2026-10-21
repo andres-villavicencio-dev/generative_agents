@@ -58,6 +58,10 @@ python simstart.py --fork base_the_ville_isabella_maria_klaus --steps 100 --auto
 - `wake_up_hour` parser did `int(resp.split("am")[0])` → failed on "9:00 AM" → every agent got the fail-safe 8am after 5 retries. Fixed (regex, am/pm aware).
 - Drives had no time-of-day sense: on an empty event history curiosity won at 00:00 and sent agents "exploring" at midnight. Fixed: while the scheduled activity is sleep, only hunger/energy drives inject goals (`plan.py`, `_determine_action`).
 - Emoji (`pronunciatio`) never uses the LLM by default: `EMOJI_LOOKUP` in `plan.py` (incl. object states) with a 🙂 fallback; `GA_PRONUNCIATIO_LLM=1` restores the LLM fallback. Purely visual — no effect on cognition.
+- **Unified location** (default, `GA_UNIFIED_LOCATION=0` = legacy chain): `resolve_action_location` (plan.py) → `run_gpt_prompt_action_location` sends the persona's whole accessible spatial tree and gets `output: <area> | <room> | <object>` in ONE call (2-5s vs 3 serial calls); unvalidated levels fall back to the legacy per-level calls. Laya still shadows all three choices (`_laya_shadow_location`).
+- **Object state templated** (default, `GA_OBJ_DESC_LLM=1` = LLM): act_obj_desc → "being used"/"being slept in"/"being cleaned"/"being fixed", triple `(object, is, state)`.
+- **Async conversations** (default, `GA_ASYNC_CHAT=0` = in-step): a chat decided in step N is queued (`concurrency_utils.PENDING_CHATS`), started after the step's pool on its own thread, and both speakers are frozen (move skipped, 💬, `ASYNC_FROZEN`) until it's written back; the town keeps stepping. `save()` joins chat threads first.
+- `GA_JEV_LAYA_LIVE_KINDS=sector,arena,object` lets laya decide those kinds on the legacy per-level path (default empty; object JEV is skipped anyway while the tool registry is loaded).
 - Diagnose slowness from `ga_traces/calls/*.jsonl`: group by `caller` for latency share; identical `(caller, prompt)` pairs = validation retries.
 
 **Restart gotchas:**

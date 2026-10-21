@@ -24,7 +24,7 @@ python simstart.py --fork base_the_ville_isabella_maria_klaus --steps 100 --auto
 
 ## Live Run Operations (as of Oct 21 2026)
 
-**Current run: `fresh25_1`** (unit `ga-fresh25`, started Oct 21 2026 15:00) — fresh 25-agent fork of `base_the_ville_n25`, target 25,920 steps (3 sim-days), minimax-m3.1-flash:cloud. All earlier sims (live3d_n17..n68, Apr/Mar tests, compressed_storage) were deleted Oct 21; their `/tmp/*_backend.log` are gzipped. `ga_traces/` (the training data) was kept.
+**Last run: `fresh25_1`** — STOPPED Oct 22 2026 10:05 at step 18817 (checkpoint 18720, sim Feb 16 ~12:00, day 4) once enough training data was collected. Fresh 25-agent fork of `base_the_ville_n25`, minimax-m3.1-flash:cloud. Resume with `run_live3d_resume.py fresh25_1 fresh25_1 18720 <target>` + `GA_FORK_SKIP_COPY=1`. All earlier sims were deleted Oct 21; their `/tmp/*_backend.log` are gzipped. `ga_traces/` holds the training data.
 
 - **Fresh run:** `systemd-run --user --unit <unit> --setenv=... venv/bin/python run_live3d.py <sim> <steps> <fork>` (cold start = day-one planning for all 25 agents, no movement dir until it finishes).
 - **Resume from checkpoint:** `run_live3d_resume.py <old_sim> <new_sim> <start_step> <target_step>` (`run N` is relative). Checkpoints every 360 steps.

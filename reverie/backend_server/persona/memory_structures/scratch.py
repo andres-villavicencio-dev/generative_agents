@@ -175,6 +175,12 @@ class Scratch:
         "social":      _random.randint(40, 80),
         "comfort":     _random.randint(40, 80),
         "stimulation": _random.randint(40, 80),
+        # Status / ambition (Oct 22 2026): a slow craving to get ahead and
+        # show it. NEVER triggers an emergency replan (it's absent from the
+        # urgent-need map and the drives); it surfaces in the needs summary
+        # the daily planner reads and as recurring thoughts, and buying a
+        # luxury good at The Willows Market satisfies it.
+        "status":      _random.randint(40, 80),
     }
 
     # Decay per sim-tick (each tick = 10 sim seconds)
@@ -187,6 +193,7 @@ class Scratch:
         "social":      1/270,   # ~45 sim-min per point
         "comfort":     1/540,   # ~90 sim-min per point
         "stimulation": 1/360,   # ~60 sim-min per point
+        "status":      1/540,   # ~90 sim-min per point (awake only)
     }
 
     self.needs_critical = 20   # threshold for emergency replanning
@@ -298,6 +305,11 @@ class Scratch:
         self.needs = scratch_load["needs"]
       if "needs_decay_rates" in scratch_load:
         self.needs_decay_rates = scratch_load["needs_decay_rates"]
+      # Checkpoints saved before the status need existed (Oct 22 2026)
+      if isinstance(getattr(self, "needs", None), dict):
+        self.needs.setdefault("status", _random.randint(40, 80))
+      if isinstance(getattr(self, "needs_decay_rates", None), dict):
+        self.needs_decay_rates.setdefault("status", 1/540)
       if "needs_critical" in scratch_load:
         self.needs_critical = scratch_load["needs_critical"]
       if "needs_danger" in scratch_load:
@@ -810,6 +822,7 @@ class Scratch:
           "social": f"{severity} lonely (social: {int(value)})",
           "comfort": f"{severity} uncomfortable (comfort: {int(value)})",
           "stimulation": f"{severity} bored (stimulation: {int(value)})",
+          "status": f"{severity} restless about getting ahead in life, daydreaming about saving up for something luxurious (status: {int(value)})",
         }
         low_needs.append(need_descriptions.get(need, f"{severity} low on {need} ({need}: {int(value)})"))
 

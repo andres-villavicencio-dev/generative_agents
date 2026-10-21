@@ -28,6 +28,11 @@ ITEM_PRICES = {
     "wine": 4.50,
     "juice": 2.50,
     "medicine": 8.00,
+    # Luxury goods (keep in sync with economy.LUXURY_GOODS)
+    "silk scarf": 180.00,
+    "gold watch": 320.00,
+    "designer handbag": 420.00,
+    "diamond necklace": 650.00,
 }
 
 
@@ -90,6 +95,12 @@ class WorldResourceManager:
             "medicine": 15,
             "last_delivery": "February 13, 2023, 06:00:00"
         },
+        # Luxury goods (Oct 22 2026) — see economy.LUXURY_GOODS
+        "the Ville:The Willows Market and Pharmacy:store:luxury display": {
+            "silk scarf": 2, "gold watch": 2, "designer handbag": 2,
+            "diamond necklace": 2,
+            "last_delivery": "February 13, 2023, 06:00:00"
+        },
         "common bathroom:bathroom:hot_water": {
             "level": 80.0, "max": 100, "refill_rate": 1.0
         },
@@ -141,6 +152,18 @@ class WorldResourceManager:
             "the Ville:The Willows Market and Pharmacy:store:grocery store shelf",
             {"eggs": 60, "bread": 30, "milk": 25},
             {"eggs": 0.25, "bread": 0.75, "milk": 0.60}),
+        # Extra shelves of a venue: "<venue_id>_<shelf>" keys bill the
+        # venue's till. The pharmacy shelf was never restocked before.
+        "market_pharmacy": (
+            "the Ville:The Willows Market and Pharmacy:store:pharmacy store shelf",
+            {"medicine": 15},
+            {"medicine": 4.00}),
+        "market_luxury": (
+            "the Ville:The Willows Market and Pharmacy:store:luxury display",
+            {"silk scarf": 2, "gold watch": 2, "designer handbag": 2,
+             "diamond necklace": 2},
+            {"silk scarf": 99.00, "gold watch": 176.00,
+             "designer handbag": 231.00, "diamond necklace": 357.50}),
     }
 
     # Ledger file for the store till (recovered from Sep 25 pyc)
@@ -180,6 +203,13 @@ class WorldResourceManager:
         else:
             print("[ResourceManager] Initializing with default world state")
             self.world_state = dict(self.DEFAULT_WORLD_STATE)
+
+        # Seed venue shelves added after this sim's world_state was saved
+        # (e.g. the luxury display, Oct 22 2026) with their full stock now —
+        # waiting for the 6 AM delivery left a day with nothing to buy.
+        for _vid, (_addr, _maxes, _ws) in self.VENUE_STOCK.items():
+            if _addr not in self.world_state:
+                self.world_state[_addr] = dict(_maxes)
 
         # Deduplicate store addresses on load: fold any legacy shadow-store
         # key (e.g. 'store:shelves:groceries') into the canonical address so
@@ -504,7 +534,7 @@ class WorldResourceManager:
                     cost += wholesale.get(item, 1.0) * delivered
                 location["last_delivery"] = time_str
                 if cost > 0:
-                    economy.debit_restock(vid, cost, sim_time)
+                    economy.debit_restock(vid.split("_")[0], cost, sim_time)
                 print(f"[ResourceManager] Daily delivery to {normalized} "
                       f"(wholesale ${cost:.2f})")
             return
@@ -813,6 +843,11 @@ ACTION_RESOURCE_MAPPINGS = {
     "drink wine": [("shelf", "wine", 1)],
     "ordering a drink": [("shelf", "beer", 1)],
     "buying medicine": [("pharmacy store shelf", "medicine", 1)],
+    # Luxury goods (Oct 22 2026): the status-need purchase goal names the item
+    "buying a silk scarf": [("luxury display", "silk scarf", 1)],
+    "buying a gold watch": [("luxury display", "gold watch", 1)],
+    "buying a designer handbag": [("luxury display", "designer handbag", 1)],
+    "buying a diamond necklace": [("luxury display", "diamond necklace", 1)],
     "picking up medicine": [("pharmacy store shelf", "medicine", 1)],
     "buying groceries at the market": [("grocery store shelf", "eggs", 5), ("grocery store shelf", "bread", 3), ("grocery store shelf", "milk", 2)],
     "groceries at the market": [("grocery store shelf", "eggs", 5), ("grocery store shelf", "bread", 3), ("grocery store shelf", "milk", 2)],

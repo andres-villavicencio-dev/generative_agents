@@ -231,7 +231,7 @@ def rizzo_decide_talk(who, who_act, target, target_act, last_chat_about=None,
     # rizzo over-weights loneliness vs a critical bladder, so we don't ask.)
     if needs:
         for k, v in needs.items():
-            if v < 20 and k not in ("social", "stimulation"):
+            if v < 20 and k not in ("social", "stimulation", "status"):
                 return ("no", 0.99)
     state = {
         "who": who, "who_activity": who_act,
@@ -261,7 +261,7 @@ def rizzo_decide_talk(who, who_act, target, target_act, last_chat_about=None,
                          else "bathroom needs fine")
         state["needs"] = "; ".join(parts)
         crit = [k for k, v in needs.items()
-                if v < 20 and k not in ("social", "stimulation")]
+                if v < 20 and k not in ("social", "stimulation", "status")]
         state["urgent_needs"] = (", ".join(crit) if crit
                                  else "none critical")
     options = {

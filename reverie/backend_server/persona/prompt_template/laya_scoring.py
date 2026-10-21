@@ -283,7 +283,7 @@ def laya_decide_talk(who, who_act, target, target_act, last_chat_about=None,
     a critical non-social need means no socializing — we don't even ask."""
     if needs:
         for k, v in needs.items():
-            if v < 20 and k not in ("social", "stimulation"):
+            if v < 20 and k not in ("social", "stimulation", "status"):
                 try:
                     from persona.prompt_template.ga_trace import record
                     record("talk", who,
@@ -324,7 +324,7 @@ def laya_decide_talk(who, who_act, target, target_act, last_chat_about=None,
                          else "bathroom needs fine")
         state["needs"] = "; ".join(parts)
         crit = [k for k, v in needs.items()
-                if v < 20 and k not in ("social", "stimulation")]
+                if v < 20 and k not in ("social", "stimulation", "status")]
         state["urgent_needs"] = (", ".join(crit) if crit else "none critical")
     options = {
         "no": (f"No: {who} stays with their current activity ({who_act}) "

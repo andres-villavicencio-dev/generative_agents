@@ -58,7 +58,8 @@ class TypewriterTool(Tool):
             
             result = run_gpt_prompt_typewriter(persona, act_description)
             
-            if result:
+            # The generator's fallback string is not a document — never save it.
+            if result and not result.endswith("content generation unavailable]"):
                 output_path = self._save_document(persona.name, result)
                 return {
                     "success": True,
@@ -488,6 +489,17 @@ def dispatch_tool(persona: Any, maze: Any, personas: Dict) -> Optional[Dict[str,
     act_description = getattr(persona.scratch, 'act_description', '')
     if not tool.matches_action(act_description):
         return None
+
+    # Once per action (Oct 22 2026): execute.py calls this on EVERY step an
+    # agent stands at its destination, so a developer "documenting progress"
+    # at a computer desk ran the typewriter every 10 sim-seconds — 421 files
+    # for Ryan Park in one run (1,032 overall). Fire once per
+    # (tool, activity, action start).
+    key = (tool.name, act_description,
+           str(getattr(persona.scratch, 'act_start_time', '')))
+    if getattr(persona.scratch, '_last_tool_dispatch', None) == key:
+        return None
+    persona.scratch._last_tool_dispatch = key
     
     context = {
         'maze': maze,

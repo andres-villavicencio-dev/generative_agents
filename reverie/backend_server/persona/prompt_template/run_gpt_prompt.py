@@ -4071,7 +4071,11 @@ Write the complete text of the document {name} is typing.
 Document text:"""
 
   try:
-    from gpt_structure import _llama_cpp_generate, USE_LLAMA_CPP, _ollama_generate
+    # Was "from gpt_structure import ..." — that module lives in this
+    # package, so the bare import always raised and EVERY typewriter document
+    # (1,032 of them) was the fallback placeholder.
+    from persona.prompt_template.gpt_structure import (
+        _llama_cpp_generate, USE_LLAMA_CPP, _ollama_generate)
     if USE_LLAMA_CPP:
       response = _llama_cpp_generate(prompt, free_form=True)
     else:

@@ -28,6 +28,8 @@ from global_methods import *
 from persona.prompt_template.run_gpt_prompt import *
 from persona.cognitive_modules.retrieve import *
 from persona.cognitive_modules.converse import *
+from persona.cognitive_modules.event_triple_parser import parse_event_triple
+from collections import OrderedDict
 
 ##############################################################################
 # CHAPTER 2: Generate
@@ -734,54 +736,39 @@ def generate_action_pronunciatio(act_desp, persona):
 
 def _parse_event_triple(action_description, persona_name):
   """Parse (subject, predicate, object) from action description via regex.
-  Returns tuple or None if parsing fails."""
-  import re
-  desc = action_description.strip()
-  if "(" in desc:
-    desc = desc.split("(")[-1].split(")")[0]
+  Returns None only when there is no " is " in the text. The parser lives in
+  event_triple_parser (import-light, unit-testable)."""
+  return parse_event_triple(action_description, persona_name)
 
-  # Common verb stems to avoid bad stemming
-  VERB_MAP = {
-    "cooking": "cook", "eating": "eat", "sleeping": "sleeping",
-    "reading": "read", "writing": "write", "working": "work",
-    "studying": "study", "walking": "walk", "running": "run",
-    "shopping": "shop", "cleaning": "clean", "painting": "paint",
-    "drawing": "draw", "listening": "listen", "watching": "watch",
-    "drinking": "drink", "brewing": "brew", "teaching": "teach",
-    "playing": "play", "sitting": "sit", "standing": "stand",
-    "waiting": "wait", "talking": "talk", "chatting": "chat",
-    "showering": "shower", "bathing": "bathe", "exercising": "exercise",
-    "gardening": "garden", "organizing": "organize", "typing": "type",
-    "browsing": "browse", "preparing": "prepare", "making": "make",
-    "buying": "buy", "having": "have", "getting": "get", "going": "go",
-    "heading": "head", "spending": "spend", "exploring": "explore",
-  }
 
-  # Pattern: "<Name> is <verb>ing <rest>"
-  m = re.match(r'^(.+?)\s+is\s+(\w+ing)\b\s*(.*?)\.?$', desc, re.IGNORECASE)
-  if m:
-    subject = m.group(1).strip()
-    verb_ing = m.group(2).strip().lower()
-    obj = m.group(3).strip()
-    verb = VERB_MAP.get(verb_ing, verb_ing)
-    if not obj:
-      return (subject, "is", verb_ing)
-    return (subject, verb, obj)
-
-  # Pattern: "<Name> is <adjective/state>"
-  m = re.match(r'^(.+?)\s+is\s+(\w+)\.?$', desc, re.IGNORECASE)
-  if m:
-    return (m.group(1).strip(), "is", m.group(2).strip())
-
-  return None
+# The triple is only a memory-index key, so identical descriptions from the
+# same persona never need a second LLM call (bounded; Oct 21 2026).
+_EVENT_TRIPLE_CACHE = OrderedDict()
+_EVENT_TRIPLE_CACHE_MAX = 2048
+_EVENT_TRIPLE_LOCK = threading.Lock()
 
 
 def generate_action_event_triple(act_desp, persona):
   if debug: print ("GNS FUNCTION: <generate_action_event_triple>")
   parsed = _parse_event_triple(act_desp, persona.name)
+  if not parsed and " is " not in f" {act_desp} ":
+    # Callers pass the bare activity ("buying groceries at ..."); the LLM
+    # prompt itself builds "<name> is <activity>" — parse that same
+    # sentence (without it ~98% of inputs still fell through to the LLM).
+    parsed = _parse_event_triple(f"{persona.name} is {act_desp}", persona.name)
   if parsed:
     return parsed
-  return run_gpt_prompt_event_triple(act_desp, persona)[0]
+  key = (persona.name, act_desp)
+  with _EVENT_TRIPLE_LOCK:
+    if key in _EVENT_TRIPLE_CACHE:
+      _EVENT_TRIPLE_CACHE.move_to_end(key)
+      return _EVENT_TRIPLE_CACHE[key]
+  result = run_gpt_prompt_event_triple(act_desp, persona)[0]
+  with _EVENT_TRIPLE_LOCK:
+    _EVENT_TRIPLE_CACHE[key] = result
+    while len(_EVENT_TRIPLE_CACHE) > _EVENT_TRIPLE_CACHE_MAX:
+      _EVENT_TRIPLE_CACHE.popitem(last=False)
+  return result
 
 
 # PERF (Oct 21 2026): the object-state pair (act_obj_desc ->

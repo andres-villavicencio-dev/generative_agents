@@ -67,13 +67,9 @@ def generate_insights_and_evidence(persona, nodes, n=5):
 
 
 def generate_action_event_triple(act_desp, persona):
-  if debug: print ("GNS FUNCTION: <generate_action_event_triple>")
-  # Reuse the regex parser from plan module
-  from persona.cognitive_modules.plan import _parse_event_triple
-  parsed = _parse_event_triple(act_desp, persona.name)
-  if parsed:
-    return parsed
-  return run_gpt_prompt_event_triple(act_desp, persona)[0]
+  # Shared implementation (regex parse + bounded LLM-fallback cache) lives in plan
+  from persona.cognitive_modules.plan import generate_action_event_triple as _gaet
+  return _gaet(act_desp, persona)
 
 
 POIGNANCY_KEYWORDS = {

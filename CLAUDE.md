@@ -57,11 +57,13 @@ python simstart.py --fork base_the_ville_isabella_maria_klaus --steps 100 --auto
 - Task names could arrive exponentially nested (`X (X) (X (X)) ...`); `run_gpt_prompt_task_decomp` now cleans its input task with `_clean_action_text`.
 - `wake_up_hour` parser did `int(resp.split("am")[0])` → failed on "9:00 AM" → every agent got the fail-safe 8am after 5 retries. Fixed (regex, am/pm aware).
 - Drives had no time-of-day sense: on an empty event history curiosity won at 00:00 and sent agents "exploring" at midnight. Fixed: while the scheduled activity is sleep, only hunger/energy drives inject goals (`plan.py`, `_determine_action`).
+- Emoji (`pronunciatio`) never uses the LLM by default: `EMOJI_LOOKUP` in `plan.py` (incl. object states) with a 🙂 fallback; `GA_PRONUNCIATIO_LLM=1` restores the LLM fallback. Purely visual — no effect on cognition.
 - Diagnose slowness from `ga_traces/calls/*.jsonl`: group by `caller` for latency share; identical `(caller, prompt)` pairs = validation retries.
 
 **Restart gotchas:**
 - Restarting a transient unit = `systemctl --user stop <unit>` then a new `systemd-run` (plain `systemctl start` fails: the transient unit file is gone after stop). `n68_stall_watch.py`'s self-heal uses `start` and therefore cannot actually restart.
 - Before restarting, delete `movement/` and `environment/` files above `reverie/meta.json`'s `step` (checkpoint). Don't fork a shell per file — there are ~90k files; use a single Python/`find` pass.
+- Resuming in place (`run_live3d_resume.py <sim> <sim> <ckpt> <target>` + `GA_FORK_SKIP_COPY=1`): the supervisor waits for the backend's "stale-file cleanup complete" marker before starting the driver. The backend log is appended across restarts, so a stale marker from the previous boot used to release the driver early → driver wrote `environment/<ckpt+1>`, backend cleanup deleted it → silent deadlock at the checkpoint step. Fixed (marker searched only past the log offset at launch). Symptom if it recurs: frontier frozen at the checkpoint, no LLM calls; killing the driver (supervisor restarts it) unblocks.
 - Other agents (Hermes) run watchers that treat "unit inactive" as completion; any stop triggers a false COMPLETE report.
 
 **Known behavior issues (n68, sim day Feb 23 — watch whether they recur in fresh25_1):** daytime sleeping/napping at 11am, "prepare dinner" before noon, clock times leaking into object/book names ("12:00 am Logic Stirrer"), activity/location mismatch (reading at the bathroom sink), references to non-existent people ("Jamie"), Isabella with "no café service scheduled".

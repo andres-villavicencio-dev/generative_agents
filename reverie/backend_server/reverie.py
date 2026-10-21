@@ -813,6 +813,24 @@ class ReverieServer:
         s.needs[need] = max(0, min(100, current_val))
 
 
+  def _queue_grocery_run(self, persona):
+    """Queue ONE grocery run, honoring the same attempt cooldown (4h) as the
+    proactive economy rule in plan.py — this empty-fridge path used to push
+    its own differently-worded goal past every dedupe and cooldown."""
+    s = persona.scratch
+    if any("grocer" in g.lower() for g in s.resource_goals):
+      return
+    now = s.curr_time
+    for stamp in (getattr(s, "last_grocery_attempt", None),
+                  getattr(s, "last_grocery_shop", None)):
+      try:
+        if stamp is not None and (now - stamp).total_seconds() < 4 * 3600:
+          return
+      except Exception:
+        pass
+    s.resource_goals.append("buying groceries at the Harvey Oak Supply Store")
+    s.last_grocery_attempt = now
+
   def _process_shopping(self, persona, act_description):
     """FIX (shopping loop): when a persona is AT the supply store with a
     grocery goal, actually buy goods — purchase() deducts wallet money and
@@ -1257,16 +1275,12 @@ class ReverieServer:
         goal = "having breakfast at Hobbs Cafe"
         if goal not in persona.scratch.resource_goals:
           persona.scratch.resource_goals.append(goal)
-        shopping_goal = "buying groceries at Harvey Oak Supply Store"
-        if shopping_goal not in persona.scratch.resource_goals:
-          persona.scratch.resource_goals.append(shopping_goal)
+        self._queue_grocery_run(persona)
       elif item == "coffee_beans":
         goal = "getting coffee at Hobbs Cafe"
         if goal not in persona.scratch.resource_goals:
           persona.scratch.resource_goals.append(goal)
-        shopping_goal = "buying groceries at Harvey Oak Supply Store"
-        if shopping_goal not in persona.scratch.resource_goals:
-          persona.scratch.resource_goals.append(shopping_goal)
+        self._queue_grocery_run(persona)
       elif item == "hot_water":
         goal = "use the common bathroom shower"
         if goal not in persona.scratch.resource_goals:

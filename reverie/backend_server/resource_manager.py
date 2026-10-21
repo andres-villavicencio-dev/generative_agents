@@ -313,6 +313,14 @@ class WorldResourceManager:
         addr_l = address.lower()
         is_store = ("supply store" in addr_l
                     or ("shelves" in addr_l and "store" in addr_l))
+        # Stamp the shopping cooldown for EVERY store purchase — it used to
+        # live inside the legacy-till branch below, which economy v2 (the
+        # default) disables, so no purchase ever started the cooldown.
+        if is_store:
+            try:
+                buyer_scratch.last_grocery_shop = self.last_tick_time
+            except Exception:
+                pass
         if is_store and os.environ.get("GA_ECONOMY2", "1") != "0":
             is_store = False  # v2 owns grocery money routing
         if is_store:

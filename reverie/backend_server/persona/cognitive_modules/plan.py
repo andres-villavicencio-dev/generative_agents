@@ -1368,21 +1368,36 @@ def _determine_action(persona, maze):
     _needs = getattr(persona.scratch, "needs", None)
     _hunger = _needs.get("hunger", 100) if isinstance(_needs, dict) else 100
     _wallet = getattr(persona.scratch, "wallet", 0)
-    _last_shop = getattr(persona.scratch, "last_grocery_shop", None)
+    # FIX (grocery loop, Oct 21 2026 fresh25_1): the cooldown keyed only on
+    # last_grocery_shop, which a FAILED purchase (store sold out) never set —
+    # and under economy v2 not even a successful one did. With hunger < 45
+    # the same 30-min shopping action was re-issued forever (Abigail, Wolfgang
+    # 2000+ steps at the store, never eating). Cool down on the ATTEMPT too,
+    # shop only while the store is open, and jitter each persona's threshold
+    # so the whole town doesn't go shopping in the same step.
+    _now = persona.scratch.curr_time
     _hours = None
-    if _last_shop is not None:
-      try:
-        _hours = ((persona.scratch.curr_time - _last_shop).total_seconds() / 3600.0)
-      except Exception:
-        _hours = None
-    _cooldown_ok = (_last_shop is None) or (_hours is None) or (_hours >= 6)
+    for _stamp in (getattr(persona.scratch, "last_grocery_attempt", None),
+                   getattr(persona.scratch, "last_grocery_shop", None)):
+      if _stamp is not None:
+        try:
+          _h = (_now - _stamp).total_seconds() / 3600.0
+          _hours = _h if _hours is None else min(_hours, _h)
+        except Exception:
+          pass
+    _cooldown_ok = (_hours is None) or (_hours >= 4)
+    _open = _now is not None and 7 <= _now.hour < 20
+    import zlib as _zlib
+    _threshold = 40 + _zlib.crc32(persona.name.encode()) % 11   # 40..50
     _shop_goal = "buying groceries at the Harvey Oak Supply Store"
-    _already = _shop_goal in getattr(persona.scratch, "resource_goals", [])
-    if (_hunger < 45 and _cooldown_ok and _wallet >= 30
+    _already = any("grocer" in g.lower()
+                   for g in getattr(persona.scratch, "resource_goals", []))
+    if (_hunger < _threshold and _cooldown_ok and _open and _wallet >= 30
         and not _already and hasattr(persona.scratch, "resource_goals")):
       persona.scratch.resource_goals.insert(0, _shop_goal)
+      persona.scratch.last_grocery_attempt = _now
       print(f"[Economy] {persona.name} heading to the store "
-            f"(hunger {_hunger:.0f}, wallet ${_wallet:.0f})")
+            f"(hunger {_hunger:.0f} < {_threshold}, wallet ${_wallet:.0f})")
   except Exception:
     pass  # economy must never crash the plan loop
 

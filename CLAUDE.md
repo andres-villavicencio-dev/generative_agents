@@ -38,7 +38,7 @@ python simstart.py --fork base_the_ville_isabella_maria_klaus --steps 100 --auto
 | system `ollama` | 11434 | Default instance; not used by live runs. |
 | `ga-laya` (user unit) | 8018 | Laya v3 local fine-tuned decision server (poignancy / talk / react). POST only. |
 | Django `runserver` | 8000 | Frontend; two PIDs is normal (autoreloader parent + worker). `/api/run_stats/<sim>/` feeds the simulator_home ops card (rate = steps written in a trailing 10-min window; unit resolved from the backend's cgroup). |
-| `~/Scripts/m31_teacher_harvest.py` | — | Blind teacher-labels `ga_traces/{poignancy,talk,react}.jsonl` with minimax → `ga_traces/m31_teacher/`. |
+| `~/Scripts/m31_teacher_harvest.py` (transient unit `m31-teacher`) | — | Blind teacher-labels `ga_traces/{poignancy,talk,react}.jsonl` with minimax → `ga_traces/m31_teacher/`. Paced `M31_CALL_GAP_S=1.5`s between calls: unpaced batches shared the cloud's **per-minute quota** with the sim and caused 429 storms. `ga-ollama` stays at `OLLAMA_NUM_PARALLEL=5` — 8 produced more 429s. |
 
 **Purpose of the minimax runs:** harvest cloud-teacher data to fine-tune the local sLM. Data products:
 - `ga_traces/{poignancy,talk,react}.jsonl` — sim decision traces (`ga_trace.py`).

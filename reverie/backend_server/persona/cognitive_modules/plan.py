@@ -1235,28 +1235,36 @@ def _determine_action(persona, maze):
   except Exception as _drv_err:
     print(f"[Drives] arbitration error ({type(_drv_err).__name__}: {_drv_err}) — falling back to legacy")
 
-  if not _drives_active:
-    # Check resource goals first — these take priority over normal replanning
-    # FIX (needs-driven urgency): needs_critical was a dead threshold — nothing
-    # ever read it. When a need crosses the critical line, inject an urgent
-    # resource goal so the persona actually ACTS on its body instead of
-    # following the daily plan while desperate.
-    if hasattr(persona.scratch, "needs") and persona.scratch.needs:
-      critical = getattr(persona.scratch, "needs_critical", 20)
-      urgent_map = {
-        "bladder": "go to the nearest bathroom to relieve themselves",
-        "hygiene": "take a shower in the bathroom",
-        "hunger": "eat a meal or get food from Hobbs Cafe",
-        "energy": "go home and take a rest",
-        "hydration": "get a drink of water",
-      }
-      for need, goal in urgent_map.items():
-        val = persona.scratch.needs.get(need, 100)
-        if val < critical:
-          # Don't stack duplicates of the same urgent goal
-          if goal not in persona.scratch.resource_goals:
-            persona.scratch.resource_goals.insert(0, goal)
-          break  # one urgent need at a time — highest urgency order above
+  # Check resource goals first — these take priority over normal replanning.
+  # FIX (needs-driven urgency, Oct 21 2026): this block was gated behind
+  # `if not _drives_active:` — dead in production, because critical bladder
+  # FOLDS INTO hunger-drive salience (agentic_drives), so a drive won nearly
+  # every arbitration and relief never ran: agents stayed critical-bladder,
+  # the talk hard-gate (critical non-social need -> always no) muted every
+  # encounter -> 0 conversations for entire sim-days. Now UNCONDITIONAL and
+  # placed after the drives insert, so its insert(0) wins the resource_goals
+  # pop. Goals are progressive-tense (goal strings render as "X is <goal>")
+  # and home-anchored: the maze has NO bathroom venues, so 'nearest
+  # bathroom' could never resolve; 'home' always does, and
+  # satisfy_needs_for_action reads the DESCRIPTION keyword ('bathroom'),
+  # not the venue.
+  if hasattr(persona.scratch, "needs") and persona.scratch.needs:
+    critical = getattr(persona.scratch, "needs_critical", 20)
+    urgent_map = {
+      "bladder": "using the bathroom at home",
+      "hygiene": "taking a shower at home",
+      "hunger": "eating a meal at the Hobbs Cafe",
+      "energy": "resting at home",
+      "hydration": "getting a drink of water",
+    }
+    for need, goal in urgent_map.items():
+      val = persona.scratch.needs.get(need, 100)
+      if val < critical:
+        # Don't stack duplicates of the same urgent goal
+        if goal not in persona.scratch.resource_goals:
+          persona.scratch.resource_goals.insert(0, goal)
+          print(f"[UrgentNeed] {persona.name} critical {need} ({val:.0f}) -> '{goal}'")
+        break  # one urgent need at a time — highest urgency order above
 
   # PROACTIVE GROCERY SHOPPING (Sep 2026 economy revival): inject a
   # shopping goal before hunger goes critical, with a cooldown, so money

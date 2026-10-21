@@ -18,6 +18,14 @@ import subprocess
 import sys
 import time
 
+# FIX (Oct 21 2026): the backend log is block-buffered when stdout is a
+# file — it lagged ~15 min behind a healthy sim and was twice read as a
+# wedge, nearly triggering a spurious restart of a live conversation.
+# Unbuffered stdout makes /tmp/<sim>_backend.log real-time for the
+# backend AND the driver (both inherit this environ). setdefault so an
+# explicit override in the unit environment still wins.
+os.environ.setdefault("PYTHONUNBUFFERED", "1")
+
 BASE = os.path.expanduser("~/Projects/generative_agents")
 REVERIE_DIR = os.path.join(BASE, "reverie/backend_server")
 PYTHON = sys.executable

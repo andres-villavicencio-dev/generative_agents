@@ -123,6 +123,28 @@ window.RichFX = (function () {
     return key;
   }
 
+  // Sleep "Zzz" (Oct 22 2026): the sleep floaty used the key of an emoji
+  // texture ('fxe_55357_56404_', i.e. 😴) that only existed if a 😴 emote had
+  // happened to pop up earlier — otherwise Phaser drew its black/green
+  // missing-texture square above every sleeper. Built here at init instead,
+  // as text (no emoji-font dependency).
+  function makeZzz(key) {
+    if (SC.textures.exists(key)) return key;
+    var c = document.createElement('canvas');
+    c.width = 48; c.height = 40;
+    var ctx = c.getContext('2d');
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(30,30,60,0.85)';
+    ctx.fillStyle = '#eef3ff';
+    [[30, 10, 18], [21, 20, 15], [13, 30, 12]].forEach(function (z) {
+      ctx.font = 'bold ' + z[0] + 'px Georgia, serif';
+      ctx.strokeText('Z', z[1], z[2]);
+      ctx.fillText('Z', z[1], z[2]);
+    });
+    addCanvas(key, c);
+    return key;
+  }
+
   function makeLeaf(key) {
     if (SC.textures.exists(key)) return key;
     var c = document.createElement('canvas');
@@ -179,6 +201,7 @@ window.RichFX = (function () {
     makeSpark('fx_spark');
     makeNote('fx_note1', '\u266A');   // ♪
     makeNote('fx_note2', '\u266B');   // ♫
+    makeZzz('fx_zzz');
     makeLeaf('fx_leaf');
     makeDrop('fx_drop');
     makeEmojiTex('\uD83D\uDCA4');     // 💤 (preload the most common one)
@@ -466,7 +489,7 @@ window.RichFX = (function () {
         sp.setAlpha(0.85);
         if (now >= st.nextEmit) {
           st.nextEmit = now + 1500;
-          floaty(name, 'fxe_55357_56404_', { rise: 22, dur: 2300, sway: 9, jx: 10 });
+          floaty(name, 'fx_zzz', { rise: 22, dur: 2300, sway: 9, jx: 10 });
         }
         break;
 

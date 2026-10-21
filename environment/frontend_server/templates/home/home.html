@@ -48,6 +48,9 @@
 				<div class="col-md-3"><strong>Rate:</strong> <span id="rs-rate">…</span></div>
 				<div class="col-md-3"><strong>GPU:</strong> <span id="rs-gpu">…</span></div>
 			</div>
+			<div class="row" style="margin-top:0.4em; font-size:1.0em">
+				<div class="col-md-12"><strong>Activity:</strong> <span id="rs-activity">…</span></div>
+			</div>
 			<div class="row" style="margin-top:0.4em; font-size:0.95em; color:#555">
 				<div class="col-md-4">Engine: <span id="rs-enginedetail">…</span></div>
 				<div class="col-md-4">Services: <span id="rs-services">…</span></div>
@@ -61,7 +64,7 @@
 			function tick() {
 				fetch("/api/run_stats/" + SIM + "/").then(function(r){ return r.json(); }).then(function(s) {
 					var chain = document.getElementById("rs-chain");
-					chain.textContent = "chain: " + fmt0(s.chain_unit);
+					chain.textContent = (s.chain_unit_name || "chain").replace(/\.service$/, "") + ": " + fmt0(s.chain_unit);
 					chain.className = "label " + (s.chain_unit === "active" ? "label-success" : "label-danger");
 
 					var eng = s.engine || {};
@@ -77,6 +80,20 @@
 					var rateEl = document.getElementById("rs-rate");
 					rateEl.textContent = rate === null ? "—" : rate + " steps/min";
 					rateEl.style.color = (rate !== null && rate < 3) ? "#B22222" : "";
+
+					// In-step activity: one step can hold a whole conversation + re-plan
+					// (minutes). Busy-but-slow is not a stall: red only when no LLM call
+					// has completed for 3+ minutes.
+					var act = s.activity, actEl = document.getElementById("rs-activity");
+					function dur(x) { return x === null || x === undefined ? "—" : (x >= 60 ? Math.floor(x / 60) + "m" + (x % 60) + "s" : x + "s"); }
+					if (act) {
+						var lc = act.last_call;
+						actEl.textContent = (s.latest_step === null || s.latest_step === undefined ? "cold start (day-one planning, no step yet)"
+							: "step " + fmt0(s.latest_step) + " in progress " + dur(act.step_age_s) +
+								" · " + fmt0(act.calls_since_step) + " LLM calls this step") +
+							(lc ? " · last: " + lc.caller + (lc.persona ? " (" + lc.persona + ")" : "") + " " + dur(lc.age_s) + " ago" : "");
+						actEl.style.color = (lc && lc.age_s > 180) ? "#B22222" : "";
+					} else { actEl.textContent = "—"; }
 
 					var g = s.gpu;
 					document.getElementById("rs-gpu").textContent = g ? (g.util + "% · " + g.vram_used + "/" + g.vram_total + " MB") : "—";

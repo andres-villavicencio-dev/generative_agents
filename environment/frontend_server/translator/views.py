@@ -11,6 +11,7 @@ from os import listdir
 import os
 
 import datetime
+import time
 from django.shortcuts import render, redirect, HttpResponseRedirect
 from django.http import HttpResponse, JsonResponse
 from global_methods import *
@@ -159,10 +160,11 @@ def home(request):
       if key in persona_names_set:
         persona_init_pos += [[key, val["x"], val["y"]]]
 
-  # ?follow=1 → read-only viewer mode (mode="replay" in the template):
-  # the headless driver is the sole writer of environment files; the
-  # browser polls movement files and never POSTs positions back.
-  mode = "replay" if request.GET.get("follow") else "simulate"
+  # Read-only follow mode is the DEFAULT (Oct 21 2026): every run is driven
+  # by headless_driver.py, the sole writer of environment files — a browser
+  # in "simulate" mode POSTs positions too and races it. ?drive=1 restores
+  # the legacy browser-driven mode (no headless driver running).
+  mode = "simulate" if request.GET.get("drive") else "replay"
 
   context = {"sim_code": sim_code,
              "step": step,
@@ -311,7 +313,29 @@ def update_environment(request):
       response_data = json.load(json_file)
       response_data["<step>"] = step
 
+  # Viewer resync (Oct 21 2026): the page's step counter is fixed at load,
+  # so after a checkpoint rollback / restart it waited forever for a step
+  # being re-generated, and after a fork it kept polling the dead sim —
+  # the run looked stalled. Report the live frontier + sim so the page can
+  # re-initialise itself.
+  response_data["frontier"] = _movement_frontier(sim_code)
+  try:
+    with open("temp_storage/curr_sim_code.json") as f:
+      response_data["live_sim_code"] = json.load(f)["sim_code"]
+  except (OSError, ValueError, KeyError):
+    response_data["live_sim_code"] = None
+
   return JsonResponse(response_data)
+
+
+def _movement_frontier(sim_code):
+  """Newest movement step for a sim, or None."""
+  try:
+    steps = [int(f[:-5]) for f in os.listdir(f"storage/{sim_code}/movement")
+             if f.endswith(".json") and f[:-5].isdigit()]
+    return max(steps) if steps else None
+  except OSError:
+    return None
 
 
 def path_tester_update(request):
@@ -517,6 +541,26 @@ def _backend_proc_env_gates():
         return {}
 
 
+def _backend_unit():
+    """systemd unit name owning the live reverie backend, or None."""
+    import subprocess
+    try:
+        pids = subprocess.run(["pgrep", "-f", "reverie.py"],
+                              capture_output=True, text=True, timeout=5)
+        for pid in pids.stdout.split():
+            try:
+                with open(f"/proc/{pid}/cgroup") as f:
+                    units = [seg for seg in f.read().strip().split("/")
+                             if seg.endswith(".service")]
+            except OSError:
+                continue
+            if units:
+                return units[-1]
+    except Exception:
+        pass
+    return None
+
+
 def _probe_service(port, path="/health"):
     """Tiny HTTP probe of a local decision service; returns 'up'/'down'.
     Laya's server only implements do_POST, so POST a minimal typed decision
@@ -547,6 +591,47 @@ def _probe_service(port, path="/health"):
         return "down"
 
 
+def _step_activity(frontier_file):
+    """{step_age_s, calls_since_step, last_call} from the frontier file's
+    mtime and the tail of the newest ga_traces/calls/*.jsonl; None on error."""
+    import glob
+    try:
+        calls_dir = os.path.abspath(os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            "..", "..", "..", "ga_traces", "calls"))
+        files = glob.glob(os.path.join(calls_dir, "*.jsonl"))
+        now = time.time()
+        step_mtime = os.path.getmtime(frontier_file) if frontier_file else None
+        out = {"step_age_s": round(now - step_mtime) if step_mtime else None,
+               "calls_since_step": None, "last_call": None}
+        if not files:
+            return out
+        newest = max(files, key=os.path.getmtime)
+        with open(newest, "rb") as f:
+            f.seek(max(0, os.path.getsize(newest) - 256_000))
+            lines = f.read().decode("utf-8", "replace").splitlines()[1:]
+        recs = []
+        for line in lines:
+            try:
+                recs.append(json.loads(line))
+            except ValueError:
+                continue
+        if not recs:
+            return out
+        if step_mtime:
+            out["calls_since_step"] = sum(1 for r in recs if r.get("ts", 0) > step_mtime)
+        last = recs[-1]
+        out["last_call"] = {
+            "caller": (last.get("caller") or "").replace("run_gpt_prompt_", ""),
+            "persona": last.get("persona"),
+            "age_s": round(now - last.get("ts", now)),  # ts = completion time
+            "latency_s": last.get("latency_s"),
+        }
+        return out
+    except Exception:
+        return None
+
+
 def get_run_stats(request, sim_code):
     """Live run stats for the simulator_home ops panel.
 
@@ -573,24 +658,49 @@ def get_run_stats(request, sim_code):
         stats["checkpoint_step"] = None
         stats["sim_time"] = None
 
-    # --- movement frontier + step rate (newest 60 mtimes) ---
+    # --- movement frontier + step rate (trailing 10-min window) ---
+    # Rate = steps written in the last 10 min / time since the oldest of
+    # them. The old "newest 60 mtimes" span read 0.0 after every resume:
+    # the files at/below the resume point are inherited from the parent
+    # run (hours-old mtimes), so the span exploded. A frozen sim now
+    # correctly decays to 0.0 instead of reporting its last burst.
     mdir = f"storage/{sim_code}/movement"
     latest_step, rate = None, None
+    RATE_WINDOW_S = 600
     try:
         names = sorted((int(f[:-5]) for f in os.listdir(mdir)
                         if f.endswith(".json") and f[:-5].isdigit()))
         if names:
             latest_step = names[-1]
-            recent = names[-60:]
-            mtimes = [os.path.getmtime(os.path.join(mdir, f"{n}.json")) for n in recent]
-            if len(mtimes) >= 10:
-                span = max(mtimes) - min(mtimes)
-                if span > 0:
-                    rate = round(len(recent) / span * 60, 1)
+            now = time.time()
+            mtimes = [os.path.getmtime(os.path.join(mdir, f"{n}.json"))
+                      for n in names[-300:]]
+            recent = [m for m in mtimes if now - m <= RATE_WINDOW_S]
+            if recent:
+                span = max(now - min(recent), 60)
+                rate = round(len(recent) / span * 60, 1)
+            else:
+                rate = 0.0
     except OSError:
         pass
     stats["latest_step"] = latest_step
     stats["steps_per_min"] = rate
+    # Live sim clock from the frontier file (meta.json only updates at
+    # checkpoints, so it lags the running sim by hours).
+    if latest_step is not None:
+        try:
+            with open(os.path.join(mdir, f"{latest_step}.json")) as f:
+                stats["sim_time"] = json.load(f)["meta"]["curr_time"]
+        except (OSError, ValueError, KeyError):
+            pass
+
+    # --- in-step activity (Oct 21 2026) ---
+    # One step can take minutes (a whole conversation + re-plan is generated
+    # inside a single step), which used to read as a stall. The per-call
+    # capture (ga_traces/calls/<model>.jsonl, gpt_structure._trace_call)
+    # shows whether the backend is actually working inside the step.
+    stats["activity"] = _step_activity(
+        os.path.join(mdir, f"{latest_step}.json") if latest_step is not None else None)
 
     # --- backend gates (live process env) ---
     gates = _backend_proc_env_gates()
@@ -612,8 +722,12 @@ def get_run_stats(request, sim_code):
     }
 
     # --- chain unit ---
+    # The driving unit changes per run (ga-sim, ga-n68, ...): resolve it from
+    # the live backend's cgroup; fall back to the legacy ga-sim.service.
+    unit = _backend_unit() or "ga-sim.service"
+    stats["chain_unit_name"] = unit
     try:
-        u = subprocess.run(["systemctl", "--user", "is-active", "ga-sim.service"],
+        u = subprocess.run(["systemctl", "--user", "is-active", unit],
                            capture_output=True, text=True, timeout=5)
         stats["chain_unit"] = u.stdout.strip()
     except Exception:

@@ -113,7 +113,32 @@
 
 	// <timer_max> determines how frequently our update function will query the 
 	// frontend server. If it's higher, we wait longer cycles. 
-	let timer_max = 0;
+	// Was 0 (polled on EVERY frame, ~60 POSTs/s); ~20 frames is ~3 polls/s.
+	let timer_max = 20;
+
+	// Viewer resync (Oct 21 2026): <step> is fixed at page load, so after a
+	// checkpoint rollback the page waited for a step being re-generated, after
+	// a fork it polled the dead sim, and a lagging tab never caught up: the
+	// run looked stalled. update_environment reports the live frontier + sim;
+	// reload (home() re-initialises from curr_step.json) when they disagree.
+	const RESYNC_MAX_LAG = 60;
+	let last_resync = Date.now();
+	function maybeResync(resp) {
+	  if (Date.now() - last_resync < 30000) return;
+	  const frontier = resp["frontier"];
+	  const live = resp["live_sim_code"];
+	  let why = null;
+	  if (live && live !== sim_code) why = "sim changed to " + live;
+	  else if (frontier !== null && frontier !== undefined) {
+	    if (frontier < step - 1) why = "rollback to " + frontier;
+	    else if (frontier - step > RESYNC_MAX_LAG) why = "viewer " + (frontier - step) + " steps behind";
+	  }
+	  if (why) {
+	    last_resync = Date.now();
+	    console.log("[viewer resync] " + why + " (at step " + step + ")");
+	    location.reload();
+	  }
+	}
 	let timer = timer_max;
 
 	// <phase> -- there are three phases: "process," "update," and "execute."
@@ -509,8 +534,10 @@
 	      update_xobj.addEventListener("load", function() {
 	        if (this.readyState === 4) {
 	          if (update_xobj.status === 200) {
-	            if (JSON.parse(update_xobj.responseText)["<step>"] == step) {
-	              execute_movement = JSON.parse(update_xobj.responseText)
+	            const resp = JSON.parse(update_xobj.responseText);
+	            maybeResync(resp);
+	            if (resp["<step>"] == step) {
+	              execute_movement = resp;
 	              phase = "execute";
 	            }
 	            timer = timer_max;

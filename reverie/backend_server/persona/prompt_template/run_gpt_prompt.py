@@ -325,6 +325,108 @@ def parse_revised_schedule(prompt, response):
   return out
 
 
+def _ci_match(name, options):
+  """Case/punctuation-insensitive pick of `name` from `options` (or None)."""
+  if not name:
+    return None
+  n = name.strip().strip("{}[]()\"'`*.").strip().lower()
+  for o in options:
+    if o.lower() == n:
+      return o
+  return None
+
+
+def run_gpt_prompt_action_location(action_description, persona, maze):
+  """PERF (Oct 21 2026): ONE cloud call picks sector, arena and game object
+  together — the legacy chain (action_sector -> action_arena ->
+  action_game_object) was 3 serial calls on the step's critical path for
+  every activity change. The persona's whole accessible spatial tree goes in
+  the prompt; the answer is one YAML line "output: <area> | <room> |
+  <object>". Returns (sector, arena, game_object); any level that fails
+  validation comes back None so the caller can fill it with the legacy
+  per-level call. game_object is "<random>" when the arena has no objects."""
+  act_world = maze.access_tile(persona.scratch.curr_tile)["world"]
+  tree = persona.s_mem.tree.get(act_world, {})
+  sectors = []
+  for sec in tree:
+    # MAR 11 TEMP (verbatim rule from the legacy sector prompt): other
+    # families' houses are off-limits.
+    if "'s house" in sec and persona.scratch.last_name not in sec:
+      continue
+    sectors.append(sec)
+  if not sectors:
+    return None, None, None
+
+  lines = []
+  for sec in sectors:
+    parts = []
+    for arena, objs in (tree.get(sec) or {}).items():
+      objs = [o for o in (objs or []) if o]
+      parts.append(f"{arena} [{', '.join(objs)}]" if objs else arena)
+    lines.append(f"- {sec}: " + "; ".join(parts))
+  curr = maze.access_tile(persona.scratch.curr_tile)
+  name = persona.scratch.get_str_name()
+  act_1 = action_description.split("(")[0].strip()
+  act_2 = (action_description.split("(")[-1].rstrip(")").strip()
+           if "(" in action_description else "")
+  tool_hint = ""
+  if TOOL_REGISTRY_AVAILABLE:
+    try:
+      tool_info = get_tool_for_action_context(action_description)
+      if tool_info:
+        tool_hint = (f"\nTool hint: consider a '{tool_info['tile_keyword']}' "
+                     f"({tool_info['tool_description']}).")
+    except Exception:
+      pass
+  plan_req = persona.scratch.get_str_daily_plan_req()
+  prompt = (
+    f"{name} lives in {persona.scratch.living_area.split(':')[1]}.\n"
+    f"{name} is currently in {curr['sector']}"
+    + (f" ({curr['arena']})" if curr.get('arena') else "") + ".\n"
+    + (f"{plan_req}\n" if plan_req else "")
+    + f"Activity: {act_1}" + (f" ({act_2})" if act_2 and act_2 != act_1 else "")
+    + tool_hint + "\n\n"
+    f"Places {name} can go — area: room [objects]; room [objects]:\n"
+    + "\n".join(lines) + "\n\n"
+    "* Stay in the current area if the activity can be done there. Only go "
+    "out if the activity needs to take place in another place.\n"
+    "* NEVER go into other people's rooms unless necessary.\n"
+    "* Pick the area, ONE room of that area, and ONE object of that room, "
+    "each copied verbatim from the list.\n"
+    "Answer in this exact YAML format:\n"
+    "output: <area> | <room> | <object>"
+  )
+
+  def _split(resp):
+    parts = [x.strip() for x in str(resp).split("|")]
+    return parts if len(parts) >= 2 else None
+
+  def __func_validate(gpt_response, prompt=""):
+    parts = _split(gpt_response)
+    return bool(parts) and _ci_match(parts[0], sectors) is not None
+
+  def __func_clean_up(gpt_response, prompt=""):
+    parts = _split(gpt_response)
+    sec = _ci_match(parts[0], sectors)
+    arenas = list((tree.get(sec) or {}).keys())
+    arena = _ci_match(parts[1], arenas) if len(parts) > 1 else None
+    obj = None
+    if arena is not None:
+      objs = [o for o in (tree[sec].get(arena) or []) if o]
+      if not objs:
+        obj = "<random>"
+      elif len(parts) > 2:
+        obj = _ci_match(parts[2], objs)
+    return (sec, arena, obj)
+
+  gpt_param = {"engine": "text-davinci-002", "max_tokens": 60,
+               "temperature": 0, "top_p": 1, "stream": False,
+               "frequency_penalty": 0, "presence_penalty": 0, "stop": None}
+  out = safe_generate_response(prompt, gpt_param, 3, (None, None, None),
+                               __func_validate, __func_clean_up)
+  return out if isinstance(out, tuple) else (None, None, None)
+
+
 def run_gpt_prompt_daily_plan(persona,
                               wake_up_hour,
                               test_input=None,
@@ -933,7 +1035,7 @@ def run_gpt_prompt_action_sector(action_description,
           f"if the activity can be done there. Options:\n__JEV_OPTIONS__\n"
           f"Answer with the letter only:"
         )
-        jev_out = jev_score_choice(jev_prompt, fin_accessible_sectors)
+        jev_out = jev_score_choice(jev_prompt, fin_accessible_sectors, kind="sector")
         if jev_out is not None:
           return jev_out, ["jev", jev_prompt, "jev", ["jev"], "jev"]
   except Exception:
@@ -1120,7 +1222,7 @@ def run_gpt_prompt_action_arena(action_description,
           f"Which area in {act_sector} should {persona.scratch.name} go to for this activity? "
           f"Answer with the letter only:"
         )
-        jev_out = jev_score_choice(jev_prompt, arenas)
+        jev_out = jev_score_choice(jev_prompt, arenas, kind="arena")
         if jev_out is not None:
           return jev_out, ["jev", jev_prompt, "jev", ["jev"], "jev"]
   except Exception:
@@ -1281,7 +1383,7 @@ def run_gpt_prompt_action_game_object(action_description,
           f"Which object should {persona.scratch.name} use for this activity? "
           f"Answer with the letter only:"
         )
-        jev_out = jev_score_choice(jev_prompt, objects)
+        jev_out = jev_score_choice(jev_prompt, objects, kind="object")
         if jev_out is not None:
           return jev_out, ["jev", jev_prompt, "jev", ["jev"], "jev"]
   except Exception:

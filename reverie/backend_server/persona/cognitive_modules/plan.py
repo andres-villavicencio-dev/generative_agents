@@ -573,6 +573,64 @@ def generate_action_game_object(act_desp, act_address, persona, maze):
   return run_gpt_prompt_action_game_object(act_desp, persona, maze, act_address)[0]
 
 
+def _laya_shadow_location(act_desp, persona, maze, sector, arena):
+  """Keep laya's spatial training pairs flowing under the unified call:
+  ask laya (off-thread, shadow) the same three questions; its picks land in
+  ga_traces/spatial.jsonl next to the teacher's unified answer."""
+  try:
+    import persona.prompt_template.jev_scoring as _J
+    if not (_J.USE_JEV_SCORING and _J.JEV_BACKEND == "laya"):
+      return
+    world = maze.access_tile(persona.scratch.curr_tile)["world"]
+    tree = persona.s_mem.tree.get(world, {})
+    act = act_desp.split("(")[0].strip()
+    name = persona.scratch.name
+    secs = [x for x in tree if "'s house" not in x or persona.scratch.last_name in x]
+    jobs = [(f"{name} is in {maze.access_tile(persona.scratch.curr_tile)['sector']}.\n"
+             f"Activity: {act}\nWhich area should they go to?\n__JEV_OPTIONS__", secs)]
+    if sector in tree:
+      jobs.append((f"{name} is going to {sector}.\nActivity: {act}\n"
+                   f"Which room should they use?\n__JEV_OPTIONS__", list(tree[sector].keys())))
+      if arena in tree[sector]:
+        objs = [o for o in (tree[sector][arena] or []) if o]
+        if objs:
+          jobs.append((f"{name} is in {arena}.\nActivity: {act}\n"
+                       f"Which object should they use?\n__JEV_OPTIONS__", objs))
+    for prompt, opts in jobs:
+      if len(opts) > 1:
+        _J._shadow(_J._laya_score_choice, prompt, opts, 0.0, False)
+  except Exception:
+    pass
+
+
+def resolve_action_location(act_desp, persona, maze):
+  """(world, sector, arena, game_object) for an action. PERF (Oct 21 2026):
+  one unified cloud call (run_gpt_prompt_action_location) instead of the
+  sector -> arena -> object chain; any level it can't validate falls back to
+  the legacy per-level call. GA_UNIFIED_LOCATION=0 restores the chain."""
+  import re as _re
+  act_world = maze.access_tile(persona.scratch.curr_tile)["world"]
+  sector = arena = obj = None
+  if os.environ.get("GA_UNIFIED_LOCATION", "1") == "1":
+    try:
+      sector, arena, obj = run_gpt_prompt_action_location(act_desp, persona, maze)
+    except Exception as e:
+      print(f"[Location] unified call failed ({type(e).__name__}: {e}); legacy chain")
+      sector = arena = obj = None
+    if sector:
+      _laya_shadow_location(act_desp, persona, maze, sector, arena)
+  if not sector:
+    sector = generate_action_sector(act_desp, persona, maze)
+  if not arena:
+    arena = generate_action_arena(act_desp, persona, maze, act_world, sector)
+    arena = _re.sub(r'^Answer:\s*', '', arena, flags=_re.IGNORECASE).strip()
+    arena = arena.lstrip("{[(\"'").rstrip("}])\"'").strip()
+  if not obj:
+    obj = generate_action_game_object(act_desp, f"{act_world}:{sector}:{arena}",
+                                      persona, maze)
+  return act_world, sector, arena, obj
+
+
 EMOJI_LOOKUP = {
   "sleep": "😴", "sleeping": "😴", "nap": "😴", "napping": "😴",
   "eat": "🍽️", "eating": "🍽️", "breakfast": "🍳", "lunch": "🥪", "dinner": "🍽️",
@@ -726,8 +784,30 @@ def generate_action_event_triple(act_desp, persona):
   return run_gpt_prompt_event_triple(act_desp, persona)[0]
 
 
+# PERF (Oct 21 2026): the object-state pair (act_obj_desc ->
+# act_obj_event_triple) was 2 serial cloud calls per activity change whose
+# answers were almost always "being used" / "in use" and
+# "(<object>, is, <state>)". Templated by default; GA_OBJ_DESC_LLM=1
+# restores the LLM path.
+def _obj_desc_llm():
+  return os.environ.get("GA_OBJ_DESC_LLM", "0") == "1"
+
+
+def _template_obj_desc(act_desp):
+  a = (act_desp or "").lower()
+  if re.search(r"\b(sleep|sleeping|asleep|nap|napping)\b", a):
+    return "being slept in"
+  if re.search(r"\b(clean|cleaning|tidy|tidying|wash|washing)\b", a):
+    return "being cleaned"
+  if re.search(r"\b(fix|fixing|repair|repairing)\b", a):
+    return "being fixed"
+  return "being used"
+
+
 def generate_act_obj_desc(act_game_object, act_desp, persona): 
   if debug: print ("GNS FUNCTION: <generate_act_obj_desc>")
+  if not _obj_desc_llm():
+    return _template_obj_desc(act_desp)
   result = run_gpt_prompt_act_obj_desc(act_game_object, act_desp, persona)
   if result is None:
     return f"{act_game_object} is idle"
@@ -736,6 +816,8 @@ def generate_act_obj_desc(act_game_object, act_desp, persona):
 
 def generate_act_obj_event_triple(act_game_object, act_obj_desc, persona): 
   if debug: print ("GNS FUNCTION: <generate_act_obj_event_triple>")
+  if not _obj_desc_llm():
+    return (act_game_object, "is", act_obj_desc)
   return run_gpt_prompt_act_obj_event_triple(act_game_object, act_obj_desc, persona)[0]
 
 
@@ -1326,17 +1408,8 @@ def _determine_action(persona, maze):
     act_dura = 30  # 30 minutes for resource-driven actions
 
     # Determine the target location based on the goal
-    act_world = maze.access_tile(persona.scratch.curr_tile)["world"]
-    act_sector = generate_action_sector(act_desp, persona, maze)
-    act_arena = generate_action_arena(act_desp, persona, maze, act_world, act_sector)
-
-    # Strip any LLM artifacts from arena name
-    import re as _re
-    act_arena = _re.sub(r'^Answer:\s*', '', act_arena, flags=_re.IGNORECASE).strip()
-    act_arena = act_arena.lstrip("{[(\"'").rstrip("}])\"'").strip()
-
-    act_address = f"{act_world}:{act_sector}:{act_arena}"
-    act_game_object = generate_action_game_object(act_desp, act_address, persona, maze)
+    act_world, act_sector, act_arena, act_game_object = \
+        resolve_action_location(act_desp, persona, maze)
 
     if act_game_object and act_game_object != "<random>":
       new_address = f"{act_world}:{act_sector}:{act_arena}:{act_game_object}"
@@ -1455,17 +1528,8 @@ def _determine_action(persona, maze):
 
   # Finding the target location of the action and creating action-related
   # variables.
-  act_world = maze.access_tile(persona.scratch.curr_tile)["world"]
-  # act_sector = maze.access_tile(persona.scratch.curr_tile)["sector"]
-  act_sector = generate_action_sector(act_desp, persona, maze)
-  act_arena = generate_action_arena(act_desp, persona, maze, act_world, act_sector)
-  # Strip any LLM artifacts from arena name
-  import re as _re
-  act_arena = _re.sub(r'^Answer:\s*', '', act_arena, flags=_re.IGNORECASE).strip()
-  act_arena = act_arena.lstrip("{[(\"'").rstrip("}])\"'").strip()
-  act_address = f"{act_world}:{act_sector}:{act_arena}"
-  act_game_object = generate_action_game_object(act_desp, act_address,
-                                                persona, maze)
+  act_world, act_sector, act_arena, act_game_object = \
+      resolve_action_location(act_desp, persona, maze)
   # Don't include <random> placeholder in the address — use arena address only
   if act_game_object and act_game_object != "<random>":
     new_address = f"{act_world}:{act_sector}:{act_arena}:{act_game_object}"
@@ -1945,11 +2009,21 @@ def plan(persona, maze, personas, new_day, retrieved):
           elif reaction_mode[:4] == "wait":
             _wait_react(persona, reaction_mode)
     if chat_pair:
-      try:
-        _chat_react(maze, persona, focused_event, reaction_mode, personas)
-      finally:
+      from concurrency_utils import async_chat_enabled, PENDING_CHATS
+      if async_chat_enabled():
+        # Queued, not generated: reverie starts it after this step's pool
+        # and freezes both speakers until it is written back (the pair
+        # stays claimed in CHAT_BUSY until then).
         with CONVO_LOCK:
-          CHAT_BUSY.difference_update(chat_pair)
+          PENDING_CHATS.append(
+              (_chat_react, (maze, persona, focused_event, reaction_mode, personas),
+               chat_pair))
+      else:
+        try:
+          _chat_react(maze, persona, focused_event, reaction_mode, personas)
+        finally:
+          with CONVO_LOCK:
+            CHAT_BUSY.difference_update(chat_pair)
 
   # Step 3: Chat-related state clean up. 
   # If the persona is not chatting with anyone, we clean up any of the 

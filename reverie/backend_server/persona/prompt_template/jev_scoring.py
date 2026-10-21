@@ -98,6 +98,14 @@ JEV_LAYA_CONTEXT_CHARS = 1500
 # reach JEV after laya already deferred. Shadow traces are the paired
 # (laya pick, teacher pick) data to fine-tune that in.
 JEV_LAYA_MODE = os.environ.get("GA_JEV_LAYA_MODE", "shadow")
+# Per-kind live override for spatial choices on the legacy per-level path
+# ("sector,arena,object"): those kinds let laya decide even in shadow mode.
+# Default empty — the unified location call (one teacher call for all three
+# levels) already removed these calls, and laya-v3's spatial picks are not
+# yet trustworthy (sector 6/11, Oct 21 eval).
+JEV_LAYA_LIVE_KINDS = {k.strip() for k in
+                       os.environ.get("GA_JEV_LAYA_LIVE_KINDS", "").split(",")
+                       if k.strip()}
 
 
 def _shadow(fn, *args):
@@ -421,7 +429,7 @@ def jev_score_digit(prompt, lo=1, hi=10, min_margin=JEV_MIN_MARGIN):
 
 
 def jev_score_choice(prompt, options, min_margin=JEV_SPATIAL_MIN_MARGIN,
-                     return_dist=False):
+                     return_dist=False, kind=None):
     """
     Score a choice over enumerated multi-token options (sector/arena/
     game_object names). Uses letter labels (A/B/C/...) so the FIRST token
@@ -436,7 +444,7 @@ def jev_score_choice(prompt, options, min_margin=JEV_SPATIAL_MIN_MARGIN,
     _jev_stats["calls"] += 1
     t0 = time.time()
     if JEV_BACKEND == "laya":
-        if JEV_LAYA_MODE != "live":
+        if JEV_LAYA_MODE != "live" and kind not in JEV_LAYA_LIVE_KINDS:
             _shadow(_laya_score_choice, prompt, options, min_margin, return_dist)
             return None
         return _laya_score_choice(prompt, options, min_margin, return_dist)

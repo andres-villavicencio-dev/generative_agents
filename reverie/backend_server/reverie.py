@@ -308,6 +308,13 @@ class ReverieServer:
       None
       * Saves all relevant data to the designated memory directory
     """
+    # Wait for background conversations to be written back first — a
+    # checkpoint must not serialize a half-updated persona.
+    try:
+      from concurrency_utils import join_chat_threads
+      join_chat_threads()
+    except Exception as e:
+      print(f"[Reverie] Warning: chat-thread join before save failed: {e}")
     # <sim_folder> points to the current simulation folder.
     sim_folder = f"{fs_storage}/{self.sim_code}"
 
@@ -1474,6 +1481,12 @@ class ReverieServer:
           movements = {"persona": dict(),
                        "meta": dict()}
 
+          # Async conversations: speakers whose chat is being generated on a
+          # background thread are frozen for this step (snapshot, so a chat
+          # finishing mid-step can't flip a persona half-way through).
+          from concurrency_utils import ASYNC_FROZEN, start_pending_chats
+          _frozen_now = dict(ASYNC_FROZEN)
+
           def _move_one(args):
             persona_name, persona = args
             # Layer 1: attribute all LLM calls on this worker thread to this
@@ -1482,6 +1495,13 @@ class ReverieServer:
             # Skip deceased personas
             if persona.scratch.is_deceased:
                 return None
+            # Frozen speaker: stand still with a chat bubble; the background
+            # chat thread owns this persona until it writes the chat back.
+            if persona_name in _frozen_now:
+                return (persona_name, persona, persona.scratch.act_description,
+                        self.personas_tile[persona_name], "💬",
+                        f"conversing with {_frozen_now[persona_name]} @ "
+                        f"{persona.scratch.act_address}")
             # Death check: has this agent reached their lifespan?
             if (persona.scratch.death_age is not None
                 and persona.scratch.current_age >= persona.scratch.death_age):
@@ -1511,6 +1531,8 @@ class ReverieServer:
           with ThreadPoolExecutor(max_workers=GA_MOVE_WORKERS) as ex:
             move_results = list(ex.map(_move_one,
                                         list(self.personas.items())))
+          # Serial point: start conversations queued during this step.
+          start_pending_chats(set_persona_call_context)
           for res in move_results:
             if res is None:
               continue
@@ -1551,6 +1573,8 @@ class ReverieServer:
 
             # Satisfy needs when persona transitions to a new action
             curr_act_description = persona.scratch.act_description
+            if persona_name in _frozen_now:
+              curr_act_description = prev_act_description
             if curr_act_description != prev_act_description:
               self.satisfy_needs_for_action(persona, curr_act_description)
               # Consume world resources for the action (Phase 2)

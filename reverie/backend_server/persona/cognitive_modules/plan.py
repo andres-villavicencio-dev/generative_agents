@@ -1226,6 +1226,21 @@ def _determine_action(persona, maze):
       _cooldown_h = 3.0
       _cd_ok = (_last is None or _now is None or
                 (_now - _last).total_seconds() / 3600.0 >= _cooldown_h)
+      # Sleep gate (Oct 21 2026, fresh25_1 cold start): arbitration had no
+      # sense of time — with an empty event history at 00:00 curiosity won
+      # for nearly everyone and agents went "exploring" at midnight, which
+      # is where n68's broken sleep (11am naps, dinner before noon) came
+      # from. While the scheduled activity is sleep, only somatic drives
+      # (hunger/energy) may inject a goal.
+      _asleep = False
+      try:
+        _sched = persona.scratch.f_daily_schedule
+        _cur = _sched[persona.scratch.get_f_daily_schedule_index()][0] if _sched else ""
+        _asleep = re.search(r"\b(sleep|sleeping|asleep|bed)\b", _cur.lower()) is not None
+      except Exception:
+        pass
+      if _asleep and _winner not in ("hunger", "energy"):
+        _cd_ok = False
       if (_cd_ok and _goal not in persona.scratch.resource_goals
           and hasattr(persona.scratch, "resource_goals")):
         persona.scratch.resource_goals.insert(0, _goal)
@@ -1899,16 +1914,31 @@ def plan(persona, maze, personas, new_day, retrieved):
   # FIX (vector 1): reaction decisions read other personas' live state and
   # conversations mutate BOTH personas — serialize on CONVO_LOCK under the
   # pooled-cognition step loop.
-  from concurrency_utils import CONVO_LOCK
+  # PERF (Oct 21 2026, n68): the lock used to span the WHOLE conversation —
+  # ~24 serial cloud calls (5-10 min) during which every other persona with
+  # a focused event blocked, freezing the step barrier. Now the lock covers
+  # only the decision + claiming both speakers (CHAT_BUSY); generation runs
+  # outside it, so independent pairs/reactions proceed in parallel.
+  from concurrency_utils import CONVO_LOCK, CHAT_BUSY
   if focused_event:
+    chat_pair = None
     with CONVO_LOCK:
-      reaction_mode = _should_react(persona, focused_event, personas)
-      if reaction_mode:
-        # If we do want to chat, then we generate conversation
-        if reaction_mode[:9] == "chat with":
-          _chat_react(maze, persona, focused_event, reaction_mode, personas)
-        elif reaction_mode[:4] == "wait":
-          _wait_react(persona, reaction_mode)
+      if persona.name not in CHAT_BUSY:
+        reaction_mode = _should_react(persona, focused_event, personas)
+        if reaction_mode:
+          if reaction_mode[:9] == "chat with":
+            target_name = reaction_mode[9:].strip()
+            if target_name not in CHAT_BUSY:
+              chat_pair = (persona.name, target_name)
+              CHAT_BUSY.update(chat_pair)
+          elif reaction_mode[:4] == "wait":
+            _wait_react(persona, reaction_mode)
+    if chat_pair:
+      try:
+        _chat_react(maze, persona, focused_event, reaction_mode, personas)
+      finally:
+        with CONVO_LOCK:
+          CHAT_BUSY.difference_update(chat_pair)
 
   # Step 3: Chat-related state clean up. 
   # If the persona is not chatting with anyone, we clean up any of the 

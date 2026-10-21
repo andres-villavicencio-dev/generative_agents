@@ -79,7 +79,17 @@ def run_gpt_prompt_wake_up_hour(persona, test_input=None, verbose=False):
     return prompt_input
 
   def __func_clean_up(gpt_response, prompt=""):
-    cr = int(gpt_response.strip().lower().split("am")[0])
+    # Was int(resp.split("am")[0]): completion-era models answered "8am";
+    # chat models answer "9:00 AM" / "wakes up around **9:00 AM**." — that
+    # int() raised on every reply, so ALL agents burned 5 retries and got the
+    # fail-safe 8am wake-up (Oct 21 2026, fresh25_1 cold start).
+    m = re.search(r'(\d{1,2})(?::\d{2})?\s*([ap])?\.?\s*m?\b',
+                  gpt_response.replace("*", ""), re.I)
+    cr = int(m.group(1))
+    if m.group(2) and m.group(2).lower() == "p" and cr < 12:
+      cr += 12
+    if not 0 <= cr <= 23:
+      raise ValueError(cr)
     return cr
 
   def __func_validate(gpt_response, prompt=""):
@@ -133,6 +143,186 @@ def clamp_subtask_durations(schedule, parent_dur=None):
       if clamped and diff != 0:
         clamped[-1][1] = max(5, clamped[-1][1] + diff)
   return clamped
+
+
+_DECOMP_ITEM_RE = re.compile(r'^\s*(?:\d+\s*[.)]|[-*•])\s+(.*)$')
+_DECOMP_TIME_RE = re.compile(
+    r'(\d{1,2}):(\d{2})\s*([ap])?\.?\s*m?\.?\s*[–—-]+\s*'
+    r'(\d{1,2}):(\d{2})\s*([ap])?\.?\s*m?\.?', re.I)
+_DECOMP_MIN_RE = re.compile(r'(\d+)\s*(?:-\s*)?min', re.I)
+
+
+def _decomp_clock_min(h, m, ap):
+  h, m = int(h), int(m)
+  if ap:
+    ap = ap.lower()
+    if ap == 'p' and h != 12:
+      h += 12
+    elif ap == 'a' and h == 12:
+      h = 0
+  return h * 60 + m
+
+
+def parse_loose_task_decomp(text, firstname, total_min):
+  """PERF (Oct 21 2026, n68): reasoning cloud models (minimax-m3.1-flash)
+  ignore the '1) X is ... (duration in minutes: 5, minutes left: 55)' shape
+  and answer with markdown numbered lists ('1. **5:00-5:05 PM:** Eddy
+  gathers ...') or tables. The strict parser found zero tasks, so every
+  decomposition burned all 5 retries (~40s each, town frozen behind the
+  step barrier) and then fell back to the single-task fail-safe anyway.
+  Accept numbered/bulleted items and table rows; duration from a time
+  range, else an explicit 'N min', else an even share of what's left.
+  Returns [[task, minutes], ...] or []."""
+  items = []
+  for raw in text.split("\n"):
+    line = raw.strip()
+    if line.startswith("|"):
+      cells = [c.strip() for c in line.strip("|").split("|")]
+      if len(cells) < 2 or set("".join(cells)) <= set("-: "):
+        continue
+      if not (_DECOMP_TIME_RE.search(cells[0]) or _DECOMP_MIN_RE.search(" ".join(cells[1:]))):
+        continue  # header row
+      body = " | ".join(cells)
+      task = max(cells, key=len)
+    else:
+      m = _DECOMP_ITEM_RE.match(line)
+      if m:
+        body = m.group(1)
+      elif _DECOMP_TIME_RE.match(line.replace("**", "")):
+        body = line  # bare "12:00 PM–12:05 PM: ..." schedule line
+      else:
+        continue
+      task = body
+    plain = body.replace("**", "").replace("__", "")
+    dur = None
+    t = _DECOMP_TIME_RE.search(plain)
+    if t:
+      a = _decomp_clock_min(t.group(1), t.group(2), t.group(3) or t.group(6))
+      b = _decomp_clock_min(t.group(4), t.group(5), t.group(6) or t.group(3))
+      if b > a:
+        dur = b - a
+    if dur is None:
+      mm = _DECOMP_MIN_RE.search(plain)
+      if mm:
+        dur = int(mm.group(1))
+    # task text: drop markdown, the time range, leading separators, the
+    # "(duration ...)" tail and the persona's name.
+    task = task.replace("**", "").replace("__", "")
+    task = _DECOMP_TIME_RE.sub("", task)
+    task = re.sub(r'\(.*?min.*?\)', '', task)
+    task = re.sub(r'^[\s:—–\-|]+', '', task).strip()
+    task = " ".join(task.split())  # minimax emits NBSP / narrow NBSP
+    for lead in (f"{firstname} is ", f"{firstname} ", "He is ", "She is ",
+                 "They are ", "He ", "She ", "They "):
+      if task.startswith(lead):
+        task = task[len(lead):]
+        break
+    task = task.rstrip(" .")
+    if task:
+      items.append([task, dur])
+  if not items:
+    return []
+  known = sum(d for _, d in items if d)
+  unknown = [i for i in items if not i[1]]
+  if unknown:
+    share = max(5, (max(total_min - known, 0) // len(unknown)) // 5 * 5)
+    for i in unknown:
+      i[1] = share
+  return [[_clean_action_text(t), int(d)] for t, d in items]
+
+
+_SCHED_RANGE_RE = re.compile(
+    r'(\d{1,2}):(\d{2})\s*([ap]\.?m\.?)?\s*(?:~|–|—|-|to)\s*'
+    r'(\d{1,2}):(\d{2})\s*([ap]\.?m\.?)?\s*(?:--|—|–|-|:)?\s*(.*)$', re.I)
+_SCHED_CONT_RE = re.compile(
+    r'^(\d{1,2}):(\d{2})\s*([ap]\.?m\.?)?\s*(?:--|—|–)\s*(.+)$', re.I)
+_SCHED_WINDOW_RE = re.compile(
+    r'schedule from (\d{1,2}):(\d{2})\s*[AP]M to (\d{1,2}):(\d{2})\s*[AP]M')
+
+
+def _sched_min(h, m, ap=None):
+  h, m = int(h), int(m)
+  if ap and ap[0].lower() == 'p' and h < 12:
+    h += 12
+  elif ap and ap[0].lower() == 'a' and h == 12:
+    h = 0
+  return h * 60 + m
+
+
+def _sched_lines(text):
+  for raw in text.split("\n"):
+    line = raw.replace("**", "").replace("`", "").strip()
+    line = re.sub(r'^(?:\d+\s*[.)]|[-*•])\s+', '', line)
+    if line:
+      yield line
+
+
+def parse_revised_schedule(prompt, response):
+  """PERF (Oct 21 2026, n68): new_decomp_schedule (re-plan after a chat)
+  expects the model to CONTINUE the prompt's dangling 'HH:MM ~' line in the
+  exact 'HH:MM ~ HH:MM -- act' shape. minimax restarts the whole schedule
+  with prose preambles, code fences, '11:00–11:10 — Act' ranges, blank
+  lines and a cut-off last line — the strict parser crashed on every one,
+  5 retries x ~60s per chat with the town frozen. Parse tolerantly, keep the
+  prompt's fixed prefix, then make the result contiguous over the revision
+  window so durations sum exactly. Returns [[act, min], ...] or []."""
+  win = _SCHED_WINDOW_RE.search(prompt)
+  if not win:
+    return []
+  w0 = _sched_min(win.group(1), win.group(2))
+  w1 = _sched_min(win.group(3), win.group(4))
+  if w1 <= w0:
+    return []
+  prefix_text = prompt.split("The revised schedule:")[-1]
+  entries = []           # (start, end, act)
+  dangling = None
+  for line in _sched_lines(prefix_text):
+    m = _SCHED_RANGE_RE.match(line)
+    if m and m.group(7).strip():
+      entries.append((_sched_min(m.group(1), m.group(2), m.group(3)),
+                      _sched_min(m.group(4), m.group(5), m.group(6)),
+                      m.group(7).strip()))
+    else:
+      d = re.match(r'^(\d{1,2}):(\d{2})\s*~\s*$', line)
+      if d:
+        dangling = _sched_min(d.group(1), d.group(2))
+  cut = dangling if dangling is not None else (entries[-1][1] if entries else w0)
+  first = True
+  for line in _sched_lines(response):
+    m = _SCHED_RANGE_RE.match(line)
+    if m and m.group(7).strip():
+      a = _sched_min(m.group(1), m.group(2), m.group(3))
+      b = _sched_min(m.group(4), m.group(5), m.group(6) or m.group(3))
+      if a >= cut:
+        entries.append((a, b, m.group(7).strip()))
+    elif first and dangling is not None:
+      c = _SCHED_CONT_RE.match(line)
+      if c:
+        entries.append((dangling, _sched_min(c.group(1), c.group(2), c.group(3)),
+                        c.group(4).strip()))
+    if m or _SCHED_CONT_RE.match(line):
+      first = False
+  entries.sort(key=lambda e: e[0])
+  out = []
+  t = w0
+  for a, b, act in entries:
+    b = min(b, w1)
+    if b <= t:
+      continue
+    if a > t and out:
+      out[-1][1] += a - t   # absorb gaps into the previous activity
+      t = a
+    # (a leading gap before the first entry: it simply starts at w0;
+    #  an overlap is clipped: the entry starts where the last one ended)
+    out.append([_clean_action_text(act), b - t])
+    t = b
+    if t >= w1:
+      break
+  if not out:
+    return []
+  if t < w1:
+    out[-1][1] += w1 - t
+  return out
 
 
 def run_gpt_prompt_daily_plan(persona,
@@ -481,6 +671,11 @@ def run_gpt_prompt_task_decomp(persona,
                                duration,
                                test_input=None,
                                verbose=False):
+  # FIX (poison-wrap, Oct 21 2026 n68): the INPUT task can already be nested
+  # ("tidying up (tidying up) (tidying up (tidying up)) ...") — each re-decomp
+  # wrapped it again via f"{task} ({decomp_task})", doubling prompt size.
+  task = _clean_action_text(task)
+
   def create_prompt_input(persona, task, duration, test_input=None):
 
     """
@@ -570,12 +765,19 @@ def run_gpt_prompt_task_decomp(persona,
         continue  # skip lines with unparseable duration
       cr += [[task, duration]]
 
+    total_expected_min = int(prompt.split("(total duration in minutes")[-1]
+                                   .split("):")[0].strip())
+    if not cr:
+      cr = parse_loose_task_decomp(gpt_response,
+                                   persona.scratch.get_str_firstname(),
+                                   total_expected_min)
+      # Loose answers often re-time the block (the model "fixed" a 60-min
+      # dinner into its own window): rescale to the requested total.
+      cr = clamp_subtask_durations(cr, parent_dur=total_expected_min)
+
     # FIX A (duration sanity, defense-in-depth): even after the parent-block
     # clamp upstream, cap individual subtasks at 120 min.
     cr = clamp_subtask_durations(cr)
-
-    total_expected_min = int(prompt.split("(total duration in minutes")[-1]
-                                   .split("):")[0].strip())
 
     # TODO -- now, you need to make sure that this is the same as the sum of
     #         the current action sequence.
@@ -1551,6 +1753,9 @@ def run_gpt_prompt_new_decomp_schedule(persona,
     return prompt_input
 
   def __func_clean_up(gpt_response, prompt=""):
+    loose = parse_revised_schedule(prompt, gpt_response)
+    if loose:
+      return loose
     new_schedule = prompt + " " + gpt_response.strip()
     new_schedule = new_schedule.split("The revised schedule:")[-1].strip()
     new_schedule = new_schedule.split("\n")
@@ -1585,9 +1790,13 @@ def run_gpt_prompt_new_decomp_schedule(persona,
           return False
         if str(type(dur)) != "<class 'int'>":
           return False
-      x = prompt.split("\n")[0].split("originally planned schedule from")[-1].strip()[:-1]
-      x = [datetime.datetime.strptime(i.strip(), "%H:%M %p") for i in x.split(" to ")]
-      delta_min = int((x[1] - x[0]).total_seconds()/60)
+      # The window used to be read from the prompt's FIRST line — but
+      # generate_prompt now prepends "IMPORTANT: Respond in English only",
+      # so strptime always raised and EVERY re-plan burned 5 retries into
+      # the fail-safe, whatever the model said (Oct 21 2026, n68).
+      win = _SCHED_WINDOW_RE.search(prompt)
+      delta_min = (_sched_min(win.group(3), win.group(4))
+                   - _sched_min(win.group(1), win.group(2)))
 
       if int(dur_sum) != int(delta_min):
         return False

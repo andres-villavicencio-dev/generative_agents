@@ -24,6 +24,7 @@ Description: Wrapper functions for calling local Ollama APIs instead of OpenAI.
 # =============================================================================
 import json
 import os
+import sys
 import threading
 import time
 import urllib.request
@@ -174,13 +175,28 @@ def _parse_yaml_output(text):
     except (json.JSONDecodeError, ValueError):
         pass
     # YAML single-key shape
-    for line in stripped.splitlines():
+    lines = stripped.splitlines()
+    for idx, line in enumerate(lines):
         line = line.strip()
         if line.startswith("output:"):
             val = line[len("output:"):].strip()
             val = val.strip('"').strip("'").strip()
             if val:
                 return val
+            # YAML block list ("output:" then "- item" lines), the shape
+            # reasoning models pick for list answers (focal points): return
+            # it as a JSON list string so list callers' literal_eval parses.
+            # _strip_markdown has usually removed the "- " markers already.
+            items = []
+            for nxt in lines[idx + 1:]:
+                nxt = nxt.strip()
+                if nxt.startswith("- "):
+                    nxt = nxt[2:].strip()
+                nxt = nxt.strip('"').strip("'").strip()
+                if nxt:
+                    items.append(nxt)
+            if items:
+                return json.dumps(items)
     # free-form: return first non-empty line (grammar guarantees one)
     for line in stripped.splitlines():
         if line.strip():
@@ -310,6 +326,60 @@ def _llama_cpp_generate(prompt, retries=5, free_form=False):
     return ""
 
 
+# Call capture (Oct 21 2026, n68): every successful /api/chat round-trip
+# (prompt, system, answer, reasoning, tokens, latency, caller) appended to
+# <repo>/ga_traces/calls/<model>.jsonl — distillation corpus for the sLM
+# while the cloud teacher drives the sim. GA_CALL_TRACE=0 disables; fail-open:
+# capture must never cost the sim a step.
+_CALL_TRACE_LOCK = threading.Lock()
+_CALL_TRACE_DIR = os.path.abspath(os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..",
+    "ga_traces", "calls"))
+
+
+def _call_site():
+    """Nearest run_gpt_prompt_* / generate_* frame name (the call family)."""
+    f = sys._getframe(2)
+    while f is not None:
+        n = f.f_code.co_name
+        if n.startswith("run_gpt_prompt_") or n.startswith("generate_"):
+            return n
+        f = f.f_back
+    return None
+
+
+def _trace_call(request_body, result, latency_s, attempt):
+    if os.environ.get("GA_CALL_TRACE", "1") != "1":
+        return
+    try:
+        msg = result.get("message", {})
+        rec = {
+            "ts": time.time(),
+            "persona": getattr(_PERSONA_CTX, "name", None),
+            "caller": _call_site(),
+            "model": request_body.get("model"),
+            "think": request_body.get("think"),
+            "options": request_body.get("options"),
+            "system": request_body.get("system"),
+            "prompt": request_body["messages"][0]["content"],
+            "content": msg.get("content", ""),
+            "thinking": msg.get("thinking", ""),
+            "done_reason": result.get("done_reason"),
+            "eval_count": result.get("eval_count"),
+            "prompt_eval_count": result.get("prompt_eval_count"),
+            "latency_s": round(latency_s, 3),
+            "attempt": attempt,
+        }
+        name = str(rec["model"]).replace("/", "_").replace(":", "_")
+        line = json.dumps(rec, ensure_ascii=False) + "\n"
+        with _CALL_TRACE_LOCK:
+            os.makedirs(_CALL_TRACE_DIR, exist_ok=True)
+            with open(os.path.join(_CALL_TRACE_DIR, f"{name}.jsonl"), "a") as fh:
+                fh.write(line)
+    except Exception:
+        pass
+
+
 def _ollama_generate(prompt, retries=5, free_form=False, model_hint=None):
     """
     Make a request to Ollama's CHAT endpoint (conversation-native; works with
@@ -431,8 +501,10 @@ def _ollama_generate(prompt, retries=5, free_form=False, model_hint=None):
             # re-queues it, feeding a saturation death-spiral (553 errors,
             # 3 steps/hour). Give big calls room to complete instead.
             # On timeout the retry loop gives the call 5 more chances.
+            _t0 = time.time()
             with urllib.request.urlopen(req, timeout=300) as response:
                 result = json.loads(response.read().decode('utf-8'))
+                _trace_call(request_body, result, time.time() - _t0, attempt)
                 # /api/chat response: content lives under message.content.
                 # If a model still emits reasoning inline (think=false
                 # unsupported or ignored), the reasoning field is separate —
@@ -447,7 +519,12 @@ def _ollama_generate(prompt, retries=5, free_form=False, model_hint=None):
                 # YAML lane: unwrap "output: <value>" (grammar-constrained) or
                 # fall back to JSON parsing if a caller bypassed the grammar.
                 if text.strip():
-                    text = _parse_yaml_output(text)
+                    # free_form answers are multi-line by contract (task
+                    # decomp numbered lists): the single-line YAML unwrap
+                    # used to cut them to their FIRST line (Oct 21 2026, n68:
+                    # every decomp failed validation and burned 5 retries).
+                    if not free_form:
+                        text = _parse_yaml_output(text)
                     return text
                 # Empty content. If the generation died AT the cap, the
                 # reasoning phase swallowed the budget — adapt: double the

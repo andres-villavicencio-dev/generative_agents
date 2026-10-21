@@ -14,6 +14,11 @@ import threading
 # Serializes the conversation/reaction decision phase.
 CONVO_LOCK = threading.Lock()
 
+# Names of personas currently generating a conversation (guarded by
+# CONVO_LOCK). Conversation generation runs OUTSIDE the lock; a busy persona
+# can't be pulled into a second chat until its first one is written back.
+CHAT_BUSY = set()
+
 # Per-persona locks for finer-grained future use (currently unused).
 _PERSONA_LOCKS = {}
 _PERSONA_LOCKS_GUARD = threading.Lock()

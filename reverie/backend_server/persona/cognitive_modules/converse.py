@@ -146,10 +146,21 @@ def agent_chat_v2(maze, init_persona, target_persona):
   # GA_CHAT_SECONDS_PER_REPLY sim-seconds; reverie drains the debt when
   # the step completes so long conversations move the clock like real life.
   import chat_time as _chat_time
+  # PERF (Oct 21 2026, n68): the relationship summary was regenerated on
+  # EVERY turn (retrieve-50 + one LLM call per utterance, 12 extra serial
+  # cloud calls per chat). Neither persona's memory changes mid-chat, so
+  # summarize each direction once per conversation.
+  relationships = {}
+  def _relationship(speaker, listener):
+    if speaker.scratch.name not in relationships:
+      focal_points = [f"{listener.scratch.name}"]
+      retrieved = new_retrieve(speaker, focal_points, 50)
+      relationships[speaker.scratch.name] = \
+          generate_summarize_agent_relationship(speaker, listener, retrieved)
+    return relationships[speaker.scratch.name]
+
   for i in range(6):  # Reduced from 8 to limit runaway loops 
-    focal_points = [f"{target_persona.scratch.name}"]
-    retrieved = new_retrieve(init_persona, focal_points, 50)
-    relationship = generate_summarize_agent_relationship(init_persona, target_persona, retrieved)
+    relationship = _relationship(init_persona, target_persona)
     print ("-------- relationshopadsjfhkalsdjf", relationship)
     last_chat = ""
     for i in curr_chat[-4:]:
@@ -169,9 +180,7 @@ def agent_chat_v2(maze, init_persona, target_persona):
     if end or _conversation_should_end(utt):
       break
 
-    focal_points = [f"{init_persona.scratch.name}"]
-    retrieved = new_retrieve(target_persona, focal_points, 50)
-    relationship = generate_summarize_agent_relationship(target_persona, init_persona, retrieved)
+    relationship = _relationship(target_persona, init_persona)
     print ("-------- relationshopadsjfhkalsdjf", relationship)
     last_chat = ""
     for i in curr_chat[-4:]:

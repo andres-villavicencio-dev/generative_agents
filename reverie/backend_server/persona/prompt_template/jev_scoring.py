@@ -41,6 +41,7 @@ import itertools
 from persona.prompt_template.gpt_structure import OLLAMA_BASE_URL, OLLAMA_CHAT_MODEL
 
 # Master flag: set GA_JEV_SCORING=1 in the backend's environment to enable.
+# Backend: laya typed decisions by default (see JEV_BACKEND below).
 # Default off: everything routes through the legacy generation path.
 USE_JEV_SCORING = os.environ.get("GA_JEV_SCORING", "0") == "1"
 
@@ -62,6 +63,180 @@ _jev_stats = {
     "fallback_error": 0,
     "latency_samples": [],
 }
+
+
+# Capability breaker (Oct 21 2026, n68): cloud models proxied by ollama
+# (minimax-m3.1-flash:cloud) return NO logprobs and an empty first token —
+# every JEV call was a guaranteed 1-2s miss before the legacy path ran.
+# After this many consecutive logprob-less responses, disable JEV for the
+# process. Callers re-import USE_JEV_SCORING per call, so this takes effect.
+JEV_NO_LOGPROBS_TRIP = 3
+
+
+def _note_no_logprobs():
+    global USE_JEV_SCORING
+    _jev_stats["no_logprobs_streak"] = _jev_stats.get("no_logprobs_streak", 0) + 1
+    if USE_JEV_SCORING and _jev_stats["no_logprobs_streak"] >= JEV_NO_LOGPROBS_TRIP:
+        USE_JEV_SCORING = False
+        print(f"[JEV] {OLLAMA_CHAT_MODEL} returned no logprobs "
+              f"{JEV_NO_LOGPROBS_TRIP}x in a row — JEV scoring disabled "
+              f"for this process (legacy path only).")
+
+
+# Backend (Oct 21 2026): JEV's typed decisions belong on laya — the
+# fine-tuned local System-One decision model (ga-laya.service :8018) — not
+# on the chat model's next-token logprobs. GA_JEV_BACKEND=ollama restores
+# the logprob path (local completion models only; :cloud has no logprobs).
+JEV_BACKEND = os.environ.get("GA_JEV_BACKEND", "laya")
+JEV_LAYA_CONTEXT_CHARS = 1500
+# GA_JEV_LAYA_MODE: "shadow" (default) asks laya on a background thread,
+# traces its answer, and returns None so the cloud teacher still decides;
+# "live" lets laya's answer drive the sim. Measured Oct 21 2026 (n68 call
+# log, laya v3 vs minimax picks): sector 6/11 agreement with CONFIDENT misses
+# (library -> Johnson Park @ margin 0.95), objects 6-7/8, arenas 2/2 —
+# laya-v3 was never trained on spatial choice, and poignancy/talk/react only
+# reach JEV after laya already deferred. Shadow traces are the paired
+# (laya pick, teacher pick) data to fine-tune that in.
+JEV_LAYA_MODE = os.environ.get("GA_JEV_LAYA_MODE", "shadow")
+
+
+def _shadow(fn, *args):
+    """Run a laya decision off the critical path; its trace is the output."""
+    import threading as _t
+    from persona.prompt_template.gpt_structure import _PERSONA_CTX
+    who = getattr(_PERSONA_CTX, "name", None)
+
+    def _run():
+        _PERSONA_CTX.name = who
+        try:
+            fn(*args)
+        except Exception:
+            pass
+    _t.Thread(target=_run, daemon=True).start()
+
+
+def _laya_typed(kind, context, instructions, criteria, trace_payload=None):
+    """One laya /v1/systemone typed question. kind: 'choice' (criteria =
+    {key: description}) or 'score' (criteria = rubric list). Returns
+    {resolved_label: prob} (normalized) or None on any failure."""
+    from persona.prompt_template.laya_scoring import _systemone
+    state = {"context": (context or "")[-JEV_LAYA_CONTEXT_CHARS:]}
+    questions = {"jev": {"type": kind, "instructions": instructions,
+                         "criteria": criteria}}
+    try:
+        answers = _systemone(state, questions)
+    except Exception as e:
+        _jev_stats["fallback_error"] += 1
+        print(f"[JEV] laya request failed ({type(e).__name__}: {e}); falling back")
+        return None
+    answer = (answers or {}).get("jev")
+    if not isinstance(answer, dict):
+        _jev_stats["fallback_error"] += 1
+        return None
+    legend = answer.get("legend") or {}
+    probs = {}
+    for k, v in (answer.get("probabilities") or {}).items():
+        if str(k).startswith("__"):
+            continue
+        label = str(legend.get(k, k))
+        probs[label] = probs.get(label, 0.0) + float(v)
+    total = sum(probs.values())
+    if total <= 0:
+        _jev_stats["fallback_error"] += 1
+        return None
+    probs = {k: v / total for k, v in probs.items()}
+    if trace_payload is not None:
+        try:
+            from persona.prompt_template.ga_trace import record
+            from persona.prompt_template.gpt_structure import _PERSONA_CTX
+            best = max(probs, key=probs.get)
+            record(trace_payload, getattr(_PERSONA_CTX, "name", None),
+                   {"conf": probs[best], "choice": best,
+                    "mode": JEV_LAYA_MODE, "dist": probs,
+                    "state": state, "questions": questions})
+        except Exception:
+            pass
+    return probs
+
+
+def _rank(dist):
+    ranked = sorted(dist.items(), key=lambda kv: -kv[1])
+    winner, winner_p = ranked[0]
+    runner_p = ranked[1][1] if len(ranked) > 1 else 0.0
+    return winner, winner_p - runner_p
+
+
+def _laya_decide(question_prompt, choices, return_dist):
+    block = "\n".join(f"- {m}" for m in choices.values())
+    context = question_prompt.replace("__JEV_OPTIONS__", block)
+    probs = _laya_typed(
+        "choice", context,
+        "Choose the answer the context's question calls for.",
+        {k: str(v) for k, v in choices.items()}, trace_payload="jev_decide")
+    if not probs:
+        return None, None
+    dist = {k: p for k, p in probs.items() if k in choices}
+    if not dist:
+        _jev_stats["fallback_error"] += 1
+        return None, None
+    winner, margin = _rank(dist)
+    _jev_stats["scored"] += 1
+    if margin < JEV_MIN_MARGIN:
+        _jev_stats["fallback_margin"] += 1
+        return (None, dist) if return_dist else (None, None)
+    return choices[winner], (dist if return_dist else None)
+
+
+def _laya_score_digit(prompt, lo, hi, min_margin):
+    if (lo, hi) == (1, 10):
+        from persona.prompt_template.laya_scoring import _RUBRIC
+        rubric = list(_RUBRIC)
+    else:
+        rubric = [str(d) for d in range(lo, hi + 1)]
+    probs = _laya_typed("score", prompt,
+                        "Answer the rating the context asks for.", rubric,
+                        trace_payload="jev_digit")
+    if not probs:
+        return None
+    dist = {}
+    for label, p in probs.items():
+        try:
+            d = int(str(label).split("=")[0].strip())
+        except ValueError:
+            continue
+        if lo <= d <= hi:
+            dist[d] = dist.get(d, 0.0) + p
+    if not dist:
+        _jev_stats["fallback_error"] += 1
+        return None
+    winner, margin = _rank(dist)
+    _jev_stats["scored"] += 1
+    if margin < min_margin:
+        _jev_stats["fallback_margin"] += 1
+        return None
+    return winner
+
+
+def _laya_score_choice(prompt, options, min_margin, return_dist):
+    block = "\n".join(f"- {o}" for o in options)
+    context = (prompt.replace("__JEV_OPTIONS__", block)
+                     .replace("Answer with the letter only:", "").strip())
+    criteria = {o: o for o in options}
+    probs = _laya_typed("choice", context,
+                        "Pick the option the context's question calls for.",
+                        criteria, trace_payload="spatial")
+    if not probs:
+        return None
+    dist = {o: probs.get(o, 0.0) for o in options}
+    if sum(dist.values()) <= 0:
+        _jev_stats["fallback_error"] += 1
+        return None
+    winner, margin = _rank(dist)
+    _jev_stats["scored"] += 1
+    if margin < min_margin:
+        _jev_stats["fallback_margin"] += 1
+        return (None, dist) if return_dist else None
+    return (winner, dist) if return_dist else winner
 
 
 def _post(url_path, body, timeout=300):
@@ -103,7 +278,9 @@ def _score_one_ordering(prompt, answer_tokens):
     logprob_list = result.get("logprobs")
     if not logprob_list:
         _jev_stats["fallback_error"] += 1
+        _note_no_logprobs()
         return None
+    _jev_stats["no_logprobs_streak"] = 0
     # Ollama returns logprobs as a list of per-generated-token entries; with
     # num_predict=1 there is exactly one entry.
     entry = logprob_list[0]
@@ -151,6 +328,11 @@ def jev_decide(question_prompt, choices, return_dist=False):
         return None, None
     _jev_stats["calls"] += 1
     t0 = time.time()
+    if JEV_BACKEND == "laya":
+        if JEV_LAYA_MODE != "live":
+            _shadow(_laya_decide, question_prompt, choices, return_dist)
+            return None, None
+        return _laya_decide(question_prompt, choices, return_dist)
 
     answer_tokens = list(choices.keys())
     # Order-sensitivity mitigation: score every ordering (K! is small here).
@@ -204,6 +386,11 @@ def jev_score_digit(prompt, lo=1, hi=10, min_margin=JEV_MIN_MARGIN):
         return None
     _jev_stats["calls"] += 1
     t0 = time.time()
+    if JEV_BACKEND == "laya":
+        if JEV_LAYA_MODE != "live":
+            _shadow(_laya_score_digit, prompt, lo, hi, min_margin)
+            return None
+        return _laya_score_digit(prompt, lo, hi, min_margin)
 
     digit_tokens = {str(d): d for d in range(lo, hi + 1)}
     probs = _score_one_ordering(prompt, set(digit_tokens.keys()))
@@ -248,6 +435,11 @@ def jev_score_choice(prompt, options, min_margin=JEV_SPATIAL_MIN_MARGIN,
         return None
     _jev_stats["calls"] += 1
     t0 = time.time()
+    if JEV_BACKEND == "laya":
+        if JEV_LAYA_MODE != "live":
+            _shadow(_laya_score_choice, prompt, options, min_margin, return_dist)
+            return None
+        return _laya_score_choice(prompt, options, min_margin, return_dist)
 
     labels = [chr(ord("A") + i) for i in range(len(options))]
     # Order-bias mitigation: try 2 label permutations (forward + reversed).

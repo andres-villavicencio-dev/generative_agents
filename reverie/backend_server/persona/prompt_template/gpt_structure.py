@@ -374,7 +374,20 @@ def _trace_call(request_body, result, latency_s, attempt):
         line = json.dumps(rec, ensure_ascii=False) + "\n"
         with _CALL_TRACE_LOCK:
             os.makedirs(_CALL_TRACE_DIR, exist_ok=True)
-            with open(os.path.join(_CALL_TRACE_DIR, f"{name}.jsonl"), "a") as fh:
+            path = os.path.join(_CALL_TRACE_DIR, f"{name}.jsonl")
+            # Size rotation (Oct 22 2026): the live file is committed with
+            # each data snapshot — GitHub rejects files > 100 MB and every
+            # commit stores a full copy. Roll over to <name>.partNNN.jsonl.
+            try:
+                rot = float(os.environ.get("GA_CALL_TRACE_ROT_MB", "20")) * 1024 * 1024
+                if rot > 0 and os.path.getsize(path) >= rot:
+                    n = 1
+                    while os.path.exists(os.path.join(_CALL_TRACE_DIR, f"{name}.part{n:03d}.jsonl")):
+                        n += 1
+                    os.rename(path, os.path.join(_CALL_TRACE_DIR, f"{name}.part{n:03d}.jsonl"))
+            except OSError:
+                pass
+            with open(path, "a") as fh:
                 fh.write(line)
     except Exception:
         pass

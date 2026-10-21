@@ -43,7 +43,7 @@ python simstart.py --fork base_the_ville_isabella_maria_klaus --steps 100 --auto
 **Purpose of the minimax runs:** harvest cloud-teacher data to fine-tune the local sLM. Data products:
 - `ga_traces/{poignancy,talk,react}.jsonl` — sim decision traces (`ga_trace.py`).
 - `ga_traces/m31_teacher/*.jsonl` — blind teacher labels for those.
-- `ga_traces/calls/<model>.jsonl` — **every** chat call (prompt, system, content, thinking, tokens, latency, caller, persona) (default on; `GA_CALL_TRACE=0` disables — `gpt_structure._trace_call`). Includes empty/overflow attempts — filter on `content`/`done_reason`.
+- `ga_traces/calls/<model>.jsonl` — **every** chat call (prompt, system, content, thinking, tokens, latency, caller, persona) (default on; `GA_CALL_TRACE=0` disables — `gpt_structure._trace_call`). Includes empty/overflow attempts — filter on `content`/`done_reason`. Rotates to `<model>.partNNN.jsonl` at `GA_CALL_TRACE_ROT_MB` (default 20): the data is committed, and GitHub rejects files > 100 MB (warns > 50). Rotating by hand while the sim runs is safe (the file is reopened per write) — just `mv` it to the next part number.
 
 **Performance facts (measured Oct 21, n68):**
 - minimax **always reasons, even with `think=false`** (~300-2000 hidden tokens per call). p50 latency ~7s, p90 ~35s, worst ~100s.

@@ -109,7 +109,9 @@
 	let tile_width = 32;
 	// Important: tile_width % movement_speed has to be 0. 
 	// <movement_speed> determines how fast we move at each upate cylce. 
-	let movement_speed = 32; 
+	// 8 = 4 eased animation frames per step (RichFX cycles). a8caa771 set 32
+	// (1 frame): walking snapped tile-to-tile.
+	let movement_speed = 8;
 
 	// <timer_max> determines how frequently our update function will query the 
 	// frontend server. If it's higher, we wait longer cycles. 
@@ -478,6 +480,13 @@
 	    player.body.setVelocityY(camera_speed);
 	  }
 
+	  // RichFX: per-frame engine update — day/night tint, shadows, glows,
+	  // ambient fireflies/leaves, chat-bubble typewriter/follow. Runs EVERY
+	  // frame: it used to sit inside the "execute" phase, so while the viewer
+	  // waited on a slow step (nearly all the time with a cloud-model sim)
+	  // the tint, fireflies and bubbles froze (Oct 21 2026).
+	  RichFX.update();
+
 	  // console.log("phase: " + phase + ", step: " + step);
 	  // *** MOVE PERSONAS ***
 	  // Moving personas take place in three distinct phases: "process,"
@@ -688,9 +697,6 @@
 	      }
 	    }
 
-	    // RichFX: per-frame engine update — day/night tint, shadows, glows,
-	    // ambient fireflies/leaves, chat-bubble typewriter/follow.
-	    RichFX.update();
 
 	    execute_count = execute_count - 1;
 	    }

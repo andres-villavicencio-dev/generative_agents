@@ -601,6 +601,11 @@ EMOJI_LOOKUP = {
   "wait": "⌛", "waiting": "⌛", "idle": "⌛",
   "wake up": "⏰", "waking up": "⏰",
   "get ready": "🧑", "morning routine": "🧑",
+  # object states (act_obj_desp) — the bulk of the old LLM fallbacks
+  "slept": "😴", "occupied": "🚫", "in use": "🛠️", "being used": "🛠️",
+  "explored": "🔍", "explore": "🔍", "empty": "▫️", "idle object": "▫️",
+  "drink": "🥤", "water": "💧", "lively": "🎉", "spend time with": "🎉",
+  "holding": "✋", "notebook": "📓", "book": "📕", "grocer": "🛒",
 }
 
 
@@ -652,6 +657,12 @@ def generate_action_pronunciatio(act_desp, persona):
   lookup = _lookup_pronunciatio(act_desp)
   if lookup:
     return lookup
+
+  # The emoji is purely visual (sprite bubble) and never feeds back into
+  # cognition; the LLM fallback cost ~10s of cloud time per miss on the
+  # step's critical path (Oct 21 2026). GA_PRONUNCIATIO_LLM=1 re-enables it.
+  if os.environ.get("GA_PRONUNCIATIO_LLM", "0") != "1":
+    return "🙂"
 
   try:
     x = run_gpt_prompt_pronunciatio(act_desp, persona)[0]

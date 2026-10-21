@@ -71,7 +71,14 @@ def main():
         backend_env["GA_RESUME_TIME"] = resume_time
 
     inputs = f"{old_sim}\n{new_sim}\nrun {remaining}\n"
-    backend_log = open(f"/tmp/{new_sim}_backend.log", "a")
+    # The log is APPENDED across restarts: remember where this boot's output
+    # starts so the cleanup-marker wait below can't match a stale marker
+    # left by the previous process (Oct 21 2026, fresh25_1: "marker seen
+    # after 0s" -> driver raced the cleanup -> mutual deadlock at the
+    # checkpoint step).
+    _blog = f"/tmp/{new_sim}_backend.log"
+    log_offset = os.path.getsize(_blog) if os.path.exists(_blog) else 0
+    backend_log = open(_blog, "a")
     rev = subprocess.Popen(
         [PYTHON, "reverie.py"],
         cwd=REVERIE_DIR,
@@ -109,7 +116,8 @@ def main():
         waited = 0
         while waited < 1200:
             try:
-                with open(backend_log_path) as f:
+                with open(backend_log_path, errors="replace") as f:
+                    f.seek(log_offset)
                     if marker in f.read():
                         break
             except OSError:

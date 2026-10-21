@@ -1,7 +1,7 @@
 {
-  "t": 1792564913.5283988,
+  "t": 1792579663.6617827,
   "kind": "poignancy",
-  "lowconf_share": 0.571,
+  "lowconf_share": 0.603,
   "window": 2000,
   "message": "low-confidence density crossed threshold \u2014 harvest teacher labels (cloud-jev) and re-distill laya"
 }

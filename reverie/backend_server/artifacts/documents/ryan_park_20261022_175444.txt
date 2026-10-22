@@ -1,0 +1,20 @@
+Mobile App Navigation Test Report
+
+Date: Monday, February 13  
+Tester: Ryan Park  
+Build: Current development build  
+Focus: Navigation, back controls, deep links, and screen transitions
+
+Test Summary
+
+I tested the primary user flow from onboarding through the dashboard, settings, and account screens. The app is generally stable, but navigation behavior needs tightening. The most noticeable problems are inconsistent back-button behavior, deep links that fail to preserve authentication state, and transitions that occasionally appear to duplicate screens.
+
+Findings and Improvements
+
+1. Back Button
+The system back gesture does not always match the visible in-app back arrow.
+Back navigation should return users to the previous logical screen rather than the last visited screen in browser history.
+Prevent accidental navigation away from forms with unsaved changes; display a confirmation prompt when appropriate.
+
+2. Deep Links
+Protected deep links redirect to login but do not resume the re...

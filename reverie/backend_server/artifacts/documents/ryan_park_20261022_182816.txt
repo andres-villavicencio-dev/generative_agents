@@ -1,0 +1,16 @@
+Mobile App Technology Evaluation Notes
+
+Date: Monday, February 13  
+Author: Ryan Park
+
+Project Context
+
+I’m comparing cross-platform and native development options for the new mobile app. The primary requirements are fast iteration, reliable performance, access to device features, and straightforward maintenance after launch. I reviewed recent technical articles, implementation guides, and compatibility notes before updating this document.
+
+React Native
+
+Key features: React Native uses JavaScript and TypeScript, making it practical for developers already familiar with React. Reusable components, mature debugging tools, and over-the-air updates can shorten the release cycle. It also integrates well with REST, GraphQL, and most third-party services.
+
+Limitations: Performance can degrade with large lists, complex animations, or poorly optimized bridges. Native modules may require custom maintenance when platform APIs change.
+
+Compatibility: React Native supports both iOS and Android, b...

@@ -1,0 +1,14 @@
+Subject: Possible Next Stanza Cards
+
+Hi Ryan Park,
+
+I’ve been thinking about how to make the “Possible next stanza” suggestions feel more supportive and less presumptuous. I’ve put together a quick prototype with cards that you can edit before adding a stanza to the poem.
+
+The main thing I want to make clear is the difference between a preference you’ve explicitly shared and a pattern the system has inferred. For example:
+
+Explicit preference: “Use imagery inspired by rivers and forests.”  
+Inferred pattern: “Several recent poems focus on natural imagery, so a landscape-oriented continuation may fit.”
+
+The cards should label these differently so people can see where each suggestion comes from. I’ve also included a short rationale beneath every card, along with three editable options: Keep, Adjust, or Discard. “Adjust” lets someone change the tone, image, length, or direction without starting over.
+
+I’m especially interested in making the language warm but honest. Instead of “This is...

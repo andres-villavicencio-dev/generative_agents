@@ -1,0 +1,24 @@
+Mobile App Test Report
+
+Date: Monday, February 13  
+Tester: Ryan Park  
+Build: Latest available app build  
+Scope: Installation, launch verification, and startup error review
+
+Objective
+
+Confirm that the latest application build installs successfully and starts without crashing, displaying an error, or forcing the device to restart unexpectedly.
+
+Test Process
+
+1. Downloaded the latest app build from the designated distribution source.
+2. Installed the build on the test device and confirmed that installation completed successfully.
+3. Launched the application from the device.
+4. Monitored the startup sequence for visible errors, crashes, freezes, and unexpected closes.
+5. Relaunched the app to verify that it starts consistently after the initial run.
+
+Results
+
+Test status: Pass
+
+The latest build installed without errors. On both launch attempts, the app opened to the main screen and completed its startup sequence without displaying an error message, terminating unexpectedly, or requi...

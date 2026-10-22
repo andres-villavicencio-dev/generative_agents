@@ -1,0 +1,17 @@
+Mobile App Testing and Improvement Report
+
+Date: Monday, February 13  
+Prepared by: Ryan Park  
+Build tested: Latest staging release
+
+Summary
+
+I tested the mobile app’s primary user flow, from sign-in through task creation and confirmation. The core flow is stable, but several issues create unnecessary friction and should be addressed before the next release. I confirmed each finding through repeated testing, screenshots, and device logs rather than relying on a single observation.
+
+Confirmed Findings
+
+1. Session recovery is unreliable  
+   After the app returns from the background, the dashboard sometimes displays stale account data. In three of five test cycles, the screen remained unchanged until manually refreshed. The expected behavior is an immediate data refresh when the app regains focus.
+
+2. Form submission feedback is inconsistent  
+   Some input fields do not display clear validation messages. The user receives either no explanation or a generic error after submission. Th...

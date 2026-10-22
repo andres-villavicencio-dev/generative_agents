@@ -1,0 +1,24 @@
+Mobile App Testing Report
+
+App: [App Name]  
+Device: [Device Model]  
+Tester: Ryan Park  
+Date: Monday, February 13
+
+Objective: Verify that the app launches without errors and performs expected functions on the target device.
+
+Launch Verification:  
+The app opened successfully. No crash, black screen, or loading error appeared during startup. The app launched cleanly and displayed the expected welcome screen.
+
+Functional Checks:  
+App navigation was smooth with no unexpected redirects.  
+User authentication and account settings loaded correctly.  
+Notifications and app settings toggles functioned as expected.  
+The app remained responsive during the test session.
+
+Findings:  
+No major issues were identified. The app launched without errors, navigation was stable, and the expected features were accessible. Minor visual inconsistencies were noted, but they did not affect functionality.
+
+Next Steps:  
+Perform a regression test on the updated version.  
+Update the device and test again ...

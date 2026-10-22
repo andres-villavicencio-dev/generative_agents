@@ -1,0 +1,19 @@
+Mobile App Test Report and Improvement Recommendations
+
+Prepared by: Ryan Park  
+Role: Software Engineer  
+Date: Monday, February 13  
+
+Executive Summary
+
+I tested the app across the primary user journey, including first-time setup, core task completion, navigation, error recovery, and repeated use. The core flow is usable, but avoidable friction appears at several high-traffic points. The highest-value improvements are clearer onboarding, more actionable error states, and better performance under realistic network conditions. None of these changes require a major product redesign.
+
+Prioritized Improvements
+
+| Priority | Improvement | User Impact | Severity | Effort |
+|---|---|---|---|---|
+| P0 | Simplify onboarding | High | High | Medium |
+| P0 | Make error states actionable | High | High | Low |
+| P1 | Standardize navigation patterns | High | Medium | Medium |
+| P1 | Improve perceived performance | Medium | High | Medium |
+| P2 | Expand accessibility support | High | Medium | Medi...

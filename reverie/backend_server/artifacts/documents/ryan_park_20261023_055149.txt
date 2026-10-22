@@ -1,0 +1,26 @@
+Testing Report: Notification and Dismissal Functionality
+
+Date: Monday, February 13  
+Tester: Ryan Park  
+Device: [Device Name]  
+App Version: [Version Number]
+
+Objective:  
+Verify the app’s notification handling, including delivery, visibility, dismissal, and user feedback.
+
+Methodology:  
+I opened the app, opened the notification drawer, and interacted with the following scenarios:  
+Received a notification  
+Dismissed the notification  
+Checked notification status  
+Verified that dismissed notifications were not retained  
+Tested the dismissal button and feedback prompt
+
+Findings:  
+Notifications are delivered correctly and appear in the notification drawer.  
+The dismissal button works reliably, with no visible lag or error messages.  
+Dismissed notifications are not retained in the notification history.  
+The app responds appropriately when dismissed, though the feedback prompt is not immediately visible.  
+Notification timing remains consistent across devices.
+
+Recommendations...

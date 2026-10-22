@@ -1,0 +1,19 @@
+App Test Review: Error Messages, Failure States, and Retry Behavior
+
+Tester: Ryan Park  
+Date: Monday, February 13  
+Project: Mobile App
+
+Purpose
+
+This review evaluates how the app communicates errors, handles failed operations, and recovers through retry behavior. The goal is to ensure users understand what happened and have a clear path forward without needing to restart the app.
+
+Findings and Recommendations
+
+1. Error Message Clarity
+
+Several error messages expose technical terminology that may not be useful to users. Generic responses such as “Request failed” should explain the problem in plain language and provide a relevant next step. For example, “Unable to load your projects. Check your connection and try again” is more actionable than a server or status-code message.
+
+2. Failure States
+
+Some failed requests leave the loading indicator active indefinitely. This makes the app appear frozen and gives users no indication of whether they should wait or take action. I recommend a...

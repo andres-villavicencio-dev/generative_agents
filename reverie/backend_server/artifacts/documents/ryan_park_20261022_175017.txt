@@ -1,0 +1,20 @@
+Core App Test Plan
+
+Owner: Ryan Park  
+Date: Monday, February 13  
+Status: Draft for review
+
+Objective
+
+Validate the app’s core features against the current requirements and identify improvements that will reduce user friction and prevent release-blocking defects. Testing will focus on functional correctness, usability, data integrity, error handling, and recovery.
+
+Requirements Review
+
+The requirements should define measurable acceptance criteria for each core workflow. Validation rules must cover valid, invalid, and boundary inputs. User-facing errors should explain what happened and provide a clear next action. Loading, success, empty, and failure states must be addressed for every screen that retrieves or submits data.
+
+Core Test Scenarios
+
+1. Register and authenticate with valid information.
+2. Attempt authentication with an incorrect password or unsupported account.
+3. Create, edit, save, and delete a primary record.
+4. Submit a required field with invalid or maximum-length in...

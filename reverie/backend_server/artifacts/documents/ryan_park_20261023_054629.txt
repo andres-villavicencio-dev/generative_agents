@@ -1,0 +1,12 @@
+Testing Report: Notification and Dismissal Functionality
+
+Date: Monday, February 13  
+Tester: Ryan Park  
+Device: Android Test Device  
+App Under Test: Mobile Application
+
+I tested the app’s notification system and dismissal functionality across several scenarios. The notification center opened reliably, and the notification list displayed expected alerts. I dismissed one notification using the standard button, and the app returned to its previous state.
+
+The dismissal process was straightforward, but I noticed a few inconsistencies. One notification remained visible after dismissal, suggesting the app may not be fully clearing the notification list. Additionally, the dismissed notification could not be reopened through the notification center, which may affect the user experience.
+
+I also tested the notification sound and priority settings. The sound remained consistent, but the priority toggle did not change the notification appearance. This suggests that the priority logic may be...

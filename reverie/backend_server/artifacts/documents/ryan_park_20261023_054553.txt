@@ -1,0 +1,12 @@
+Test Findings Report: Notification and Dismissal
+
+Date: Monday, February 13, 2024  
+Subject: Testing the app’s notification delivery and dismissal behavior
+
+I tested the app’s notification system on a device and documented the findings. The primary goal was to verify that notifications are delivered correctly and that users can dismiss them without leaving the app.
+
+The notification delivery worked as expected. Alerts appeared in the designated area, and the app responded immediately. However, dismissing a notification did not always prevent the app from opening. In some cases, the notification remained visible even after the user tapped dismiss.
+
+I also tested the auto-dismissal feature. It appeared to work for most notifications, but the system sometimes kept the notification open after a few seconds. I also tested the sound and visual feedback. The sound was audible, and the dismissal animation was smooth, but the visual feedback was inconsistent.
+
+Overall, the app’s core notific...

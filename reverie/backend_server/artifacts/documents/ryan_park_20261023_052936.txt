@@ -1,0 +1,24 @@
+Test Findings Report: Mobile App Login Functionality
+
+Date: Monday, February 13  
+Tester: Ryan Park  
+App: New Mobile Application  
+Test Environment: Device with standard operating system and default credentials
+
+Test Objective
+Verify that the app accepts a valid test username and password and logs the user in successfully.
+
+Test Procedure
+1. Opened the app and entered the test username and password.
+2. Attempted to log in using the credentials.
+3. Checked the app’s response and logged-in status.
+4. Recorded any errors, messages, or exceptions.
+
+Findings
+The app accepted the test credentials and displayed a successful login screen.
+No authentication errors were reported during the test.
+The login process completed within the expected time frame.
+The logged-in user was able to access the main interface.
+
+Conclusion
+The app’s login functionality is working as expected. The test credentials were accepted, and the user was successfully logged in. No security vulnerabilities or authentic...

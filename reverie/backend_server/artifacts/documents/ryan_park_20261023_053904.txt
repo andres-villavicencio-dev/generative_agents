@@ -1,0 +1,18 @@
+Testing the Notifications Feature
+
+Date: Monday, February 13  
+Tester: Ryan Park  
+Device: Samsung Galaxy S23, Android 14  
+App Version: 1.2.0
+
+I tested the app’s notification system on a Samsung Galaxy S23 running Android 14. The notifications arrived as expected, but I noticed a few areas that should be addressed before the app is released.
+
+Positive Findings
+The notification arrived at the expected time and was displayed clearly.
+The notification icon was visible, and the sound was audible.
+The notification content was readable and contained the expected details.
+
+Issues and Recommendations
+Dismissal: I could not dismiss the notification from the lock screen. Attempting to dismiss it from the notification shade did not work.
+Multiple Notifications: When three notifications arrived at once, I had to tap each one individually. The app should allow dismissal of all notifications at once.
+Notification Grouping: The app should group notifications by category or priority rather than li...

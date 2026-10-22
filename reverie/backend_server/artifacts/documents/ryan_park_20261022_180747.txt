@@ -1,0 +1,22 @@
+Mobile App Test Report: Critical Issue Documentation
+
+Date: Monday, February 13  
+Tester: Ryan Park  
+Build: Current development build  
+Priority: Critical  
+
+CP-01: Form Data Is Lost After Session Timeout
+
+Summary
+Users are forced back to the login screen when the session expires while completing a long form. All unsaved information is lost. I reproduced the issue in three of five attempts, making it a consistent blocker for slow connections or users completing lengthy sections.
+
+Steps to Reproduce
+1. Sign in to the app.
+2. Open a form that requires multiple sections.
+3. Enter information in several fields but do not submit it.
+4. Leave the app inactive until the session timeout expires.
+5. Return to the app and attempt to continue.
+6. Attempt to sign in again and reopen the form.
+
+Expected Results
+The app should warn the user before the session expires and preserve form data locally. After signing in again, the user should be able to resume from the same section without re-enterin...

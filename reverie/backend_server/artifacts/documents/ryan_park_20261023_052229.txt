@@ -1,0 +1,23 @@
+Test Report: Mobile App Functional Verification
+
+Date: Monday, February 13  
+Tester: Ryan Park  
+Device: Android emulator  
+App: New Mobile Application
+
+Objective: Verify that the app navigates the main menu correctly and displays the expected welcome screen.
+
+Test Steps:  
+1. Opened the app from the device home screen.  
+2. Navigated to the main menu.  
+3. Checked that the welcome screen appeared after selecting the app icon.  
+4. Verified the welcome screen displayed the app’s title, logo, and welcome message.  
+5. Tested the main menu navigation and confirmed that the expected screens were displayed.
+
+Findings:  
+The app launched successfully. The main menu was accessible, and the welcome screen appeared as expected. The title, logo, and welcome message were displayed correctly.
+
+Recommendations:  
+Confirm that the welcome screen displays the expected message on all supported devices.  
+Test navigation from the welcome screen to the main menu.  
+Verify that the app responds corre...

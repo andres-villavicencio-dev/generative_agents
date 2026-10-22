@@ -1,0 +1,22 @@
+Mobile App Testing and Improvement Report
+
+Date: Monday, February 13  
+Author: Ryan Park
+
+Purpose
+
+This document summarizes the improvements identified during mobile app testing. The goal is to make the app faster, easier to use, more accessible, and more dependable across devices and network conditions.
+
+Findings and Recommended Improvements
+
+Usability
+Simplify onboarding and explain the app’s core value before requesting unnecessary permissions.
+Make navigation labels more descriptive and consistent across screens.
+Provide immediate feedback after taps, submissions, and account changes.
+Use clear error messages that explain both what happened and how to resolve it.
+Add confirmation prompts for destructive actions and preserve user input when recoverable errors occur.
+
+Performance
+Reduce startup time by loading only essential resources during the initial screen.
+Optimize images, API responses, and heavy list rendering to prevent scrolling delays.
+Cache appropriate data locally and ...

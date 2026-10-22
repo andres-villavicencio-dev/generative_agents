@@ -1,0 +1,13 @@
+RESEARCH REVIEW MEMORANDUM
+
+Subject: Revised Results and Parameter Robustness  
+Date: Monday, February 13  
+Author: Giorgio Rossi
+
+I have recalculated the model using the revised parameter estimates and examined whether its principal conclusions survive small perturbations. Three patterns emerge with unusual consistency.
+
+First, the system exhibits damped oscillations around its equilibrium. The amplitude decreases approximately geometrically, with a decay rate near 0.82. This suggests a stable feedback process rather than sustained cyclical behavior.
+
+Second, the transition threshold is slightly asymmetric. An increase of roughly 4% in the critical carrying capacity is required to produce the same qualitative change as a 7% reduction. The model therefore appears more resilient to expansion than to contraction—a rather inconvenient asymmetry, but one that repeats across all initial-condition tests.
+
+Third, the revised coefficient \(\beta\) produces the clearest improvement in fit. I...

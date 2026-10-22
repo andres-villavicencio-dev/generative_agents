@@ -1,0 +1,22 @@
+Test Report: Logout Functionality and User Redirect
+
+Date: Monday, February 13  
+Tester: Ryan Park  
+Device: [Device Name]
+
+Objective:  
+Verify that the logout function clears the user session and redirects the user to the login screen.
+
+Test Results:  
+I tested the logout function by entering a valid user account and selecting the logout option. The system successfully terminated the active session and cleared the associated credentials.
+
+The app then redirected the user to the login screen. The URL changed to the authentication page, and the session was properly reset. I also confirmed that the logged-in user could not access protected features after logging out.
+
+Observations:  
+The logout flow is complete and functional. The redirect is consistent with the expected behavior, and the session reset appears effective.
+
+Recommendations:  
+The logout function should be added to the user guide. I will also verify the redirect on other devices to ensure consistency.
+
+Conclusion:  
+The ...

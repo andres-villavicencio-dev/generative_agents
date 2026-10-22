@@ -1,0 +1,23 @@
+Testing Report: Notification and Dismissal Functionality
+
+App: Mobile App  
+Tester: Ryan Park  
+Date: Monday, February 13  
+Time: 10:45 AM  
+Device: Samsung Galaxy S23, Android 14  
+Test Environment: Device with notifications enabled and a simulated notification flow
+
+Test Objective
+Verify that the app correctly displays notifications, handles their delivery, and allows users to dismiss them without unintended side effects.
+
+Test Procedure
+1. Open the app and navigate to the notifications section.
+2. Trigger a simulated notification from an external source.
+3. Observe the notification display, timing, and delivery behavior.
+4. Attempt to dismiss the notification using the app’s interface.
+5. Confirm that the notification is removed from the notification list and that the dismissed action does not interfere with other app functions.
+
+Test Results
+The notification appeared immediately after the simulated event.
+The app displayed the notification title, time, and source.
+Dismissing the...

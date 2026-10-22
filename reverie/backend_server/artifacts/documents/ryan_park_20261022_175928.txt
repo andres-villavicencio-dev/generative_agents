@@ -1,0 +1,15 @@
+Mobile App Test Report: Notifications and Settings
+
+Tester: Ryan Park  
+Date: Monday, February 13  
+Project: Mobile App Testing
+
+Test Scope
+
+I tested notification delivery, user settings, and available notification actions. The goal was to verify that notifications arrive reliably and that their behavior matches the selected preferences.
+
+Findings and Improvements
+
+Notification delivery is working consistently on supported devices, including standard alerts and scheduled reminders. However, the app should provide clearer confirmation when a notification has been scheduled, canceled, or failed to send. Adding a brief success or error message will reduce uncertainty and prevent unnecessary support requests.
+
+The settings section is easy to navigate, but some options need clearer labels and descriptions. For example, “Quiet Hours” should explain whether it silences sound, vibration, and banner alerts or only sound. Notification categories should also display their current status direct...

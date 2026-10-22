@@ -1,0 +1,25 @@
+Mobile App Test Report
+
+Tester: Ryan Park  
+Date: Monday, February 13  
+Build: Current development build  
+Focus: Functional behavior, user flow, and interface consistency
+
+Issue Log
+
+QA-001 — Skip Option Remains Active After Account Setup
+Severity: High  
+Steps: Complete onboarding, create an account, and proceed to the home screen.  
+Expected: The onboarding “Skip” option is removed and cannot be accessed again.  
+Actual: Returning to onboarding still displays the active “Skip” button, allowing account configuration to be bypassed.  
+Status: Open
+
+QA-002 — Inconsistent Date Formatting
+Severity: Medium  
+Steps: Compare dates shown in activity history, notifications, and profile details.  
+Expected: All dates use one consistent format and time zone.  
+Actual: Some screens display “02/13,” while others display “Feb 13.” One activity timestamp also appears to be converted to local time incorrectly.  
+Status: Open
+
+QA-003 — Profile Image Removal Provides No Confirmation
+Severity: Mediu...

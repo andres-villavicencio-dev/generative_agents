@@ -1,0 +1,37 @@
+RESEARCH CALCULATION AND CITATION REVIEW  
+Project: Mathematical Patterns in Nature  
+Date: Monday, February 13  
+Reviewer: Giorgio Rossi  
+
+1. Purpose and scope
+
+This review checks the draft’s calculations, mathematical notation, measurement units, figure labels, and references. The primary result concerns phyllotaxis—the angular arrangement of leaves—and is compared with the broader use of power-law scaling in biological data.
+
+2. Calculation review
+
+The golden angle is defined as
+
+\[
+\thetag=360^\circ\left(1-\frac{1}{\varphi}\right),
+\qquad
+\varphi=\frac{1+\sqrt{5}}{2},
+\]
+
+giving \(\thetag=137.507764^\circ\). The draft’s angle sequence was recalculated using
+
+\[
+\thetan=[(n-1)\thetag]\bmod 360^\circ.
+\]
+
+Table 1. Corrected azimuth values
+
+| Leaf index, \(n\) | Azimuth, \(\theta_n\) |
+|---:|---:|
+| 1 | 0.000° |
+| 2 | 137.508° |
+| 3 | 275.016° |
+| 4 | 52.523° |
+| 5 | 190.031° |
+| 6 | 327.539° |
+
+All angles are expressed in degrees and measured clockwise from the designated referen...

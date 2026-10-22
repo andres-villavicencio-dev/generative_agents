@@ -1,0 +1,21 @@
+Testing Report: Notifications and Dismissal
+
+Date: Monday, February 13  
+Tester: Ryan Park  
+Device: [Device Name]
+
+Notification Testing
+
+I tested the app’s notification settings and confirmed that notifications can be enabled, disabled, and set to appear only for selected apps. I also checked that notifications are delivered correctly and that the notification center is accessible.
+
+Dismissal Testing
+
+I dismissed all notifications and verified that the app’s notification settings remain unchanged. I also tested dismissing individual notifications and checking that the dismissed list is cleared correctly.
+
+Findings
+
+The notification system functions as expected. Dismissing notifications works reliably, and the dismissed list is updated correctly. However, I noticed that dismissing a notification does not immediately close the notification banner. This may require a brief delay before the banner disappears.
+
+Recommendation
+
+I recommend adding a small delay to the notification dismiss...

@@ -1,0 +1,23 @@
+Research Notes: Mathematical Patterns in Nature
+
+Date: Monday, February 13  
+Status: Preliminary review
+
+Purpose
+
+I have been comparing recurring forms in plants, shells, branching structures, and crystals to determine whether their proportions arise from simple mathematical rules. The evidence suggests that nature repeatedly uses recurrence, scaling, and symmetry—sometimes with almost suspicious consistency.
+
+1. Fibonacci Recurrence
+
+Many specimens display sequences related to the Fibonacci rule, \(Fn = F{n-1} + F{n-2}\).
+
+Representative examples: sunflower seed spirals, pinecone scales, and the petals of several daisies. In the sampled pinecones, adjacent spiral families frequently contained 5, 8, 13, 21, or 34 elements.
+
+Calculation review:  
+\[
+13/21 = 0.6190,\quad 21/34 = 0.6176,\quad 34/55 = 0.6182
+\]
+
+These values converge toward the golden ratio, approximately 1.618. The agreement is strong, though not universal; some specimens depart from the sequence.
+
+2. Logarithmic Growt...

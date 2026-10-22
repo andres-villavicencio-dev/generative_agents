@@ -1,0 +1,18 @@
+Mobile App Regression Test Report
+
+Date: Monday, February 13  
+Tester: Ryan Park  
+Build: Latest development release  
+Objective: Verify that previously working features continue to function correctly and identify opportunities to improve stability and usability.
+
+Test Scope
+
+I ran regression checks across authentication, onboarding, navigation, task creation, editing, deletion, profile settings, notifications, and data synchronization. I also retested the app using both an existing account and a newly registered account.
+
+Results
+Registration, login, logout, and password reset completed successfully.
+Previously created tasks loaded correctly and remained available after restarting the app.
+Creating, editing, completing, and deleting tasks worked as expected.
+Navigation between primary screens remained consistent, with no unexpected redirects.
+Profile updates and notification preferences persisted between sessions.
+Background synchronization recovered correctly after connectivity wa...

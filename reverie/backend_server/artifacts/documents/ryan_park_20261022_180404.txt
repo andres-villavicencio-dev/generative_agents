@@ -1,0 +1,17 @@
+Accessibility Test Report
+
+Tester: Ryan Park  
+Date: Monday, February 13  
+Scope: Labels, color contrast, font scaling, and focus order
+
+Summary
+
+The app is generally usable, but several accessibility issues could prevent users with visual, motor, or cognitive disabilities from completing key tasks reliably. The highest-priority problems are inconsistent form labels, low-contrast secondary text, unsupported font scaling, and confusing focus order.
+
+Findings and Recommendations
+
+Labels
+Form fields should have persistent, programmatically associated labels. Placeholder text alone is insufficient because it disappears while users enter information. Add descriptive error messages and ensure screen readers announce the field name, current value, and validation status.
+
+Color Contrast
+Body text and interactive elements meet contrast requirements in most areas, but muted labels, helper text, and disabled buttons are too faint against their backgrounds. Increase contrast, particularly for s...

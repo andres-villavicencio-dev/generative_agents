@@ -1,0 +1,19 @@
+Test Report: Mobile App Login Screen  
+Date: Monday, February 13  
+Tester: Ryan Park  
+Device: iPhone 15 Pro Max  
+App Version: 1.2.0  
+
+Objective: Verify that the login screen displays a clear success or error message when the user attempts to sign in with valid and invalid credentials.
+
+Test Steps:  
+1. Opened the app and navigated to the login screen.  
+2. Entered a valid email address and password and submitted the form.  
+3. Entered an incorrect password and submitted the form.  
+4. Checked the screen for error messages and visual feedback.
+
+Findings:  
+The login screen displays a success message after a valid login attempt. The message is concise and clearly indicates that the account was accepted.  
+When an invalid password is entered, the screen shows an error message and the login button becomes disabled. The error text is legible and includes the requested password.  
+No additional prompts, confusing messages, or missing fields appear during testing.  
+The login screen rem...

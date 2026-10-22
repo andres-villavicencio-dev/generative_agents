@@ -1,0 +1,15 @@
+Mobile App Test Report and Improvement Notes
+
+Date: Monday, February 13  
+Tester: Ryan Park  
+Project: Mobile App Quality Assurance
+
+Test Objective
+
+The purpose of this testing cycle was to evaluate the app’s stability during background processing, repeated app switching, and session restoration. The goal was not only to identify failures, but also to recommend practical improvements that make the app more reliable and responsive.
+
+Test Results
+
+Background operation was tested by running active tasks, locking the device, and allowing the app to remain in the background for several minutes. Most operations continued correctly, but notifications were occasionally delayed after the app returned to the foreground. The app also consumed more memory than expected during prolonged background use.
+
+App switching was tested across several screens and repeated through the recent-apps menu. Transitions were generally smooth, and navigation state was preserved. However, the app sometimes reload...

@@ -1,0 +1,15 @@
+Subject: Possible Next Stanza Recommendation Cards
+
+Monday, February 13
+
+Hi Carlos,
+
+Thanks for discussing the “Possible next stanza” idea with me. I prototyped a lightweight version of the recommendation cards focused on three principles: recommendations should be supportive, editable, and transparent about why they appear.
+
+Each card will distinguish between two types of guidance:
+Based on your stated preferences for suggestions the user has explicitly chosen, such as tone, length, or rhyme scheme.
+Suggested from recent patterns for options inferred from repeated behavior. These will be labeled as suggestions rather than treated as confirmed preferences.
+
+Users can accept a card, edit the suggested stanza, or dismiss it without affecting future recommendations. I also added a short “Why this suggestion?” explanation to each card so the recommendation does not feel arbitrary or overly authoritative.
+
+The current prototype shows the cards below the draft stanza, with one primary rec...

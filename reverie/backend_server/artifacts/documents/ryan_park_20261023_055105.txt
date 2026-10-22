@@ -1,0 +1,20 @@
+Test Report: Notification and Dismissal Functionality
+
+Date: Monday, February 13  
+Tester: Ryan Park  
+Device: [Device Model]  
+App Under Test: [App Name]
+
+Testing Scope
+I tested the app’s notification settings, notification delivery, and dismissal behavior. The primary objective was to verify that notifications appear correctly, can be dismissed, and do not interfere with the app’s core functionality.
+
+Findings
+Notification appearance: Notifications display correctly in the app’s notification panel.
+Dismissal: Users can dismiss notifications using the standard button.
+Notification delivery: The app receives notifications as expected.
+Dismissal behavior: Dismissing a notification does not prevent the app from receiving subsequent notifications.
+Edge cases: No unexpected behavior was observed during the testing period.
+
+Recommendations
+Ensure the dismiss button remains accessible across all notification panels.
+Test the app’s notification settings on additional devices to confirm con...

@@ -1,0 +1,17 @@
+Test Report: Search and Filter Feature Validation
+
+Date: Monday, February 13  
+Tester: Ryan Park  
+Device: Android Emulator / Physical Device
+
+Objective:  
+Validate the search and filter functionality of the new mobile app.
+
+Testing Process:  
+I tested the search bar and filter options across different device sizes and screen resolutions. The interface was responsive, and the search results appeared immediately after entering keywords.
+
+Findings:  
+Search Accuracy: The search engine correctly matched keywords in titles, descriptions, and metadata. However, it occasionally failed to return relevant results for broad terms.  
+Filter Functionality: Filtering by category, price range, and rating worked as expected. The filter dropdowns were easy to use, but selecting multiple filters simultaneously could be confusing.  
+Performance: Loading search results was fast, but filtering large result sets took several seconds.  
+Edge Cases: The search failed for empty results and returned duplic...

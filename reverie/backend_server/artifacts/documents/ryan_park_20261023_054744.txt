@@ -1,0 +1,12 @@
+Testing Report: Notification and Dismissal Functionality
+
+Date: Monday, February 13  
+Tester: Ryan Park  
+Device: Android Test Device  
+App: New Mobile Application
+
+I conducted a functional test of the application’s notification system, focusing on how notifications are received, displayed, and dismissed. The goal was to verify that the app handles incoming notifications reliably and that users can manage them without unnecessary interruptions.
+
+I tested the notification flow by opening the app, checking the notification center, and simulating incoming alerts. The notification panel appeared immediately, and the content displayed correctly. I also tested the dismissal mechanism by tapping the notification and closing the panel.
+
+The primary finding is that dismissing a notification works as intended, but the user experience could be improved. The notification remains visible for a brief moment after dismissal, which may be confusing. Additionally, the app does not automatically dism...

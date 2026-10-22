@@ -1,0 +1,19 @@
+Mobile App Test Report
+
+Date: Monday, February 13  
+Tester: Ryan Park  
+Focus: Text entry, forms, and user-provided data handling
+
+Objective
+
+Evaluate the app’s core input workflows and identify improvements that will reduce errors, protect user data, and make the mobile experience more reliable.
+
+Test Results
+
+Text Entry
+
+Text fields accept normal keyboard input, spaces, numbers, and symbols correctly. Copy-and-paste operations also work as expected. However, several fields allow excessive text without displaying a clear character limit or validation message. The keyboard sometimes covers the active field after scrolling, and the cursor position is not always obvious. Adding visible counters, inline validation, and automatic scrolling to keep the active field above the keyboard would improve usability.
+
+Forms
+
+Required fields are clearly marked, but the visual distinction between valid, invalid, and incomplete fields is too subtle. Submission errors appear at the top of the form, w...

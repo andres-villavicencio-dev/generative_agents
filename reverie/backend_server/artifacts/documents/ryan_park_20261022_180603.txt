@@ -1,0 +1,16 @@
+Mobile App Performance and Resilience Test Report
+
+Date: Monday, February 13  
+Prepared by: Ryan Park
+
+Purpose
+
+This report documents the app’s battery usage, network consumption, and behavior under unstable internet conditions. The goal is to identify practical improvements before release without adding unnecessary complexity.
+
+Test Scope
+
+I tested the app on a mid-range Android device using the same account and typical user workflow for each run. Tests covered background synchronization, image loading, video streaming, offline navigation, and recovery after connection loss. Network performance was measured under stable Wi-Fi, constrained LTE, and intermittent connections.
+
+Findings
+
+Battery impact: Continuous use consumed approximately 8% more battery than the baseline over a two-hour session. Most unnecessary usage came from repeated location checks and background synchronization. Disabling nonessential activity while the app is in the background reduced consumption by roughly 3%...

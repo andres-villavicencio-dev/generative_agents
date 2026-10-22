@@ -1,0 +1,19 @@
+Testing Report: Push Notifications and Dismissal Behavior
+
+Date: Monday, February 13  
+Tester: Ryan Park  
+App: [App Name]
+
+Objective: Validate the push notification delivery, handling, and dismissal behavior.
+
+Tested Scenarios:
+
+1. Notification Trigger: A push notification was successfully delivered to the device.
+2. Notification Display: The notification appeared in the app’s notification center.
+3. Dismissal: The user dismissed the notification using the standard dismiss button.
+4. Notification Retention: The notification remained in the notification center after dismissal.
+5. Notification Delivery: The notification was delivered again within the same session.
+6. Dismissal Behavior: The user dismissed the notification without triggering an alert.
+7. Notification Retention: The notification remained in the notification center after dismissal.
+8. Notification Delivery: The notification was delivered again within the same session.
+9. Dismissal Behavior: The user dismissed the notifi...

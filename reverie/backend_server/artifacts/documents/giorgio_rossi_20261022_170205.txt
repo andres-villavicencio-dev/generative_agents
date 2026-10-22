@@ -1,0 +1,28 @@
+Research Memorandum: Phyllotaxis Angle Review
+
+Date: Monday, February 13  
+From: Giorgio Rossi  
+Subject: Analysis of Golden-Angle Patterns in Sunflower Heads  
+Project: Mathematical Patterns in Nature
+
+Objective
+
+I reviewed the angular measurements from five sunflower heads to determine whether their spiral arrangements follow the theoretical golden angle of 137.5°. For each head, I calculated the mean of four adjacent-petal angles, compared the result with the benchmark, and checked the arithmetic using both direct deviation and mean-absolute-error methods.
+
+Results
+
+| Sunflower head | Mean observed angle | Difference from 137.5° | Absolute deviation |
+|---|---:|---:|---:|
+| 1 | 136.8° | −0.7° | 0.70° |
+| 2 | 137.4° | −0.1° | 0.10° |
+| 3 | 138.1° | +0.6° | 0.60° |
+| 4 | 137.2° | −0.3° | 0.30° |
+| 5 | 137.7° | +0.2° | 0.20° |
+
+Figure 1. Absolute deviation from the golden-angle benchmark
+
+Head 1 | ███████  0.70°
+Head 2 | █       0.10°
+Head 3 | ██████   0.60°
+Head 4 | ███      0.30°
+...

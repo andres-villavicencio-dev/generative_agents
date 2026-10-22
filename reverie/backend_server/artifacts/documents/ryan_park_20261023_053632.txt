@@ -1,0 +1,15 @@
+Test Results: Push Notifications and Notification Behavior
+
+Date: Monday, February 13  
+Tester: Ryan Park  
+Device: Android emulator, version 14.0
+
+Overview
+
+I tested the app’s push notification system across several scenarios. The notification delivery mechanism is functional, but the current implementation does not fully meet the expected user experience.
+
+Notifications
+Delivery: The app successfully delivers push notifications when the user is actively using the device. In the emulator, notifications appeared in the notification panel and were delivered to the device.
+Visibility: The notification icon is visible in the notification shade, and the user can tap it to open the app.
+Action: Tapping the notification opens the target screen. The app responds appropriately to taps, although the response time was not measured.
+Missing Features: The notification did not show a clear status indicator when the app was not responding. It also did not provide a way to view the notification hi...

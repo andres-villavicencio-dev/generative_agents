@@ -1,0 +1,21 @@
+Testing Report: Notification and Dismissal Functionality
+
+Date: Monday, February 13  
+Tester: Ryan Park  
+Device: iOS 17.4 on iPhone 14 Pro
+
+Testing Scope
+
+The app’s notification system was tested across the following scenarios:
+New notifications appearing on the lock screen and home screen
+Notification delivery and visual indicators
+Notification dismissal via the app, lock screen, and notification center
+Notification persistence after dismissal
+Handling of repeated notifications and overlapping alerts
+
+Findings
+
+1. Notification delivery: The app successfully delivers notifications to the device. The notification center displays the icon, timestamp, and message.
+2. Dismissal: Dismissing a notification works immediately. The icon disappears from the notification center, and the app does not continue to display it.
+3. Lock screen behavior: Notifications appear on the lock screen after a short delay. Dismissing them from the lock screen removes the icon.
+4. Persistent notifications: No...

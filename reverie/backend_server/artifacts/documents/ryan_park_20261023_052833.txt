@@ -1,0 +1,20 @@
+Testing Report: Login Screen Accessibility
+
+Project: Mobile App Development  
+Tester: Ryan Park  
+Date: Monday, February 13  
+Device: Android Device  
+Test Objective: Verify that the login screen is accessible and that the username and password fields are usable.
+
+Findings:
+
+The login screen is clearly visible and the screen is navigable. The username and password fields are accessible, with sufficient contrast and clearly labeled input areas. Users can tap the fields, enter text, and submit the credentials. The login button is also accessible and appears to function correctly.
+
+The password field is fully accessible, allowing users to enter and modify the password. The username field is also accessible, with the required input and submit buttons functioning as expected.
+
+No accessibility issues were identified. The fields are usable on the tested device, and the login process appears complete.
+
+Recommendation: The login screen is ready for further testing.
+
+Signature:  
+Ryan Park  ...

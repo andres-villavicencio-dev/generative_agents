@@ -1,0 +1,27 @@
+Mathematical Patterns in Nature  
+Calculation Review and Research Archive
+
+Researcher: Giorgio Rossi  
+Date: Monday, 13 February  
+Status: Calculations reviewed; findings ready for archiving
+
+Calculation Review
+
+The Fibonacci sequence was recalculated using  
+Fₙ = Fₙ₋₁ + Fₙ₋₂, with F₁ = 1 and F₂ = 1.
+
+The verified sequence begins:
+
+1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144
+
+The ratio of consecutive terms approaches the golden ratio:
+
+φ = (1 + √5) / 2 ≈ 1.618033989
+
+For example, 89 ÷ 55 ≈ 1.61818, while 144 ÷ 89 ≈ 1.61798. The decreasing error confirms convergence rather than coincidence. The corresponding golden angle is:
+
+360° × (1 − 1/φ) ≈ 137.507764°
+
+Research Findings
+
+Fibonacci proportions and approximately 137.5-degree divergence angles occur repeatedly in natural structures, including seed arrangements, flower petal growth, shell spirals, and branching systems. These patterns do not prove a single governing formula, but they demonstrate that efficient, mathematically recogniz...

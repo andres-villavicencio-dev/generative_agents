@@ -1,0 +1,19 @@
+Test Documentation: Notification and Dismissal Testing
+
+Date: Monday, February 13  
+Tester: Ryan Park  
+App: New Mobile Application
+
+Purpose
+
+This document records the results of testing the app’s notification system and dismissing notifications. The goal was to verify that notifications are delivered reliably, that users can dismiss them appropriately, and that the dismissal process does not interfere with app functionality.
+
+Testing Process
+
+I tested the following scenarios:
+
+1. Notification delivery – Opened the app, checked the notification center, and attempted to receive a test notification.
+2. Dismissal – Dismissed the notification and verified that the dismissed notification was not retained.
+3. Notification persistence – Checked whether dismissed notifications remained visible after closing the app.
+4. Multiple notifications – Opened the app and dismissed several notifications in succession.
+5. App functionality – Completed a required task and verified that the app remained...

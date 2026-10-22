@@ -1,0 +1,28 @@
+Research Calculation Review: Exponential Growth in Lichen Colonies
+
+Date: Monday, February 13  
+Researcher: Giorgio Rossi  
+Project: Mathematical Patterns in Nature  
+Review period: January 6–February 10  
+
+Purpose
+
+Compare calculated colony-area projections with field observations from four wall sites. The aim is not to force nature into a tidy curve, but to determine where the model fails and why.
+
+Method
+
+I used the exponential model \(A(t)=A_0e^{rt}\), with \(r=0.040\) per day derived from preliminary sampling. Areas were measured to the nearest 0.1 cm² on Day 0 and Day 14. Percentage differences were calculated as:
+
+\[
+(\text{Observed}-\text{Calculated})/\text{Calculated}\times100
+\]
+
+| Site | Initial Area | Calculated Area | Observed Area | Difference |
+|---|---:|---:|---:|---:|
+| A | 20.0 cm² | 35.0 cm² | 31.2 cm² | −10.9% |
+| B | 25.0 cm² | 43.8 cm² | 44.1 cm² | +0.7% |
+| C | 18.0 cm² | 31.5 cm² | 27.9 cm² | −11.4% |
+| D | 22.0 cm² | 38.5 cm² | 42.7 cm² | +10.9% |
+
+Findings
+...

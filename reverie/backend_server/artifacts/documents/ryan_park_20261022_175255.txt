@@ -1,0 +1,14 @@
+Authentication Flow Test Report  
+Date: Monday, February 13  
+Tester: Ryan Park  
+
+Objective  
+Evaluate the registration, login, logout, and account recovery flows for functionality, clarity, security, and consistency across the mobile app.
+
+Test Results
+
+The registration flow is functional, but password requirements should appear before the user submits the form. Inline validation would reduce avoidable errors and make the process more efficient. Email-field validation and error messages are also inconsistent, so I recommend using a single format for all form feedback.
+
+Login works as expected. Failed attempts display a clear message without revealing whether the email address exists, which is appropriate for security. However, the app should provide feedback when a valid email is paired with an incorrect password and temporarily limit repeated attempts to discourage brute-force attacks.
+
+Logout successfully ends the session and returns the user to the login screen. The back button...

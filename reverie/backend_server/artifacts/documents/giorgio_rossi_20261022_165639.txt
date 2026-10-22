@@ -1,0 +1,21 @@
+Research Calculation Review: Mathematical Patterns in Nature
+
+Date: Monday, February 13  
+Prepared by: Giorgio Rossi  
+Subject: Preliminary harmonic analysis of recurring natural patterns
+
+1. Objective
+
+I am testing whether several natural time series can be represented by a limited set of repeating cycles. The goal is not to force every measurement into a tidy curve, but to identify where a simple mathematical model provides meaningful explanatory power.
+
+2. Data Sources
+Temperature: NOAA Climate Data Online daily minimum and maximum records, 2013–2022.  
+River discharge: USGS National Water Information System hourly stream-gauge readings.  
+Sea level: NOAA tide-gauge observations from three coastal stations.  
+Wildflower counts: GBIF occurrence records aggregated by survey date and grid cell.
+
+Only records with reliable timestamps, location metadata, and documented collection methods are included.
+
+3. Model Setup
+
+Each series is centered and scaled using its mean and standard devi...

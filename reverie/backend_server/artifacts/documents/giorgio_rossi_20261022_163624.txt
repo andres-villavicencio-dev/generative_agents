@@ -1,0 +1,45 @@
+Research Calculation Review  
+Mathematical Patterns in Nature: Logistic Growth
+
+Date: Monday, February 13  
+Prepared by: Giorgio Rossi  
+
+1. Purpose and Model
+
+I am reviewing the logistic growth calculations used in the project. The objective is not merely to produce a smooth population curve, but to confirm that every equation follows from the stated assumptions.
+
+Let \(N(t)\) represent population size at time \(t\), \(r>0\) the intrinsic growth rate, and \(K>0\) the carrying capacity. The model is
+
+\[
+\frac{dN}{dt}=rN\left(1-\frac{N}{K}\right).
+\]
+
+It assumes constant \(r\) and \(K\), a closed population, and no sudden environmental changes.
+
+2. Derivation Check
+
+For \(0<N<K\), separation gives
+
+\[
+\frac{dN}{N(1-N/K)}=r\,dt.
+\]
+
+Since
+
+\[
+\frac{1}{N(1-N/N)}=\frac1N+\frac1{K-N},
+\]
+
+integration yields
+
+\[
+\ln\left(\frac{N}{K-N}\right)=rt+C.
+\]
+
+Solving for \(N\),
+
+\[
+N(t)=\frac{K}{1+\left(\frac{K-N0}{N0}\right)e^{-rt}}.
+\]
+
+Differentiation recovers the original differential equatio...

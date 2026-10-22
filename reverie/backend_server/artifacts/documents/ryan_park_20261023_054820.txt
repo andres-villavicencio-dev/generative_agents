@@ -1,0 +1,14 @@
+Testing Report: Notification and Dismissal Functionality  
+Tester: Ryan Park  
+Date: Monday, February 13  
+Device: [Insert Device Model and OS Version]
+
+Subject: App Notification and Dismissal Functionality
+
+I tested the notification system and dismissal workflow on the device. The core functionality appears to work, but the experience could be improved.
+
+Notifications are triggered correctly when the app requires user attention. The notification icon appears in the top-right corner, and the notification center opens when tapped. I was able to review the notification list, including unread items and recent alerts.
+
+Dismissal is the main area for improvement. I dismissed a notification, but the app did not return to the previous screen until I tapped the notification icon again. The dismissal did not persist across sessions, and the dismissed notification remained visible in the list. This prevents users from quickly returning to the main interface after dismissing a message.
+
+The no...

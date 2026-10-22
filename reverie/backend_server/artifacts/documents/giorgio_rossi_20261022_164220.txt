@@ -1,0 +1,25 @@
+Research Calculation Review: Discrete Logistic Growth
+
+Date: Monday, February 13  
+Project: Mathematical Patterns in Nature
+
+I reviewed the discrete logistic equation
+
+\[
+x{n+1}=xn+r xn\left(1-\frac{xn}{K}\right),
+\]
+
+using carrying capacity \(K=100\), growth parameter \(r=1\), and initial population \(x0=10\). The sequence was:
+
+\[
+10,\ 19,\ 34.39,\ 56.95,\ 81.47,\ 96.57,\ 99.88,\ 100.00\ldots
+\]
+
+The convergence is smooth and remains inside the physical domain \(0\le xn\le100\).
+
+Boundary and Special-Condition Tests
+Zero population: \(x0=0\) produces \(x1=0\). There is no spontaneous population.
+Full capacity: \(x0=100\) produces \(x1=100\), so the population remains fixed.
+No growth: Setting \(r=0\) gives \(x{n+1}=xn\) for every initial value.
+Negative values: \(x0=-10\) produces \(x1=-21\), confirming that the formula is mathematically valid but biologically meaningless outside the nonnegative domain.
+Excessive population: When \(x_0>200\), the next value becomes negative. The m...

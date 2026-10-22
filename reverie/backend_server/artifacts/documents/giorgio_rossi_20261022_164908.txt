@@ -1,0 +1,14 @@
+RESEARCH VERIFICATION MEMORANDUM
+
+Date: Monday, February 13  
+To: Mathematical Patterns in Nature Research Team  
+From: Giorgio Rossi  
+Subject: Re-run and Verification of Corrected Growth-Model Calculations
+
+Summary
+
+I reviewed the calculations supporting the preliminary leaf-growth model and identified the source of the discrepancy reported last week. Four rainfall measurements had been entered in centimeters while the model required millimeters. The affected inputs were therefore corrected from 0.85, 1.20, 1.75, and 2.40 cm to 8.5, 12.0, 17.5, and 24.0 mm.
+
+Corrective Action
+
+I replaced the erroneous values, confirmed their units in the source dataset, and reran the complete normalization and growth-rate calculation. The revised primary growth coefficient is 0.743, compared with the previous value of 0.687. The coefficient of determination remains strong at R² = 0.918. The correction also reduces the residual error by approximately 18%, suggesting that the original mismatch was s...

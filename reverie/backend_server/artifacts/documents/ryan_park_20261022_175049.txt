@@ -1,0 +1,20 @@
+Mobile App Test Environment Setup and Improvement Notes
+
+Date: Monday, February 13  
+Tester: Ryan Park  
+Status: Ready for validation
+
+Objective
+
+Prepare a consistent Android device or emulator configuration for testing the mobile app. The environment should reflect common user conditions while allowing network, permission, background-task, and performance issues to be reproduced reliably.
+
+Target Environment
+Operating system: Android 14, API Level 34
+Device profile: Pixel 7 with 6 GB RAM and 1080 × 2400 resolution
+App build: Latest debug build with logging enabled
+Network: Wi-Fi connected, with mobile-data testing completed separately
+Display: 420 dpi, dark mode enabled for initial validation
+Location: GPS enabled; simulated coordinates configured
+Permissions: Camera, microphone, location, and notifications granted individually
+Battery settings: Background activity allowed; battery saver disabled
+Developer options: Strict mode disabled, GPU rendering enabled, and “Keep screen on” a...

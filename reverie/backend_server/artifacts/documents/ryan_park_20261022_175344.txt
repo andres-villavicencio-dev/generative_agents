@@ -1,0 +1,23 @@
+End-to-End Test Report: Primary App Workflow
+
+Tester: Ryan Park  
+Date: Monday, February 13  
+Status: Core workflow passes, with improvements recommended
+
+Objective
+
+Test the app’s primary feature from initial setup through record creation, editing, saving, reopening, and deletion. The goal was to verify that the workflow remains clear, reliable, and consistent throughout.
+
+Test Results
+
+1. Installed the latest build and completed the onboarding process without errors.
+2. Created a new record using both required and optional fields.
+3. Saved the record and confirmed that it appeared in the main list.
+4. Opened, edited, and updated the record; changes were reflected immediately.
+5. Closed and relaunched the app. All saved data remained intact.
+6. Deleted the record and confirmed that it was removed from the list.
+7. Submitted an empty form to test validation. The app correctly blocked the action and identified the missing field.
+
+Findings and Improvements
+
+1. Improve save feedback — ...

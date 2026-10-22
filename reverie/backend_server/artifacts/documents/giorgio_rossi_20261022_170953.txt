@@ -1,0 +1,14 @@
+MEMORANDUM
+
+To: Project File—Mathematical Patterns in Nature  
+From: Giorgio Rossi  
+Date: Monday, February 13  
+Subject: Final Calculation Review and Verified Research Findings
+
+I have completed the review of the calculation package against the final observation files. The final dataset contains 48 daily records. Six records were excluded because of incomplete temperature or count fields, leaving 42 usable observations. The retained counts total 3,528, producing a mean of 84.0 observations per day. The observed range is 57 to 112. These values agree with the totals, averages, and range calculations in the final workbook and with my independent hand checks.
+
+The preferred model remains:
+
+y = 1.8x + 12.4
+
+Here, x is the average morning temperature in degrees Celsius, and y is the observed daily count. The model’s R² is 0.86. At 18°C, it predicts 44.8 observations, since 1.8 × 18 + 12.4 = 44.8. I re-entered the coefficients, recomputed the residuals, and confirmed the reported fit sta...

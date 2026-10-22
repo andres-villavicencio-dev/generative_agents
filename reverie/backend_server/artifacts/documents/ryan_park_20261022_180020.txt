@@ -1,0 +1,17 @@
+Offline Behavior, Connectivity Changes, and Data Synchronization Test Report
+
+Date: Monday, February 13  
+Tester: Ryan Park  
+Project: New Mobile App  
+Status: Initial testing in progress
+
+Objective
+
+Verify that the app preserves user data during offline use, handles network transitions without crashes or data loss, and synchronizes changes correctly when connectivity returns.
+
+Test Scenarios and Findings
+Offline launch: The app launches successfully in airplane mode and displays the last synchronized data. No loading screen remains indefinitely.
+Data entry while offline: New records created offline are saved locally and clearly marked as pending synchronization.
+Connectivity restoration: Switching from airplane mode to Wi-Fi or cellular data triggers synchronization without requiring an app restart.
+Connectivity interruption: An active request is interrupted when the network drops. The app reports the failed operation and retries safely rather than duplicating records.
+Background s...

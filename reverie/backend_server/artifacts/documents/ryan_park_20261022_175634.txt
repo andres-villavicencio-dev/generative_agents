@@ -1,0 +1,18 @@
+Mobile App Validation Testing & Improvement Log
+
+Date: Monday, February 13  
+Tester: Ryan Park  
+Project: New Mobile App  
+Status: Testing in progress
+
+Objective
+
+I tested the current build’s input validation to determine whether it prevents incomplete, malformed, or out-of-range data. The focus was on empty submissions, invalid formats, whitespace-only values, and exact boundary conditions.
+
+Test Cases and Findings
+
+| Test ID | Scenario | Result | Recommended Improvement |
+|---|---|---|---|
+| VAL-01 | Submit a form with all required fields empty | The form submitted without blocking the user | Disable submission until required fields are valid, or show clear inline errors immediately |
+| VAL-02 | Enter a name containing only spaces | Whitespace was treated as valid input | Trim values and reject empty strings after trimming |
+| VAL-03 | Enter an invalid email address, such as `ryan@@example.com` | The invalid address was accepted | Use a consistent email validation rule and display...

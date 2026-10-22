@@ -1,0 +1,23 @@
+Daily Research and Work Plan  
+Monday, February 13  
+Gioreo Rossi
+
+Primary Objective
+Document and test candidate mathematical patterns found in nature, with particular attention to exponential growth and periodic variation. The goal is not merely to identify a pattern, but to determine which model best describes it.
+
+Research Tasks
+1. Exponential growth analysis
+Compare successive growth ratios in selected population and reproduction datasets.
+Record the base rate, time interval, and percentage change.
+Check whether deviations remain within a reasonable error margin.
+Draft the model: \(N(t)=N_0e^{rt}\).
+
+2. Periodic variation study
+Examine temperature, daylight, population, or seasonal datasets.
+Identify the period, amplitude, phase, and any secondary cycles.
+Compare simple sine models with more complicated functions.
+Note where apparent periodicity may be an illusion caused by sampling.
+
+3. Pattern log
+Add each candidate to the research notebook.
+Include a graph, equation, confiden...

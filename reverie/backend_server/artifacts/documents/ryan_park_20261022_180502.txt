@@ -1,0 +1,19 @@
+Mobile App Performance Test Report
+
+Date: Monday, February 13  
+Tester: Ryan Park
+
+Purpose
+
+This evaluation measures launch time, interface response time, and resource consumption across common user workflows. The goal is to identify performance bottlenecks and document practical improvements before the next release.
+
+Test Setup
+
+Tests were completed on a mid-range Android device and an iPhone using the release candidate over a stable Wi-Fi connection. Each workflow was repeated five times. I recorded median and 95th-percentile timings, CPU load, memory usage, battery impact, and any crashes or freezes.
+
+Results
+Cold launch: 2.4 seconds average; 3.1 seconds at the 95th percentile.
+Warm launch: 1.1 seconds average.
+Sign-in: Completed in 1.8 seconds, with validation feedback appearing within 300 milliseconds.
+Dashboard loading: 2.6 seconds, including image and recommendation content.
+Search and filtering: 650 milliseconds average, with noticeable delay on results containing more than ...

@@ -1,0 +1,20 @@
+Test Results: App Launch and Navigation Flow
+
+Device: iPhone 15 Pro Max  
+Date: Monday, February 13  
+Tester: Ryan Park  
+App Version: 1.0.0 (internal build)
+
+Launch Behavior
+
+The app launched successfully from the home screen. The splash screen appeared briefly, then transitioned to the welcome screen. On iOS, the app opened in a full-screen window, and the welcome screen appeared immediately after. The app did not require a login or additional setup.
+
+The app opened cleanly without crashes, loading screens, or unexpected interruptions. The main menu appeared after a brief delay, and the app remained responsive throughout the test.
+
+Navigation Flow
+
+The navigation structure was logical and intuitive. From the main menu, I could reach the following screens:
+Onboarding – completed without additional input.  
+Dashboard – displayed the latest activity and recent tasks.  
+Tasks – listed pending items with clear labels and status indicators.  
+Settings – allowed access to account prefere...

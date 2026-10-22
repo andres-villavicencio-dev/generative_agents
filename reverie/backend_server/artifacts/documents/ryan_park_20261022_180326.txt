@@ -1,0 +1,23 @@
+Mobile App Interface Testing Report
+
+Tester: Ryan Park  
+Date: Monday, February 13  
+Objective: Evaluate the app across common screen sizes and both portrait and landscape orientations.
+
+Test Coverage
+
+| Viewport | Orientation | Result |
+|---|---|---|
+| 320 × 568 | Portrait | Major issues |
+| 390 × 844 | Portrait | Minor issues |
+| 768 × 1024 | Portrait | Pass |
+| 844 × 390 | Landscape | Major issues |
+| 1024 × 768 | Landscape | Minor issues |
+
+Findings and Recommended Improvements
+
+1. Compact portrait layout: At 320 pixels wide, navigation labels are truncated and the primary action is difficult to reach. The bottom navigation should use icons with accessible labels, reduce horizontal padding, and keep important actions within the thumb area.
+
+2. Small landscape layout: On shorter landscape screens, the header and bottom navigation consume too much vertical space. A condensed header should replace the current layout, and navigation should move to a compact side or top bar.
+
+3. Tabl...

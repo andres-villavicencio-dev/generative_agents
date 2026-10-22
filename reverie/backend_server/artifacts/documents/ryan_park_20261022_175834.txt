@@ -1,0 +1,20 @@
+Mobile App Test Report: Permissions and Restricted Features
+
+Date: Monday, February 13  
+Tester: Ryan Park  
+Focus: Permission requests, denied access, and device feature restrictions
+
+Overview
+
+I tested the app’s permission flows and behavior when users deny access or when required device features are unavailable. The primary goal was to verify that the app remains stable, communicates restrictions clearly, and provides practical recovery options.
+
+Findings and Improvements
+
+1. Permission Request Timing  
+   Permission prompts should appear only when the related feature is used, with a brief explanation beforehand. Requesting several permissions at launch creates friction and increases the likelihood of denial.
+
+2. Denied Access  
+   When access is denied, the app should preserve the user’s place rather than repeatedly prompting or crashing. A clear message should explain what cannot be used and how to enable access through system settings.
+
+3. Restricted Device Features  
+   Camer...

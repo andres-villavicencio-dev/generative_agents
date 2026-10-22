@@ -1,0 +1,15 @@
+Testing Navigation Between the Main Menu and Other Screens
+
+Date: Monday, February 13  
+Tester: Ryan Park  
+Device: Android emulator
+
+Testing Objective
+Verify that the app’s navigation between the main menu and other screens is intuitive, reliable, and responsive.
+
+Test Results
+Main Menu Access: The app opens successfully from the home screen. The main menu appears with a clear, consistent layout.
+Menu Navigation: Tap the main menu opens the navigation drawer. All menu items are accessible, and the selected item updates the screen content without requiring a page reload.
+Screen Transitions: Moving between screens uses a smooth transition. The transition time is acceptable, though the drawer sometimes appears briefly after the screen changes.
+Back Navigation: The back button works reliably. The app returns to the previous screen, though the transition can feel slightly abrupt when returning from a long menu.
+Home Screen: The home screen displays recent activity correctly. However, th...

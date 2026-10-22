@@ -1,0 +1,19 @@
+RESEARCH REPORT — RESULTS  
+Mathematical Patterns in Nature: Sunflower Geometry  
+Giorgio Rossi  
+Monday, 13 February
+
+Results
+
+I tested two related patterns in mature sunflower heads: the angular separation of successive leaves and the number of clockwise spirals formed by the florets.
+
+| Measurement | Sample | Verified result |
+|---|---:|---|
+| Leaf-divergence angle | 90 transitions | Mean: 137.4°; standard deviation: 1.6°; circular concentration: 0.9996 |
+| Clockwise spiral count | 20 heads | Mean: 47.1; median: 41.5; range: 21–89 |
+
+The mean divergence angle differed from the theoretical golden angle, 137.507°, by only 0.107°, an absolute difference of 0.078%. All 90 measurements fell within 3.4° of the predicted value, and 87 of 90 were within 2.0°. A linear regression of angle against successive leaf position produced a negligible trend of +0.04° per node with R² = 0.03, indicating no meaningful drift through the stem.
+
+The spiral-count distribution was:
+
+21 (4 heads), 34 (5),...

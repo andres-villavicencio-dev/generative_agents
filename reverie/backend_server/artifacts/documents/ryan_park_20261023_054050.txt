@@ -1,0 +1,13 @@
+Test Report: Notification and Dismissal Functionality  
+Date: Monday, February 13  
+Tester: Ryan Park  
+Device: Android device  
+
+Objective:  
+Verify that the app’s notifications are delivered, displayed correctly, and can be dismissed without causing app crashes or inconsistent behavior.
+
+Findings:  
+1. Notification Delivery: The app successfully delivers notifications when a new message is received. The notification appears in the app’s notification panel and is not blocked by the device’s notification center.  
+2. Notification Display: The notification includes the message, timestamp, and relevant metadata. The display is clear and readable on the device screen.  
+3. Dismissal: The user can dismiss the notification using the app’s notification button. The notification panel returns to its previous state after dismissal.  
+4. Edge Cases: Dismissing a notification while another is open does not cause the app to crash. The dismissed notification remains visible until the user closes...

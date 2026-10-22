@@ -1,0 +1,23 @@
+Mobile App Restart Persistence Test Report
+
+Date: Monday, February 13  
+Tester: Ryan Park  
+Test Area: User data, preferences, and settings persistence  
+Build: Current development build
+
+Objective
+
+Verify that user information and application settings remain intact after the app is closed and restarted. Persistent data is essential for maintaining a consistent user experience, particularly when users rely on customized preferences.
+
+Test Procedure
+
+1. Launch the app and sign in to a test account.
+2. Update the user profile with identifiable test information.
+3. Change several application settings, including notification preferences, display options, and default behavior.
+4. Record the updated values.
+5. Force-close the app and reopen it from the device home screen.
+6. Sign in again and compare the restored data with the recorded values.
+
+Results
+
+The user profile information persisted successfully after restart. However, several application settings reverted to their default values...

@@ -1,0 +1,22 @@
+Mobile App Architecture and Sprint Plan
+
+Owner: Ryan Park  
+Date: Monday, February 13  
+Target Release: MVP within eight weeks
+
+Objective
+
+Deliver a stable, intuitive mobile MVP that supports the primary user journey from registration through task creation, tracking, and completion. The release should be fast, accessible, secure, and easy to extend without rewriting core components.
+
+Functional Requirements
+
+The app must support:
+Email and password registration, login, logout, and password recovery.
+A guided onboarding flow with profile setup and permission requests.
+Creation, editing, assignment, prioritization, and completion of tasks.
+Task lists organized by status, due date, priority, and project.
+Search, filtering, sorting, and archived-item access.
+Detail views with descriptions, subtasks, comments, and activity history.
+Configurable reminders and push notifications.
+Profile management, preferences, and account deletion.
+Offline reading and queued changes that synchronize when...

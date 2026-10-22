@@ -1,0 +1,21 @@
+Mobile App Architecture and Sprint 1 Plan
+
+Owner: Ryan Park  
+Date: Monday, February 13  
+Product: Mobile task-management application
+
+Sprint Objective
+
+Deliver a reliable core workflow: users can create an account, add tasks, and view and update their task list. The sprint will prioritize fast onboarding, offline usability, and clear system feedback.
+
+Proposed Architecture
+Client: React Native with TypeScript and Expo
+State management: TanStack Query for server state, with local context for session data
+Local storage: SQLite for offline task caching and pending mutations
+Backend: Node.js with a TypeScript REST API
+Database: PostgreSQL with user and task tables
+Authentication: Token-based authentication with secure device storage
+Architecture pattern: Feature-based modules separating UI, business logic, and data access
+Quality controls: Unit tests for business rules, integration tests for API behavior, and end-to-end tests for primary user journeys
+
+Sprint User Stories and Acceptanc...

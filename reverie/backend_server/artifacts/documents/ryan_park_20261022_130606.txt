@@ -1,0 +1,15 @@
+Mobile App Architecture and Sprint 1 Plan
+
+Date: Monday, February 13  
+Author: Ryan Park  
+Status: Draft for technical review
+
+Objective
+
+Deliver a testable MVP covering account creation, sign-in, onboarding, and the primary user journey. Optimize for a small team and rapid iteration while maintaining clear module boundaries for future scaling.
+
+System Architecture
+Client: React Native and TypeScript, with React Navigation, TanStack Query, secure credential storage, and local caching for intermittent connectivity.
+Backend: TypeScript/Node.js modular monolith. Authentication, users, and workflow logic remain in separate modules with explicit interfaces. A versioned REST/JSON API provides an OpenAPI contract.
+Data and infrastructure: Managed PostgreSQL with versioned migrations and indexed access paths, object storage for uploads, and background jobs for notifications and media processing.
+Operations: Dockerized environments, CI checks, structured logging, crash reporting, product ana...

@@ -1,0 +1,17 @@
+Core App Features — Testing Scope Summary
+
+Project: Mobile Application  
+Owner: Ryan Park  
+Date: Monday, February 13  
+Status: Ready for testing
+
+Purpose
+
+This document summarizes the core mobile app functionality completed during the current implementation phase. The scope below is ready for validation during the testing cycle and reflects the primary user workflows required for an initial production release.
+
+Implemented Features
+Onboarding and Authentication: Users can create an account, sign in, sign out, and recover access through the standard account recovery flow.
+Primary Dashboard: The dashboard presents relevant content, key status indicators, and navigation to all major app sections.
+Core User Workflows: Users can create, view, edit, and delete records through the application’s main feature flows.
+Search and Filtering: Key data can be located using search and category-based filters.
+Profile and Settings: Users can update personal information, review preferences, and confi...

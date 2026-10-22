@@ -47,6 +47,7 @@ def _journal_conversation(init_persona, target_persona, convo, summary,
   try:
     rec = {
         "ts": time.time(),
+        "sim": os.path.basename(init_persona.scratch.sim_folder or ""),
         "sim_time": str(init_persona.scratch.curr_time),
         "init": init_persona.name,
         "target": target_persona.name,

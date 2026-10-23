@@ -750,7 +750,70 @@ class ReverieServer:
       time.sleep(self.server_sleep * 10)
 
 
-  def tick_needs(self):
+  def _night_step_seconds(self):
+    """Night time dilation (GA_NIGHT_DILATION=<factor>, 0/1 = off).
+
+    While EVERY living persona is in an unfinished sleep action, nothing
+    can change until someone wakes, so each step spans `factor` x
+    sec_per_step of sim time instead of sec_per_step. Guards: the new-day
+    planning burst has run (hour >= GA_NIGHT_START_HOUR and every persona's
+    scratch clock is on today's date), no persona is mid-chat, and no
+    reflection is due. The jump never crosses (earliest action end -
+    GA_NIGHT_WAKE_MARGIN_MIN), so the town is back at normal speed an hour
+    before the first waker. Any non-sleep action ends dilation. Step files
+    are still written every step, so viewer/checkpoints are unaffected.
+    """
+    base = self.sec_per_step
+    try:
+      factor = float(os.environ.get("GA_NIGHT_DILATION", "0"))
+    except ValueError:
+      factor = 0.0
+    if factor <= 1.0:
+      return base
+    try:
+      from concurrency_utils import PENDING_CHATS, ASYNC_FROZEN, CHAT_BUSY
+      if PENDING_CHATS or ASYNC_FROZEN or CHAT_BUSY:
+        return base
+      start_h = int(os.environ.get("GA_NIGHT_START_HOUR", "1"))
+      if not (start_h <= self.curr_time.hour < 12):
+        return base
+      margin = datetime.timedelta(
+        minutes=int(os.environ.get("GA_NIGHT_WAKE_MARGIN_MIN", "60")))
+      earliest_end = None
+      living = 0
+      for persona in self.personas.values():
+        s = persona.scratch
+        if getattr(s, "is_deceased", False):
+          continue
+        living += 1
+        desc = (s.act_description or "").lower()
+        if not ("sleep" in desc or "asleep" in desc or "in bed" in desc):
+          return base
+        if s.chatting_with or not s.act_address or s.act_check_finished():
+          return base
+        if (not s.curr_time
+            or s.curr_time.date() != self.curr_time.date()):
+          return base
+        if s.importance_trigger_curr <= 0:
+          return base
+        x = s.act_start_time
+        if x.second != 0:
+          x = x.replace(second=0) + datetime.timedelta(minutes=1)
+        end = x + datetime.timedelta(minutes=s.act_duration)
+        if earliest_end is None or end < earliest_end:
+          earliest_end = end
+      if not living or earliest_end is None:
+        return base
+      room = (earliest_end - margin - self.curr_time).total_seconds()
+      step_s = int(base * factor)
+      if room < step_s:
+        return base
+      return step_s
+    except Exception as e:
+      print(f"[NightDilation] disabled this step ({e.__class__.__name__}: {e})")
+      return base
+
+  def tick_needs(self, dt_scale=1.0):
     """
     Decay agent needs each simulation tick.
     Called from the main simulation loop after each step.
@@ -808,6 +871,10 @@ class ReverieServer:
           # hygiene, comfort, stimulation decay normally (but not during sleep for simplicity)
           if not is_sleeping:
             current_val -= rate
+
+        # Night dilation: a step may span dt_scale ticks of sim time.
+        if dt_scale != 1.0:
+          current_val = s.needs[need] + (current_val - s.needs[need]) * dt_scale
 
         # Clamp to 0-100
         s.needs[need] = max(0, min(100, current_val))
@@ -1782,7 +1849,8 @@ class ReverieServer:
             print(f"[ChatTime] step {self.step}: {_chat_utts} replies "
                   f"generated (participants' time, not the world clock)")
           self.step += 1
-          self.curr_time += datetime.timedelta(seconds=self.sec_per_step)
+          _step_s = self._night_step_seconds()
+          self.curr_time += datetime.timedelta(seconds=_step_s)
 
           # Keep curr_step.json up to date so the frontend can re-initialize
           # correctly on page refresh (instead of always starting from step 0).
@@ -1812,7 +1880,7 @@ class ReverieServer:
           int_counter -= 1
 
           # Tick agent needs each step
-          self.tick_needs()
+          self.tick_needs(_step_s / float(self.sec_per_step))
           # Status need: lingering thoughts, never an emergency replan
           self._status_thoughts()
 

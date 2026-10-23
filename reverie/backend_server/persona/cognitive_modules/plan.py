@@ -22,7 +22,7 @@ import threading
 #      instead of 25-at-a-time).
 #   2. lets_talk() short-circuits on low-poignancy events (poig < 3) before any
 #      LLM call — banal stimuli never reach the model.
-_SOCIAL_THINK_SEM = threading.Semaphore(2)
+_SOCIAL_THINK_SEM = threading.Semaphore(int(os.environ.get("GA_SOCIAL_THINK_PAR", "2")))
 
 # DURABLE CONVERSATION JOURNAL (Oct 21 2026): scratch chat state only hits
 # disk at checkpoint saves (every 360 steps); a crash mid-conversation

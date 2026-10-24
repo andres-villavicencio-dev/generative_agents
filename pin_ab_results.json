@@ -1,0 +1,22 @@
+{
+ "control (no pin)": {
+  "last_time": "February 14, 2023, 19:18:30",
+  "agents_at_Hobbs_17-19": [],
+  "n_at_Hobbs": 0,
+  "pins": 0,
+  "pin_skipped": 0,
+  "pins_total_not_1440": 0,
+  "tracebacks": 0,
+  "sample_pins": []
+ },
+ "treatment (pin)": {
+  "last_time": "February 14, 2023, 19:18:30",
+  "agents_at_Hobbs_17-19": [],
+  "n_at_Hobbs": 0,
+  "pins": 0,
+  "pin_skipped": 0,
+  "pins_total_not_1440": 0,
+  "tracebacks": 0,
+  "sample_pins": []
+ }
+}

@@ -1,0 +1,34 @@
+{
+ "control (legacy)": {
+  "chat replans logged": 92,
+  "median minutes deleted per replan": 60.0,
+  "total hours deleted": 121.6,
+  "replans deleting >=60 min": "47/92",
+  "median day length after splice (should be 1440)": 1380.0,
+  "agents asleep/in bed between 08:00 and 12:00": 6,
+  "agents who start 'dinner' before 12:40": 7,
+  "median hour of first 'lunch'": 10.2,
+  "end clock": "Feb 15 12:32",
+  "chat memories (both sides)": 92,
+  "planning thoughts written": 74,
+  "agents whose saved day != 1440 min": 3,
+  "tracebacks": 0,
+  "LLM retries exhausted": 0
+ },
+ "treatment (fix)": {
+  "chat replans logged": 118,
+  "median minutes deleted per replan": 0.0,
+  "total hours deleted": -1.7,
+  "replans deleting >=60 min": "0/118",
+  "median day length after splice (should be 1440)": 1440.0,
+  "agents asleep/in bed between 08:00 and 12:00": 5,
+  "agents who start 'dinner' before 12:40": 7,
+  "median hour of first 'lunch'": 12.1,
+  "end clock": "Feb 15 12:32",
+  "chat memories (both sides)": 99,
+  "planning thoughts written": 94,
+  "agents whose saved day != 1440 min": 0,
+  "tracebacks": 0,
+  "LLM retries exhausted": 0
+ }
+}

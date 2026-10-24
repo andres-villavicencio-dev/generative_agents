@@ -668,6 +668,7 @@ class Scratch:
     self.act_pronunciatio = action_pronunciatio
     self.act_event = action_event
 
+    self.stash_unreflected_chat()
     self.chatting_with = chatting_with
     self.chat = chat 
     if chatting_with_buffer: 
@@ -681,6 +682,21 @@ class Scratch:
     self.act_start_time = self.curr_time
     
     self.act_path_set = False
+
+
+  def stash_unreflected_chat(self):
+    """A finished chat's state is overwritten/cleared as soon as the next
+    action starts; reflect() only caught it on the single step where
+    curr_time + 10s == chatting_end_time, which clock jumps skip (fresh25_1:
+    12 planning thoughts for 410 chat memories). Keep a copy so reflect()
+    can still write the planning thought + memo."""
+    import os
+    if os.environ.get("GA_CHAT_REPLAN_LEGACY", "0") == "1":
+      return
+    if (self.chatting_with and self.chat and self.chatting_end_time
+        and getattr(self, "_reflected_chat_end", None) != self.chatting_end_time):
+      self._pending_convo_reflect = (self.chatting_with, list(self.chat),
+                                     self.chatting_end_time)
 
 
   def act_time_str(self): 

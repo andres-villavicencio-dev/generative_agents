@@ -5,6 +5,7 @@ File: run_gpt_prompt.py
 Description: Defines all run gpt prompt functions. These functions directly
 interface with the safe_generate_response function.
 """
+import os
 import re
 import datetime
 import sys
@@ -143,6 +144,46 @@ def clamp_subtask_durations(schedule, parent_dur=None):
       if clamped and diff != 0:
         clamped[-1][1] = max(5, clamped[-1][1] + diff)
   return clamped
+
+
+def chat_replan_fix_enabled():
+  """Chat-replan fixes (span-preserving splice, richer replan prompt,
+  robust conversation reflection). GA_CHAT_REPLAN_LEGACY=1 restores the old
+  behaviour for A/B comparison."""
+  return os.environ.get("GA_CHAT_REPLAN_LEGACY", "0") != "1"
+
+
+def fit_schedule_to_span(schedule, span_min, step=5):
+  """Rescale a revised schedule so its durations sum to exactly span_min.
+
+  A chat replan rewrites a multi-hour window of f_daily_schedule. The old
+  code rescaled that whole window to the CHAT's duration (clamp_subtask_
+  durations(parent_dur=chat_min)), deleting the rest of the window and
+  sliding the remainder of the day earlier (median 40 min lost per chat).
+  Here the window keeps its length, so everything after it stays put."""
+  if not schedule or not span_min or span_min <= 0:
+    return schedule
+  items = [[a, max(step, int(d))] for a, d in schedule]
+  total = sum(d for _, d in items)
+  if total == span_min:
+    return items
+  scale = span_min / total
+  items = [[a, max(step, int(round(d * scale / step)) * step)] for a, d in items]
+  diff = int(span_min) - sum(d for _, d in items)
+  # absorb the rounding residue in the longest items, never below one step
+  order = sorted(range(len(items)), key=lambda i: -items[i][1])
+  k = 0
+  guard = 0
+  while diff != 0 and guard < 10000:
+    i = order[k % len(order)]
+    delta = step if diff > 0 else -step
+    if diff > 0 or items[i][1] + delta >= step:
+      move = min(abs(diff), step) * (1 if diff > 0 else -1)
+      items[i][1] += move
+      diff -= move
+    k += 1
+    guard += 1
+  return items
 
 
 _DECOMP_ITEM_RE = re.compile(r'^\s*(?:\d+\s*[.)]|[-*•])\s+(.*)$')
@@ -1812,7 +1853,8 @@ def run_gpt_prompt_new_decomp_schedule(persona,
                                        inserted_act,
                                        inserted_act_dur,
                                        test_input=None,
-                                       verbose=False):
+                                       verbose=False,
+                                       convo_note=None):
   def create_prompt_input(persona,
                            main_act_dur,
                            truncated_act_dur,
@@ -1854,6 +1896,15 @@ def run_gpt_prompt_new_decomp_schedule(persona,
                     end_hour_str,
                     end_hour_str,
                     new_plan_init]
+    if convo_note and chat_replan_fix_enabled():
+      note = " ".join(str(convo_note).split())[:400]
+      prompt_input.append(
+          f"What was discussed: {note}. If that means {persona_name} "
+          f"agreed to be somewhere or do something at a specific time "
+          f"inside this window, put it in the revised schedule at that "
+          f"time. ")
+    else:
+      prompt_input.append("")
     return prompt_input
 
   def __func_clean_up(gpt_response, prompt=""):
@@ -1938,7 +1989,9 @@ def run_gpt_prompt_new_decomp_schedule(persona,
   gpt_param = {"engine": "text-davinci-003", "max_tokens": 1000,
                "temperature": 0, "top_p": 1, "stream": False,
                "frequency_penalty": 0, "presence_penalty": 0, "stop": None}
-  prompt_template = "persona/prompt_template/v2/new_decomp_schedule_v1.txt"
+  prompt_template = ("persona/prompt_template/v2/new_decomp_schedule_v2.txt"
+                     if chat_replan_fix_enabled()
+                     else "persona/prompt_template/v2/new_decomp_schedule_v1.txt")
   prompt_input = create_prompt_input(persona,
                                      main_act_dur,
                                      truncated_act_dur,
@@ -4092,3 +4145,134 @@ Document text:"""
 
   doc_type = "letter" if "letter" in act_description.lower() else "document"
   return f"[{name}'s {doc_type} - content generation unavailable]"
+
+
+def pin_commitments_enabled():
+  """Commitment pinning (fix 4) is on unless GA_PIN_COMMITMENTS=0 or the
+  legacy chat-replan switch is set."""
+  return (os.environ.get("GA_PIN_COMMITMENTS", "1") != "0"
+          and os.environ.get("GA_CHAT_REPLAN_LEGACY", "0") != "1")
+
+
+_COMMIT_RE = re.compile(
+  r'^\W*(\d{1,2})(?::(\d{2}))?\s*([ap])?\.?m?\.?\s*\|\s*(\d{1,4})\s*(?:min\w*)?\s*\|\s*(.+?)\s*$',
+  re.I)
+
+
+_NUM = r"(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)"
+_TIME_CUE = re.compile(
+  r"\b\d{1,2}:\d{2}\b|\b\d{1,2}\s*(?:a\.?m|p\.?m|o'?clock)\b|"
+  r"\b" + _NUM + r"\s*(?:o'?clock|a\.?m|p\.?m)\b|"
+  r"\bbetween\s+(?:\d{1,2}|" + _NUM + r")\b|\bat\s+(?:\d{1,2}|" + _NUM + r")\b|"
+  r"\b(?:noon|midnight|tonight|this (?:evening|afternoon))\b", re.I)
+
+
+def has_time_cue(text):
+  """Cheap gate: a commitment needs an explicit time of day in the chat."""
+  return bool(_TIME_CUE.search(str(text)))
+
+
+_WORDS = ["twelve", "one", "two", "three", "four", "five", "six", "seven",
+          "eight", "nine", "ten", "eleven"]
+
+
+def hour_in_text(start_min, text):
+  """True if the chat itself mentions the pinned hour (digit or number word,
+  12h or 24h). Small models invent a default like 17:00 otherwise."""
+  h24 = start_min // 60
+  h12 = h24 % 12 or 12
+  t = str(text).lower()
+  pats = [rf"\b{h12}\b", rf"\b{h24}\b", rf"\b{_WORDS[h12 % 12]}\b"]
+  return any(re.search(p, t) for p in pats)
+
+
+def accept_commitment(start, now_min, transcript):
+  """Final gate for a parsed commitment. Returns the (possibly PM-corrected)
+  start minute, or None to drop it."""
+  # a bare "five" is read as 05:00 by small models; if that is already past,
+  # the speaker meant the afternoon/evening
+  if start < now_min + 10 and start < 7 * 60:
+    start += 720
+  if start < now_min + 10 or start >= 1440 - 5:
+    return None
+  if not hour_in_text(start, transcript):
+    return None
+  return start
+
+
+def parse_commitments(text):
+  """Parse 'HH:MM | minutes | activity' lines into (start_min, dur, text).
+  Tolerates markdown bullets, am/pm, and NONE."""
+  out = []
+  for line in str(text).replace("*", "").splitlines():
+    line = re.sub(r"^\s*[-•]\s*", "", line)
+    m = _COMMIT_RE.match(line)
+    if not m:
+      continue
+    h = int(m.group(1)); mi = int(m.group(2) or 0)
+    ap = (m.group(3) or "").lower()
+    if ap == "p" and h < 12: h += 12
+    if ap == "a" and h == 12: h = 0
+    dur = int(m.group(4)); act = m.group(5).strip()
+    if not (0 <= h <= 23 and 0 <= mi <= 59 and 5 <= dur <= 600 and act):
+      continue
+    if act.upper() == "NONE":
+      continue
+    out.append((h * 60 + mi, dur, " ".join(act.replace("(", ",").replace(")", "").split())[:140]))
+  return out
+
+
+def pin_commitment(schedule, start_min, dur_min, text):
+  """Write [text, dur_min] into <schedule> ([[task, minutes], ...]) at the
+  absolute minute-of-day <start_min>. Items it overlaps are trimmed or split,
+  so the total length is unchanged. Returns a new list."""
+  total = sum(d for _, d in schedule)
+  start = max(0, min(start_min, total - 5))
+  end = min(start + dur_min, total)
+  out, t = [], 0
+  inserted = False
+  for task, d in schedule:
+    a, b = t, t + d
+    t = b
+    if b <= start or a >= end:
+      if a >= end and not inserted:
+        out.append([text, end - start]); inserted = True
+      out.append([task, d])
+      continue
+    if a < start:
+      out.append([task, start - a])
+    if not inserted:
+      out.append([text, end - start]); inserted = True
+    if b > end:
+      out.append([task, b - end])
+  if not inserted:
+    out.append([text, end - start])
+  return out
+
+
+def run_gpt_prompt_commitments(persona, transcript, test_input=None, verbose=False):
+  """Ask the LLM which same-day commitments <persona> made in a chat."""
+  def __func_clean_up(gpt_response, prompt=""):
+    return parse_commitments(gpt_response)
+
+  if not has_time_cue(transcript):
+    return []
+
+  def __func_validate(gpt_response, prompt=""):
+    t = str(gpt_response).strip()
+    if not t: return False
+    if t.upper().strip(". ").endswith("NONE") and "|" not in t: return True
+    return bool(parse_commitments(t))
+
+  prompt_input = test_input or [
+    persona.scratch.name,
+    persona.scratch.curr_time.strftime("%A %B %d, %I:%M %p"),
+    transcript[-1800:]]
+  prompt = generate_prompt(prompt_input, "persona/prompt_template/v2/commitment_extract_v1.txt")
+  gpt_param = {"engine": "text-davinci-002", "max_tokens": 120,
+               "temperature": 0, "top_p": 1, "stream": False,
+               "frequency_penalty": 0, "presence_penalty": 0, "stop": None}
+  output = safe_generate_response(prompt, gpt_param, 3, [],
+                                  __func_validate, __func_clean_up,
+                                  model_hint="planning")
+  return output

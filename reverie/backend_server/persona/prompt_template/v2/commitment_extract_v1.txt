@@ -1,0 +1,20 @@
+commitment_extract_v1.txt
+
+Variables:
+!<INPUT 0>! -- Persona name
+!<INPUT 1>! -- Current time (e.g. "Tuesday February 14, 09:12 AM")
+!<INPUT 2>! -- Conversation transcript
+
+<commentblockmarker>###</commentblockmarker>
+Current time: !<INPUT 1>!
+
+Conversation:
+!<INPUT 2>!
+
+Did !<INPUT 0>! agree to be somewhere or do something at a specific time LATER TODAY (for example "I'll stop by between five and seven")? Only count promises that !<INPUT 0>! themself made or accepted, with a clear time of day.
+
+Answer with one line per commitment, in exactly this format:
+HH:MM | duration in minutes | what !<INPUT 0>! will do, including the place
+Use 24-hour time (so 5 PM is 17:00; a bare "five" for a party, dinner or visit means the afternoon or evening, not 05:00). If a time window was given, use its start and its length. If there is no such commitment, answer exactly: NONE
+
+Answer:

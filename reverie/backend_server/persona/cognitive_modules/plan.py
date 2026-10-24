@@ -1002,7 +1002,7 @@ def generate_decide_to_react(init_persona, target_persona, retrieved):
   return run_gpt_prompt_decide_to_react(init_persona, target_persona, retrieved)[0]
 
 
-def generate_new_decomp_schedule(persona, inserted_act, inserted_act_dur,  start_hour, end_hour): 
+def generate_new_decomp_schedule(persona, inserted_act, inserted_act_dur,  start_hour, end_hour, convo_note=None): 
   # Step 1: Setting up the core variables for the function. 
   # <p> is the persona whose schedule we are editing right now. 
   p = persona
@@ -1103,7 +1103,17 @@ def generate_new_decomp_schedule(persona, inserted_act, inserted_act_dur,  start
   if "(" in truncated_act_dur[-1][0]: 
     # FIX: wrap a CLEANED insert — never re-wrap wrapped text. Cap length
     # so a chatty LLM can't smuggle a novel in here either.
-    cleaned_insert = _scrub(inserted_act)[:80]
+    if chat_replan_fix_enabled():
+      # Keep what the chat was ABOUT (times, places, promises). The old
+      # scrub cut at the first "(" and capped at 80 chars, so
+      # "...Valentine's Day party at Hobbs Cafe from 5:00 to 7:00..." reached
+      # the replan as "...discussing Isabella's Valenti". Nested parens are
+      # flattened (one paren group max downstream), 110 chars keeps the
+      # wrapped entry under _clean_action_text's 200-char cap.
+      cleaned_insert = " ".join(
+          str(inserted_act).replace("(", ",").replace(")", "").split())[:110]
+    else:
+      cleaned_insert = _scrub(inserted_act)[:80]
     inserted_act = prev_head[:80] + f" ({cleaned_insert})"
 
   # To do inserted_act_dur+1 below is an important decision but I'm not sure
@@ -1122,7 +1132,8 @@ def generate_new_decomp_schedule(persona, inserted_act, inserted_act_dur,  start
                                             start_time_hour,
                                             end_time_hour,
                                             inserted_act,
-                                            inserted_act_dur)[0]
+                                            inserted_act_dur,
+                                            convo_note=convo_note)[0]
 
 
 ##############################################################################
@@ -1866,12 +1877,33 @@ def _create_react(persona, inserted_act, inserted_act_dur,
     dur_sum += dur
     count += 1
 
-  ret = generate_new_decomp_schedule(p, inserted_act, inserted_act_dur,
-                                       start_hour, end_hour)
-  # FIX A (duration sanity): LLM decomp output may exceed the parent block.
-  # Clamp the spliced block to the intended reaction duration so a chat or
-  # nap reaction can't inflate into a multi-hour freeze.
-  ret = clamp_subtask_durations(ret, parent_dur=inserted_act_dur)
+  _fix = chat_replan_fix_enabled()
+  ret = generate_new_decomp_schedule(
+      p, inserted_act, inserted_act_dur, start_hour, end_hour,
+      convo_note=(inserted_act if (_fix and chatting_with) else None))
+  if _fix:
+    # FIX A (duration sanity), corrected: cap absurd subtasks, but keep the
+    # spliced window the SAME LENGTH as the slice it replaces. The old
+    # clamp(parent_dur=inserted_act_dur) rescaled the whole multi-hour
+    # window down to the chat's few minutes, so every chat deleted ~40 min
+    # of schedule and slid the rest of the day earlier (agents ate dinner
+    # at 10 AM and slept by 3 PM; they missed the 5 PM Valentine's party).
+    _slice = p.scratch.f_daily_schedule[start_index:end_index]
+    _span = sum(int(d) for _, d in _slice)
+    _llm_total = sum(int(d) for _, d in ret)
+    ret = fit_schedule_to_span(clamp_subtask_durations(ret), _span)
+  else:
+    _slice = p.scratch.f_daily_schedule[start_index:end_index]
+    _span = sum(int(d) for _, d in _slice)
+    _llm_total = sum(int(d) for _, d in ret)
+    ret = clamp_subtask_durations(ret, parent_dur=inserted_act_dur)
+  # A/B telemetry: how much of the replanned window survived the splice.
+  print(f"[ChatReplan] {p.name} mode={'fix' if _fix else 'legacy'} "
+        f"chat={inserted_act_dur}m window={start_hour}-{end_hour}h "
+        f"slice_before={_span}m llm_total={_llm_total}m "
+        f"slice_after={sum(int(d) for _, d in ret)}m "
+        f"sched_total={sum(int(d) for _, d in p.scratch.f_daily_schedule) - _span + sum(int(d) for _, d in ret)}m",
+        flush=True)
   p.scratch.f_daily_schedule[start_index:end_index] = ret
   p.scratch.add_new_action(act_address,
                            inserted_act_dur,
@@ -2142,6 +2174,7 @@ def plan(persona, maze, personas, new_day, retrieved):
   # If the persona is not chatting with anyone, we clean up any of the 
   # chat-related states here. 
   if persona.scratch.act_event[1] != "chat with":
+    persona.scratch.stash_unreflected_chat()
     persona.scratch.chatting_with = None
     persona.scratch.chat = None
     persona.scratch.chatting_end_time = None

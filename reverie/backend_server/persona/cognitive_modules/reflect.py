@@ -4,6 +4,7 @@ Author: Joon Sung Park (joonspk@stanford.edu)
 File: reflect.py
 Description: This defines the "Reflect" module for generative agents. 
 """
+import os
 import sys
 sys.path.append('../../')
 
@@ -251,6 +252,96 @@ def reset_reflection_counter(persona):
   persona.scratch.importance_ele_n = 0
 
 
+def _reflect_on_convo(persona, chatting_with, chat_rows):
+  """Write the planning thought + memo for a just-finished conversation."""
+  all_utt = ""
+  if chat_rows: 
+    for row in chat_rows:  
+      all_utt += f"{row[0]}: {row[1]}\n"
+
+  # planning_thought = generate_planning_thought_on_convo(persona, all_utt)
+  # print ("init planning: aosdhfpaoisdh90m     ::", f"For {persona.scratch.name}'s planning: {planning_thought}")
+  # planning_thought = generate_planning_thought_on_convo(target_persona, all_utt)
+  # print ("target planning: aosdhfpaodish90m     ::", f"For {target_persona.scratch.name}'s planning: {planning_thought}")
+
+  # memo_thought = generate_memo_on_convo(persona, all_utt)
+  # print ("init memo: aosdhfpaoisdh90m     ::", f"For {persona.scratch.name} {memo_thought}")
+  # memo_thought = generate_memo_on_convo(target_persona, all_utt)
+  # print ("target memo: aosdhfpsaoish90m     ::", f"For {target_persona.scratch.name} {memo_thought}")
+  
+
+  # make sure you set the fillings as well
+
+  # print (persona.a_mem.get_last_chat(chatting_with).node_id)
+
+  _last_chat = persona.a_mem.get_last_chat(chatting_with)
+  # get_last_chat returns False when no chat history exists with the
+  # partner — can happen when scratch.chatting_with is stale (the convo
+  # partner never stored a chat, e.g. interrupted mid-save). Build the
+  # evidence list from what exists instead of crashing on .node_id.
+  if _last_chat:
+    evidence = [_last_chat.node_id]
+  else:
+    # no chat with the partner: fall back to the most recent memory
+    # nodes as evidence for the thought (newest first by created)
+    _recent = sorted(persona.a_mem.id_to_node.items(),
+                     key=lambda kv: kv[1].created, reverse=True)[:2]
+    evidence = [nid for nid, _ in _recent]
+
+  planning_thought = generate_planning_thought_on_convo(persona, all_utt)
+  planning_thought = f"For {persona.scratch.name}'s planning: {planning_thought}"
+
+  created = persona.scratch.curr_time
+  expiration = persona.scratch.curr_time + datetime.timedelta(days=30)
+  s, p, o = generate_action_event_triple(planning_thought, persona)
+  keywords = set([s, p, o])
+  thought_poignancy = generate_poig_score(persona, "thought", planning_thought)
+  thought_embedding_pair = (planning_thought, get_embedding(planning_thought))
+
+  persona.a_mem.add_thought(created, expiration, s, p, o, 
+                            planning_thought, keywords, thought_poignancy, 
+                            thought_embedding_pair, evidence)
+
+
+
+  memo_thought = generate_memo_on_convo(persona, all_utt)
+  memo_thought = f"{persona.scratch.name} {memo_thought}"
+
+  created = persona.scratch.curr_time
+  expiration = persona.scratch.curr_time + datetime.timedelta(days=30)
+  s, p, o = generate_action_event_triple(memo_thought, persona)
+  keywords = set([s, p, o])
+  thought_poignancy = generate_poig_score(persona, "thought", memo_thought)
+  thought_embedding_pair = (memo_thought, get_embedding(memo_thought))
+
+  persona.a_mem.add_thought(created, expiration, s, p, o, 
+                            memo_thought, keywords, thought_poignancy, 
+                            thought_embedding_pair, evidence)
+
+  if pin_commitments_enabled():
+    _pin_chat_commitments(persona, all_utt)
+
+
+def _pin_chat_commitments(persona, transcript):
+  """Pin promises made in a chat (e.g. 'I'll be there 5-7 PM') into
+  f_daily_schedule at their absolute time, keeping the day at 1440 min."""
+  if not transcript.strip():
+    return
+  try:
+    now = persona.scratch.curr_time
+    now_min = now.hour * 60 + now.minute
+    for start, dur, act in run_gpt_prompt_commitments(persona, transcript):
+      start = accept_commitment(start, now_min, transcript)
+      if start is None:
+        continue
+      sched = persona.scratch.f_daily_schedule
+      persona.scratch.f_daily_schedule = pin_commitment(sched, start, dur, act)
+      print(f"[PinCommit] {persona.scratch.name} {start//60:02d}:{start%60:02d} "
+            f"{dur}m {act} total={sum(d for _, d in persona.scratch.f_daily_schedule)}m")
+  except Exception as e:
+    print(f"[PinCommit] {persona.scratch.name} skipped: {e!r}")
+
+
 def reflect(persona):
   """
   The main reflection module for the persona. We first check if the trigger 
@@ -269,73 +360,31 @@ def reflect(persona):
 
 
   # print (persona.scratch.name, "al;sdhfjlsad", persona.scratch.chatting_end_time)
-  if persona.scratch.chatting_end_time: 
-    # print("DEBUG", persona.scratch.curr_time + datetime.timedelta(0,10))
-    if persona.scratch.curr_time + datetime.timedelta(0,10) == persona.scratch.chatting_end_time: 
-      # print ("KABOOOOOMMMMMMM")
-      all_utt = ""
-      if persona.scratch.chat: 
-        for row in persona.scratch.chat:  
-          all_utt += f"{row[0]}: {row[1]}\n"
+  if os.environ.get("GA_CHAT_REPLAN_LEGACY", "0") == "1":
+    # legacy: only the single step where curr_time + 10s == chatting_end_time
+    if (persona.scratch.chatting_end_time and persona.scratch.curr_time
+        + datetime.timedelta(0, 10) == persona.scratch.chatting_end_time):
+      _reflect_on_convo(persona, persona.scratch.chatting_with,
+                        persona.scratch.chat)
+    return
 
-      # planning_thought = generate_planning_thought_on_convo(persona, all_utt)
-      # print ("init planning: aosdhfpaoisdh90m     ::", f"For {persona.scratch.name}'s planning: {planning_thought}")
-      # planning_thought = generate_planning_thought_on_convo(target_persona, all_utt)
-      # print ("target planning: aosdhfpaodish90m     ::", f"For {target_persona.scratch.name}'s planning: {planning_thought}")
+  # A conversation that was cleared before its exact end tick (clock jump,
+  # next action started first) was stashed by Scratch.stash_unreflected_chat.
+  pending = getattr(persona.scratch, "_pending_convo_reflect", None)
+  if pending:
+    persona.scratch._pending_convo_reflect = None
+    persona.scratch._reflected_chat_end = pending[2]
+    _reflect_on_convo(persona, pending[0], pending[1])
 
-      # memo_thought = generate_memo_on_convo(persona, all_utt)
-      # print ("init memo: aosdhfpaoisdh90m     ::", f"For {persona.scratch.name} {memo_thought}")
-      # memo_thought = generate_memo_on_convo(target_persona, all_utt)
-      # print ("target memo: aosdhfpsaoish90m     ::", f"For {target_persona.scratch.name} {memo_thought}")
-      
+  # Live chat: reflect once, as soon as it is (about to be) over.
+  end = persona.scratch.chatting_end_time
+  if (end and persona.scratch.chat
+      and persona.scratch.curr_time + datetime.timedelta(0, 10) >= end
+      and getattr(persona.scratch, "_reflected_chat_end", None) != end):
+    persona.scratch._reflected_chat_end = end
+    _reflect_on_convo(persona, persona.scratch.chatting_with,
+                      persona.scratch.chat)
 
-      # make sure you set the fillings as well
-
-      # print (persona.a_mem.get_last_chat(persona.scratch.chatting_with).node_id)
-
-      _last_chat = persona.a_mem.get_last_chat(persona.scratch.chatting_with)
-      # get_last_chat returns False when no chat history exists with the
-      # partner — can happen when scratch.chatting_with is stale (the convo
-      # partner never stored a chat, e.g. interrupted mid-save). Build the
-      # evidence list from what exists instead of crashing on .node_id.
-      if _last_chat:
-        evidence = [_last_chat.node_id]
-      else:
-        # no chat with the partner: fall back to the most recent memory
-        # nodes as evidence for the thought (newest first by created)
-        _recent = sorted(persona.a_mem.id_to_node.items(),
-                         key=lambda kv: kv[1].created, reverse=True)[:2]
-        evidence = [nid for nid, _ in _recent]
-
-      planning_thought = generate_planning_thought_on_convo(persona, all_utt)
-      planning_thought = f"For {persona.scratch.name}'s planning: {planning_thought}"
-
-      created = persona.scratch.curr_time
-      expiration = persona.scratch.curr_time + datetime.timedelta(days=30)
-      s, p, o = generate_action_event_triple(planning_thought, persona)
-      keywords = set([s, p, o])
-      thought_poignancy = generate_poig_score(persona, "thought", planning_thought)
-      thought_embedding_pair = (planning_thought, get_embedding(planning_thought))
-
-      persona.a_mem.add_thought(created, expiration, s, p, o, 
-                                planning_thought, keywords, thought_poignancy, 
-                                thought_embedding_pair, evidence)
-
-
-
-      memo_thought = generate_memo_on_convo(persona, all_utt)
-      memo_thought = f"{persona.scratch.name} {memo_thought}"
-
-      created = persona.scratch.curr_time
-      expiration = persona.scratch.curr_time + datetime.timedelta(days=30)
-      s, p, o = generate_action_event_triple(memo_thought, persona)
-      keywords = set([s, p, o])
-      thought_poignancy = generate_poig_score(persona, "thought", memo_thought)
-      thought_embedding_pair = (memo_thought, get_embedding(memo_thought))
-
-      persona.a_mem.add_thought(created, expiration, s, p, o, 
-                                memo_thought, keywords, thought_poignancy, 
-                                thought_embedding_pair, evidence)
 
 
 

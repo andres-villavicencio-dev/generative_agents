@@ -1,0 +1,13 @@
+Review of Error Handling and Exception Documentation
+
+I’ve been reviewing the error-handling and exception documentation for the new mobile app, with a focus on clarity, completeness, and practical usability. The documentation covers the main exception categories, but I noticed a few gaps. Some error messages are too generic and do not clearly indicate the root cause or the steps required to resolve them.
+
+The exception documentation is also inconsistent. One section describes an exception as a “runtime error,” while another refers to it as a “user error.” This creates confusion when developers encounter the same exception in different contexts. I recommend standardizing the terminology and making the exception hierarchy explicit.
+
+The error-handling section is also incomplete. It does not cover:
+Exceptions raised during development and testing  
+Logging and debugging procedures  
+Rollback and recovery procedures  
+Security exceptions and their handling  
+
+These missing pieces could...

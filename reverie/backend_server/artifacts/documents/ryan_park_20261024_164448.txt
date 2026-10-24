@@ -1,0 +1,7 @@
+Reviewing Test Setup and Teardown Code
+
+I’ve been reviewing the test setup and teardown code for the new mobile app, and I’m starting to see how much effort has gone into it. The test runner is clean, but the teardown logic is still a bit fragile. I’ll need to verify that it properly cleans up resources, resets state, and handles edge cases without leaving stale references.
+
+The setup phase has improved significantly. It now initializes the mock server, loads the test fixtures, and sets up the required dependencies in a predictable order. This makes it easier to isolate failures and compare results across test runs. I’m also adding a simple assertion to confirm that the initial state matches the expected baseline.
+
+For the teardown, I’ve added a cleanup hook that checks whether the mock server is still running and stops it if it isn’t. I’ll also add a timeout to prevent the teardown from hanging if the test environment is slow. The code is readable, but I should consider adding a un...

@@ -1,0 +1,7 @@
+Code and Documentation Review Log — Tuesday, February 14
+
+I reviewed the test execution order and error-handling logic for the new mobile app today. The test suite currently runs in the order in which tests are defined, which can lead to flaky behavior when dependencies change. I added explicit ordering assertions and wrapped the most critical paths in a retry mechanism with a clear timeout.
+
+The error-handling logic also needs attention. When a test fails, the current implementation logs the failure but does not always provide enough context for the developer to reproduce the issue. I added a structured failure summary that includes the test name, expected behavior, actual result, stack trace, and environment details. I also added a “fail fast” flag so that the first failure stops the entire suite rather than continuing through unrelated tests.
+
+I also reviewed the documentation. The README describes the app’s goals and features, but it does not explain how to run the test suite, w...

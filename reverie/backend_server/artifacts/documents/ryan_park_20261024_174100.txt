@@ -1,0 +1,26 @@
+Code Review and Documentation Checklist
+
+Project: New Mobile App  
+Reviewer: Ryan Park  
+Date: Tuesday, February 14
+
+Code Review
+[ ] Verify that all requirements are implemented in the code
+[ ] Check that every requirement has a corresponding code implementation
+[ ] Confirm that the code follows the project’s coding standards
+[ ] Review edge cases and error handling
+[ ] Test critical user flows and data validation
+[ ] Verify that the code is readable and maintainable
+[ ] Update any outdated or incomplete documentation
+[ ] Document assumptions, dependencies, and known limitations
+
+Documentation Review
+[ ] Confirm that the documentation accurately describes the code
+[ ] Check that API documentation is complete and accurate
+[ ] Verify that user-facing documentation is clear and accessible
+[ ] Update version notes and release changelog
+[ ] Ensure documentation matches the current codebase
+[ ] Document any pending technical decisions
+
+Next Steps
+[ ] Re-test the updated code against the r...

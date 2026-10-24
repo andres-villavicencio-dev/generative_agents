@@ -1,0 +1,10 @@
+Review and Documentation Checklist – Mobile App
+
+To: Development Team  
+From: Ryan Park  
+
+I’ve reviewed the new mobile app’s code and documentation today. My focus is ensuring that the test cases cover the relevant user scenarios, particularly the main navigation flow, data entry, and checkout process. I’m checking that the documentation clearly explains the expected user behavior and that the code reflects those requirements.
+
+I’ve identified a few gaps in the current test coverage. The login flow is covered, but the password recovery process is missing. The checkout flow is also incomplete, so I need to add a test case that verifies the final payment step. The documentation should be updated to reflect these changes. I need to clarify which fields are required, what happens when a user skips a step, and how the system handles errors. The current documentation is too brief for the new features.
+
+I’ll prioritize the missing recovery and checkout tests. I’ll also review the error-ha...

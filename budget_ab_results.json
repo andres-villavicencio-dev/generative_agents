@@ -1,0 +1,60 @@
+{
+ "budgetctl": {
+  "retries_exhausted": 0,
+  "tracebacks": 0,
+  "calls": 870,
+  "decode_tokens": 309313,
+  "think_flag": {
+   "False": 728,
+   "True": 142
+  },
+  "length_stops": 30,
+  "validity": {
+   "run_gpt_prompt_action_location": "297/318",
+   "generate_one_utterance": "180/185"
+  },
+  "top_tokens": {
+   "run_gpt_prompt_new_decomp_schedule": 108179,
+   "generate_one_utterance": 44224,
+   "run_gpt_prompt_insight_and_guidance": 42307,
+   "run_gpt_prompt_agent_chat_summarize_relationship": 34420,
+   "run_gpt_prompt_action_location": 25744,
+   "run_gpt_prompt_task_decomp": 21120
+  },
+  "_boot": 1792807958.0159519,
+  "_stop": 1792811029.4921627,
+  "fresh_steps": 414,
+  "wall_s": 2701,
+  "steps_per_min": 9.2,
+  "tok_per_fresh_step": 747.1
+ },
+ "budgetexp": {
+  "retries_exhausted": 0,
+  "tracebacks": 0,
+  "calls": 1323,
+  "decode_tokens": 273373,
+  "think_flag": {
+   "False": 1266,
+   "True": 57
+  },
+  "length_stops": 26,
+  "validity": {
+   "run_gpt_prompt_action_location": "458/474",
+   "generate_one_utterance": "288/288"
+  },
+  "top_tokens": {
+   "run_gpt_prompt_new_decomp_schedule": 115571,
+   "run_gpt_prompt_insight_and_guidance": 49623,
+   "run_gpt_prompt_task_decomp": 39105,
+   "generate_one_utterance": 14254,
+   "run_gpt_prompt_focal_pt": 11590,
+   "none": 8806
+  },
+  "_boot": 1792811032.99136,
+  "_stop": 1792814375.1957548,
+  "fresh_steps": 702,
+  "wall_s": 2701,
+  "steps_per_min": 15.6,
+  "tok_per_fresh_step": 389.4
+ }
+}

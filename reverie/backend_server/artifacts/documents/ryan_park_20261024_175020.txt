@@ -1,0 +1,11 @@
+Document: Review of the Mobile App Database Schema and Related Documentation
+
+Date: Tuesday, February 14  
+Prepared by: Ryan Park  
+Status: In Progress
+
+I have reviewed the current database schema and supporting documentation for the new mobile app. The structure is generally sound, and the core entity relationships are clear. However, a few gaps remain that could affect testing coverage and developer onboarding.
+
+The schema documents the main tables and their relationships, but it does not clearly describe the expected data types, constraints, or default values for fields used in user-facing queries. One particularly important area is the handling of user sessions and temporary tokens. The current documentation assumes that session identifiers are unique and immutable, but the schema does not explicitly state whether a session can be invalidated or expired. This could lead to inconsistent behavior if a user logs out, uses a different device, or encounters a network timeout.
+
+I also...

@@ -1,0 +1,27 @@
+Code Review Log: Supporting Failing Unit Tests
+
+Date: Tuesday, February 14  
+Reviewer: Ryan Park  
+Status: In Progress
+
+Review Summary
+
+The failing tests are primarily failing due to incomplete or incorrect assertions in the new mobile app’s test suite. The changes that support the failing tests have been reviewed, and the root causes have been identified.
+
+Changes Made
+
+1. Updated test assertions to match the expected behavior of the new mobile app.
+2. Added error handling for edge cases that previously caused test failures.
+3. Refactored test setup to improve readability and reduce duplication.
+4. Improved documentation for the affected API endpoints and configuration options.
+
+Remaining Issues
+
+The following items require further attention:
+One test still fails after the initial assertion update.
+A configuration option is not being validated in the test suite.
+Documentation for the new mobile app’s API is incomplete.
+
+Next Steps
+
+1. Re-run the failing tests and confirm the failur...

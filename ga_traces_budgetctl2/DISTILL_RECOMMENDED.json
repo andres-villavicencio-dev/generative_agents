@@ -1,0 +1,7 @@
+{
+  "t": 1792817783.6341598,
+  "kind": "spatial",
+  "lowconf_share": 0.633,
+  "window": 2000,
+  "message": "low-confidence density crossed threshold \u2014 harvest teacher labels (cloud-jev) and re-distill laya"
+}

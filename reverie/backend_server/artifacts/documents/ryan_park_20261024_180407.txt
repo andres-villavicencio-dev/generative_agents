@@ -1,0 +1,20 @@
+Review of Logging and Monitoring Documentation
+
+Date: Tuesday, February 14  
+To: Development Team  
+From: Ryan Park  
+
+Purpose:  
+I am reviewing the logging and monitoring documentation for the new mobile app to ensure it supports our testing and deployment workflows.
+
+Findings:  
+The documentation is clear and readable, but several areas need attention. Logging levels should be standardized, and the monitoring section lacks sufficient context for how alerts are triggered. The current approach is functional, but it does not fully support our testing and debugging needs.
+
+Recommendations:  
+1. Add a section explaining how log levels map to application events.  
+2. Include a brief guide for interpreting monitoring dashboards and alert thresholds.  
+3. Update the documentation with a realistic timeline for the new mobile app’s testing and deployment.  
+4. Add a section for common issues and their expected troubleshooting steps.
+
+Conclusion:  
+The documentation is a solid foundation, bu...

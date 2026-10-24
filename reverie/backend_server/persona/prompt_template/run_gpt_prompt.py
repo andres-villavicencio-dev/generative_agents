@@ -164,6 +164,12 @@ def fit_schedule_to_span(schedule, span_min, step=5):
   if not schedule or not span_min or span_min <= 0:
     return schedule
   items = [[a, max(step, int(d))] for a, d in schedule]
+  # more items than the window has steps: the per-item floor would overshoot,
+  # so drop the shortest (earliest on ties) until they fit
+  while len(items) > 1 and len(items) * step > span_min:
+    items.pop(min(range(len(items)), key=lambda i: (items[i][1], i)))
+  if len(items) == 1 and items[0][1] != span_min:
+    return [[items[0][0], int(span_min)]]
   total = sum(d for _, d in items)
   if total == span_min:
     return items

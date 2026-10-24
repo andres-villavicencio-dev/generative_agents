@@ -37,6 +37,13 @@ def test_fit_preserves_span(span):
     assert len(out) == 23
 
 
+@pytest.mark.parametrize("n,span", [(23, 60), (12, 50), (8, 33), (3, 7), (5, 5), (4, 3)])
+def test_fit_never_overshoots_small_span(n, span):
+    out = rgp.fit_schedule_to_span(_window(n, 10), span)
+    assert sum(d for _, d in out) == span
+    assert all(d >= min(5, span) for _, d in out)
+
+
 def test_fit_noop_when_already_exact():
     sched = _window(4, 15)
     assert rgp.fit_schedule_to_span(sched, 60) == sched

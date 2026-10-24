@@ -348,6 +348,61 @@ def _call_site():
     return None
 
 
+# Family budget classes (Oct 24 2026, measured on the dilate_1 call capture:
+# think=True lanes = 12% of calls but 60% of decode tokens; 103 length-stopped
+# runaways burned 634k tokens = 45% of ALL decode — a location runaway costs
+# 6144+ tokens to answer a 14-token question). SMALL = closed-form families
+# whose legit answers are < ~120 tokens: thinking is never requested, and
+# num_predict is capped at 512. All other families keep their resolved think
+# but the think-mult headroom is capped at 3072 (longest legit answer shape
+# measured ~1334). Gate GA_FAMILY_BUDGET (default on; control arms set =0).
+_FAMILY_BUDGET_SMALL = frozenset({
+    "run_gpt_prompt_action_location", "run_gpt_prompt_action_sector",
+    "run_gpt_prompt_action_arena", "run_gpt_prompt_action_game_object",
+    "run_gpt_prompt_event_triple", "run_gpt_prompt_act_obj_event_triple",
+    "run_gpt_prompt_act_obj_desc", "run_gpt_prompt_chat_poignancy",
+    "run_gpt_prompt_event_poignancy", "run_gpt_prompt_wake_up_hour",
+    "run_gpt_prompt_pronunciatio", "run_gpt_prompt_memo_on_convo",
+    "run_gpt_prompt_planning_thought_on_convo",
+    "run_gpt_prompt_agent_chat_summarize_relationship",
+    "run_gpt_prompt_summarize_conversation", "run_gpt_prompt_create_artifact",
+    "run_gpt_prompt_artifact_reaction", "generate_one_utterance",
+})
+
+
+# Cycle 2 (Oct 24 2026): MEDIUM structured families -> never think, per-family
+# cap (tokens) sized from dilate_1 think=False answer p99 + headroom.
+_FAMILY_BUDGET_NOTHINK = {
+    "run_gpt_prompt_new_decomp_schedule": 1792,
+    "run_gpt_prompt_task_decomp": 1024,
+    "run_gpt_prompt_insight_and_guidance": 512,
+    "run_gpt_prompt_focal_pt": 512,
+    "run_gpt_prompt_daily_plan": 512,
+    "run_gpt_prompt_typewriter": 1024,
+    None: 1792,  # unattributed (VilleOS work sessions, broad plans)
+}
+
+
+def _apply_family_budget(family, think, num_predict):
+    """Per-family think/num_predict clamp. Returns (think, num_predict)."""
+    if os.environ.get("GA_FAMILY_BUDGET", "1") != "1":
+        return think, num_predict
+    if family in _FAMILY_BUDGET_SMALL:
+        return False, min(num_predict, 512)
+    # MEDIUM structured families (Oct 24 cycle 2): v2's entire SFT corpus is
+    # think:false teacher output — its thinking is off-distribution and
+    # measured as the top remaining token burner (decomp_schedule 115k
+    # tok/45min WITH the 3072 cap). Caps sized from dilate_1 think=False
+    # answer p99 + headroom (schedule 1567->1792, decomp 884->1024,
+    # insight 433->512, focal 138->512, daily_plan 231->512, typewriter
+    # 1024, unattributed sessions 1269->1792). Gate GA_MEDIUM_NOTHINK.
+    if os.environ.get("GA_MEDIUM_NOTHINK", "1") == "1":
+        cap = _FAMILY_BUDGET_NOTHINK.get(family)
+        if cap is not None:
+            return False, min(num_predict, cap)
+    return think, min(num_predict, 3072)
+
+
 def _trace_call(request_body, result, latency_s, attempt):
     if os.environ.get("GA_CALL_TRACE", "1") != "1":
         return
@@ -434,6 +489,11 @@ def _ollama_generate(prompt, retries=5, free_form=False, model_hint=None):
         num_predict = _base_np * 3
     else:
         num_predict = _base_np
+    # Family budget classes (see _apply_family_budget): SMALL closed-form
+    # families never think and cap at 512; other families cap the think-mult
+    # headroom at 3072. Measured effect basis: dilate_1 capture, Oct 24 2026.
+    resolved_think, num_predict = _apply_family_budget(
+        _call_site(), resolved_think, num_predict)
     request_body = {
         "model": model,
         "stream": False,

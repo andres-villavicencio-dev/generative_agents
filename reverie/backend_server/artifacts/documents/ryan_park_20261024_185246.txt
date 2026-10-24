@@ -1,0 +1,7 @@
+Review Notes: Mobile App Security and Documentation
+
+I reviewed the latest code and documentation for the new mobile app, focusing on potential security risks and unauthorized access. The authentication flow is solid, but I noticed a few areas worth addressing.
+
+The session token is stored in memory rather than a secure storage layer, which could be vulnerable if the app is compromised. I also found that the API key is exposed in the source code and documentation. These are non-critical issues, but they could be exploited in a coordinated attack. I recommend moving the token to a secure, encrypted storage mechanism and removing the API key from the public repository.
+
+The documentation is clear and helpful, but it needs a few updates. The security section should explicitly state that the app does not handle sensitive data without encryption, and the authentication section should explain how sessions are invalidated. I also want to add a section on how the app handles unexpected acce...

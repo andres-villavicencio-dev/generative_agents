@@ -1,0 +1,7 @@
+Review Notes: Mobile App Performance and Documentation
+
+I’ve reviewed the new mobile app’s code and documentation, with a focus on identifying performance risks. The most pressing concern is the heavy object caching layer. It appears to be responsible for a large portion of the bundle size, which could impact load times on slower devices. I recommend evaluating whether the cached objects are truly reusable or if they should be refreshed on every request.
+
+The documentation is also incomplete. It describes the caching strategy but does not explain how the cache is invalidated, how stale data is handled, or what happens when the cache is exhausted. I need these details before the app can be considered production-ready.
+
+I’m also considering whether the caching logic should be refactored into a separate service. That would make the cache easier to test and document. If I do that, I’ll need to coordinate with the team to ensure the new code integrates without breaking the existing cachi...

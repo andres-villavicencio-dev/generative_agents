@@ -1,60 +1,67 @@
 {
- "budgetctl": {
+ "budgetctl2": {
   "retries_exhausted": 0,
   "tracebacks": 0,
-  "calls": 870,
-  "decode_tokens": 309313,
+  "calls": 1414,
+  "decode_tokens": 236417,
   "think_flag": {
-   "False": 728,
-   "True": 142
+   "False": 1362,
+   "True": 52
   },
-  "length_stops": 30,
+  "length_stops": 18,
   "validity": {
-   "run_gpt_prompt_action_location": "297/318",
-   "generate_one_utterance": "180/185"
+   "run_gpt_prompt_action_location": "514/533",
+   "run_gpt_prompt_focal_pt": "18/21",
+   "run_gpt_prompt_insight_and_guidance": "51/52",
+   "generate_one_utterance": "317/317",
+   "run_gpt_prompt_task_decomp": "46/57",
+   "run_gpt_prompt_new_decomp_schedule": "69/79"
   },
   "top_tokens": {
-   "run_gpt_prompt_new_decomp_schedule": 108179,
-   "generate_one_utterance": 44224,
-   "run_gpt_prompt_insight_and_guidance": 42307,
-   "run_gpt_prompt_agent_chat_summarize_relationship": 34420,
-   "run_gpt_prompt_action_location": 25744,
-   "run_gpt_prompt_task_decomp": 21120
+   "run_gpt_prompt_new_decomp_schedule": 93027,
+   "run_gpt_prompt_task_decomp": 47207,
+   "run_gpt_prompt_insight_and_guidance": 23001,
+   "generate_one_utterance": 14309,
+   "run_gpt_prompt_focal_pt": 14175,
+   "run_gpt_prompt_typewriter": 12286
   },
-  "_boot": 1792807958.0159519,
-  "_stop": 1792811029.4921627,
-  "fresh_steps": 414,
+  "_boot": 1792815194.820087,
+  "_stop": 1792818326.3381925,
+  "fresh_steps": 781,
   "wall_s": 2701,
-  "steps_per_min": 9.2,
-  "tok_per_fresh_step": 747.1
+  "steps_per_min": 17.35,
+  "tok_per_fresh_step": 302.7
  },
- "budgetexp": {
+ "budgetexp2": {
   "retries_exhausted": 0,
   "tracebacks": 0,
-  "calls": 1323,
-  "decode_tokens": 273373,
+  "calls": 1676,
+  "decode_tokens": 190082,
   "think_flag": {
-   "False": 1266,
-   "True": 57
+   "False": 1676
   },
-  "length_stops": 26,
+  "length_stops": 4,
   "validity": {
-   "run_gpt_prompt_action_location": "458/474",
-   "generate_one_utterance": "288/288"
+   "run_gpt_prompt_focal_pt": "21/21",
+   "run_gpt_prompt_action_location": "601/618",
+   "run_gpt_prompt_insight_and_guidance": "63/63",
+   "generate_one_utterance": "407/408",
+   "run_gpt_prompt_task_decomp": "52/55",
+   "run_gpt_prompt_new_decomp_schedule": "85/86"
   },
   "top_tokens": {
-   "run_gpt_prompt_new_decomp_schedule": 115571,
-   "run_gpt_prompt_insight_and_guidance": 49623,
-   "run_gpt_prompt_task_decomp": 39105,
-   "generate_one_utterance": 14254,
-   "run_gpt_prompt_focal_pt": 11590,
-   "none": 8806
+   "run_gpt_prompt_new_decomp_schedule": 72166,
+   "run_gpt_prompt_task_decomp": 28712,
+   "generate_one_utterance": 18768,
+   "run_gpt_prompt_insight_and_guidance": 16701,
+   "none": 14301,
+   "run_gpt_prompt_action_location": 8681
   },
-  "_boot": 1792811032.99136,
-  "_stop": 1792814375.1957548,
-  "fresh_steps": 702,
+  "_boot": 1792818332.4527435,
+  "_stop": 1792821434.4213927,
+  "fresh_steps": 967,
   "wall_s": 2701,
-  "steps_per_min": 15.6,
-  "tok_per_fresh_step": 389.4
+  "steps_per_min": 21.48,
+  "tok_per_fresh_step": 196.6
  }
 }

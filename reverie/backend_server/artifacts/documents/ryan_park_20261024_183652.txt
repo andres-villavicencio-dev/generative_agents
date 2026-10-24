@@ -1,0 +1,9 @@
+Review Notes: Mobile App Performance and Scalability
+
+I’ve been reviewing the new mobile app’s code and documentation alongside Sam and Arthur, and I want to share a few observations before we move forward.
+
+The most important bottleneck is the current database query pattern. It performs adequately today, but the number of concurrent users is increasing. The current approach may become a scalability issue within a few weeks. I recommend replacing the query with a more efficient index and adding a read-through cache. If possible, we should also consider moving the most frequently accessed data to a database-backed cache.
+
+Documentation is also catching up with the code. The README and API reference are incomplete, and some configuration details are unclear. I’ve added a quick checklist to address these gaps, but I’d like to see the final documentation before we ship.
+
+I’m also considering whether to introduce a caching layer and a request queue. These changes could improve response t...

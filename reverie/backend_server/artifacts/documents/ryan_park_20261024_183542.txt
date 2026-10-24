@@ -1,0 +1,9 @@
+Review of Mobile App Code and Documentation
+
+I’ve been reviewing the new mobile app’s code and documentation today, focusing on how the system handles errors and edge cases. The architecture is solid, but I noticed a few gaps that could cause unexpected behavior in production.
+
+First, the error-handling logic for the user-authentication flow needs to be more explicit. Currently, the code assumes a successful response, but it should account for timeouts, invalid tokens, and network failures. I added a dedicated exception handler and a fallback that preserves the current session when the server is unavailable.
+
+Second, the edge-case documentation should clarify the expected behavior for empty inputs, malformed requests, and concurrent updates. The current README describes the normal workflow but omits what happens when the API returns a 400 or 500 status. I’ve updated the documentation to include these scenarios and added a short reference to the relevant unit tests.
+
+I also want to v...

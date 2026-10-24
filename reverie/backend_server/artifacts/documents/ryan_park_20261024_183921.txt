@@ -1,0 +1,7 @@
+Review Notes: Mobile App Refactoring and Documentation
+
+I’ve been reviewing the new mobile app’s code and documentation while balancing realistic deadlines with buffers for unexpected issues. The refactoring work is progressing, but a few areas still need attention.
+
+The codebase is becoming easier to maintain, but the current structure still creates friction for new contributors. I recommend consolidating related feature modules into a single logical unit, extracting reusable utilities, and removing redundant error-handling logic. This should reduce the cognitive load when developers work on the app and make future changes more predictable.
+
+Documentation is also a priority. The current README and feature descriptions are helpful, but they lack enough context for unfamiliar users. I’d add a concise setup guide, a quick-reference troubleshooting section, and a changelog that reflects recent updates. Clear documentation will help users and QA teams move faster without needing to ask ...

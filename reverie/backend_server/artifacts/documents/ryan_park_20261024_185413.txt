@@ -1,0 +1,15 @@
+Code Review and Documentation Checklist – February 14, 2025
+
+I’ve finished reviewing the new mobile app’s code and documentation. The review is complete, but I need to make sure every required scenario is covered and that the tests are actually passing.
+
+The main requirements are:
+User authentication and session management
+Profile editing and permissions
+Data import and export
+Search, filtering, and sorting
+Push notifications and in-app messaging
+Error handling and edge cases
+
+I’ve added unit tests for the core paths and integration tests for the critical workflows. The coverage is strong, but I should verify that the notification flow, permission prompts, and error states are explicitly tested. The documentation should also reflect the current architecture and clarify the expected behavior of each module.
+
+I’ll add a few missing edge-case tests, update the test coverage report, and revise the README with the latest deployment notes. I’ll also update the task list and ensure the rev...

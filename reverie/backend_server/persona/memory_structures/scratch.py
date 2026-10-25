@@ -13,8 +13,11 @@ sys.path.append('../../')
 
 from global_methods import *
 
-class Scratch: 
-  def __init__(self, f_saved): 
+class Scratch:
+  _STAMP_FIELDS = ("last_grocery_attempt", "last_grocery_shop",
+                   "last_luxury_attempt", "last_status_thought_day")
+
+  def __init__(self, f_saved):
     # PERSONA HYPERPARAMETERS
     # <vision_r> denotes the number of tiles that the persona can see around 
     # them. 
@@ -328,6 +331,18 @@ class Scratch:
             for k, v in scratch_load["_drive_served"].items()}
         except Exception:
           self._drive_served = {}
+      # Cooldown stamps (grocery / luxury / status thought) survive resume
+      for _k in self._STAMP_FIELDS:
+        _v = (scratch_load.get("_stamps") or {}).get(_k)
+        if not _v:
+          continue
+        try:
+          if _k == "last_status_thought_day":
+            setattr(self, _k, datetime.datetime.strptime(_v, "%Y-%m-%d").date())
+          else:
+            setattr(self, _k, datetime.datetime.strptime(_v, "%B %d, %Y, %H:%M:%S"))
+        except Exception:
+          pass
       # AGENCY L2: persona routine library (persisted by the harvest pass)
       if "routines" in scratch_load:
         self.routines = scratch_load["routines"]
@@ -455,6 +470,16 @@ class Scratch:
       scratch["_drive_served"] = {
         k: v.strftime("%B %d, %Y, %H:%M:%S")
         for k, v in self._drive_served.items() if isinstance(v, datetime.datetime)}
+
+    _stamps = {}
+    for _k in self._STAMP_FIELDS:
+      _v = getattr(self, _k, None)
+      if isinstance(_v, datetime.datetime):
+        _stamps[_k] = _v.strftime("%B %d, %Y, %H:%M:%S")
+      elif isinstance(_v, datetime.date):
+        _stamps[_k] = _v.strftime("%Y-%m-%d")
+    if _stamps:
+      scratch["_stamps"] = _stamps
 
     # AGENCY L2: routine library persists (harvest refreshes it hourly)
     if getattr(self, "routines", None):

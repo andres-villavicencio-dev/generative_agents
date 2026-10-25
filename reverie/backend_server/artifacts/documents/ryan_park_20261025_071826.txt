@@ -1,0 +1,20 @@
+Technical Decision Log: Search and Filtering Functionality  
+Date: Tuesday, February 14  
+Author: Ryan Park  
+Status: Completed  
+
+Purpose  
+Document the technical decisions made during testing of the search and filtering functionality, including how the system handles queries, filters, pagination, and edge cases.
+
+Search Behavior  
+The search feature returns results based on the selected field, case-insensitive matching, and relevance ranking. A search bar is placed prominently at the top of the results page, with a clear “Clear” option to remove the current query.
+
+Filtering  
+Filters are organized by category and can be applied individually or in combination. The interface supports:
+Selecting multiple categories at once  
+Applying filters to existing results  
+Filtering by date, price, rating, or other relevant attributes  
+Sorting results by relevance, relevance score, or another configured criterion  
+
+Pagination  
+Results are displayed in pages of up to 20 entries. The page co...

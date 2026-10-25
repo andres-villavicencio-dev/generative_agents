@@ -1,0 +1,24 @@
+Technical Decision Log – Mobile App  
+Date: Tuesday, February 14  
+Prepared by: Ryan Park  
+Status: In progress
+
+Core Requirements and Acceptance Criteria
+
+The app will support the following core features:
+
+1. Onboarding and User Setup  
+Users must complete a secure profile setup.  
+Acceptance criteria: Profile creation succeeds without requiring passwords for basic functionality.
+
+2. Core Feature Access  
+The main feature must be discoverable and usable from the home screen.  
+Acceptance criteria: The feature is accessible within two taps, and the user can reach the main interface without additional navigation.
+
+3. Data Persistence and Sync  
+All user data must be stored locally and synchronized across devices.  
+Acceptance criteria: The app retains data after a restart, and the user can access their saved information from any device.
+
+4. Error Handling and Recovery  
+The app must display clear error messages and allow users to recover from common failures.  
+Acceptance criteria: T...

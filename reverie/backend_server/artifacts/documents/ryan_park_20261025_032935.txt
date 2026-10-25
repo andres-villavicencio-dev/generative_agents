@@ -1,0 +1,14 @@
+Technical Review and Technical Decision Log  
+Date: Monday, February 13  
+App: Mobile Application  
+Reviewer: Ryan Park  
+
+Review Summary
+
+I completed a full code review and functional test of the new mobile app. The core feature set is working, but several responsiveness issues and technical decisions require clarification before the app is released.
+
+Responsive Behavior
+
+The app currently performs adequately on small mobile screens, but it becomes difficult to use on tablets and desktops. The main problem is that the main navigation bar collapses at a fixed breakpoint, while the bottom navigation bar is not properly scaled. On larger screens, the bottom bar overlaps content and the bottom navigation becomes harder to reach.
+
+I also tested the app on a variety of screen sizes using Chrome DevTools and a responsive device emulator. The layout shifts inconsistently between devices, and the bottom navigation bar is not fully visible on tablets. The current design assumes a fixed-width...

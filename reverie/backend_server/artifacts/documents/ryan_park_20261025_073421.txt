@@ -1,0 +1,13 @@
+Technical Decision Log – Mobile App Testing  
+Date: Tuesday, February 14  
+Tester: Ryan Park  
+Status: In progress
+
+1. Architecture and Technology Stack
+The app will use a layered architecture with a shared dependency injection container, a modular feature store, and a centralized configuration layer. The core stack includes React Native, TypeScript, and a lightweight state management layer. We will evaluate React Query for server state and consider a lightweight GraphQL layer for complex data fetching.
+
+2. API Design and Security
+The API will follow REST conventions with clear HTTP status codes, consistent pagination, and request/response schemas. Authentication will use a bearer token with refresh logic, and sensitive data will be masked in logs and error messages. We will validate input at the client and server layers and implement a consistent error-handling pattern.
+
+3. Testing Strategy
+We will combine unit, integration, and end-to-end tests. Unit tests will cover business logi...

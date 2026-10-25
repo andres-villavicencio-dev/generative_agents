@@ -1,0 +1,18 @@
+Technical Decision Log – Mobile App  
+Date: Tuesday, February 14  
+Prepared by: Ryan Park  
+Status: In progress
+
+Core Feature Testing
+
+1. User Onboarding and Authentication  
+The login flow was completed successfully. Users can register, enter their credentials, and access the app without errors. The onboarding screen is clear, and the welcome message confirms the user’s role.
+
+2. Core Functionality  
+The primary feature—viewing and updating task lists—was tested end-to-end. Users can add, edit, and delete tasks, and the app correctly saves changes. The interface responds quickly, and the app remains usable across different screen sizes.
+
+3. Data Integrity and Reliability  
+The app handles repeated edits without losing previous progress. The latest entry appears at the top of the list, and the save button confirms completion. A simulated network interruption caused no data loss.
+
+4. Performance and Usability  
+Navigation is smooth, and the app loads required information within an ac...

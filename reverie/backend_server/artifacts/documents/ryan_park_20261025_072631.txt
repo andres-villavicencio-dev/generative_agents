@@ -1,0 +1,12 @@
+Technical Decision Log: Offline Mode and Data Synchronization
+
+Date: Tuesday, February 14  
+Status: In Progress
+
+I am testing the app’s offline mode and data synchronization to ensure it remains usable when connectivity is unavailable. The goal is to preserve the core experience while minimizing the risk of data loss or incomplete updates.
+
+Offline Mode  
+The app will function without an active internet connection. Users can still save progress, view completed tasks, and access locally cached content. Offline actions should be queued and applied automatically when connectivity is restored. The app should also provide clear indicators when an action cannot be completed due to a lack of network access.
+
+Data Synchronization  
+Local changes will be synchronized to the server only when the connection is available. The synchronization process should be reliable and handle conflicts gracefully. If a conflict occurs, the system should retain the most recent version of the changed data whil...

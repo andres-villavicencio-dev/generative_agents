@@ -1,0 +1,10 @@
+Technical Decision Log – Mobile App Accessibility and Usability  
+Date: Tuesday, February 14  
+Prepared by: Ryan Park  
+Status: In progress
+
+Accessibility
+Font and contrast: All text must use a minimum font size of 16px with a contrast ratio of at least 4.5:1. Headings, labels, and error messages must be distinguishable from the background.
+Keyboard navigation: The app must be fully navigable via keyboard. All interactive elements must receive focus, be accessible via tab order, and include visible focus indicators. Buttons, form fields, and links must be reachable without requiring the user to use the mouse.
+Screen reader support: The app must announce interactive states, loading progress, and dynamic content changes. ARIA labels, roles, and landmarks must accurately describe the app’s structure and functionality.
+Color and color-blindness: No color alone should convey critical information. Colorblindness-safe palettes, high-contrast options, and clear visual hierarchy must be pres...

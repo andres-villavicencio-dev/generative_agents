@@ -1,0 +1,7 @@
+Tom Moreno has not built or invented a new product. His most notable contribution is the The Willow Market Meal Delivery System, a shared grocery and meal-planning tool he helped develop with Jane.
+
+The system works by collecting Jane’s delivery requests, comparing them with current store inventory, and generating a customized shopping list for Tom and other shoppers. It includes an inventory checklist, estimated delivery times, and a reminder system to confirm orders before the delivery team leaves. The process allows customers to see whether a desired item is available and reduces wasted trips.
+
+The materials used are the market’s existing shelves, inventory lists, delivery notes, and a simple printed or digital shopping list. No specialized equipment or proprietary software was invented.
+
+They created it to streamline grocery shopping and meal planning at The Willow Market, helping customers avoid overbuying or ordering unavailable items. By coordinating inventory with delivery requests, it saves time, reduces costs, and helps customers make more reliable decisions.

@@ -1,0 +1,29 @@
+Technical Decision Log – Mobile App Navigation and App Switching
+
+Date: Tuesday, February 14  
+Tester: Ryan Park  
+Status: Completed
+
+Objective
+Verify that the app’s navigation and app-switching behavior are consistent, predictable, and responsive.
+
+Test Scenarios
+
+1. Primary navigation  
+Tap the home, list, and detail screens in sequence.  
+Confirm that each screen loads without errors and that the previous screen remains accessible.
+
+2. Back navigation  
+Use the back button and return to the previous screen.  
+Verify that the screen is restored correctly and that the back button returns to the original view.
+
+3. Home screen navigation  
+Tap the home icon.  
+Confirm that the app switches to the home screen and that the selected item is highlighted.
+
+4. Tab-based navigation  
+Switch between tabs and confirm that the active tab is preserved.  
+Close and reopen the tab to ensure it remains open.
+
+5. App switching  
+Open the app, switch to another app, and return to the original app.  ...

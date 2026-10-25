@@ -1,0 +1,22 @@
+Technical Decision Log – Mobile App  
+Date: Tuesday, February 14  
+Prepared by: Ryan Park  
+Status: In progress  
+
+Completed Work
+Reviewed the requirements and confirmed the app’s core functionality.
+Planned the architecture and selected the technology stack.
+Built the core features and completed the initial test suite.
+Identified and documented the remaining defects.
+
+Test Results and Defects
+The test suite covered the main user flows, but several issues remain:
+
+1. Login flow: The password validation is too strict for the current user base.  
+2. Navigation: A secondary menu item is not responding when accessed from the home screen.  
+3. Data persistence: The app does not save the selected theme when the session is refreshed.  
+4. Error handling: The app shows no clear message when a required field is missing.
+
+Technical Decisions
+Authentication: Passwords will be validated against the configured schema, with a fallback to email verification.  
+Navigation: The secondary menu will b...

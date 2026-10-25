@@ -1,0 +1,15 @@
+Technical Decision Log: Mobile App Development  
+Date: Tuesday, February 14  
+Prepared by: Ryan Park  
+
+1. Test Environment Setup  
+The test environment will be configured using a shared staging server with isolated user accounts. The build will be triggered from a reproducible repository root, and the test suite will be executed with deterministic input data.
+
+2. Required Dependencies  
+The following dependencies are required for the mobile app:
+Core: React Native, React, TypeScript, Redux Toolkit, Axios, and Jest for unit and integration testing.  
+State Management: Redux Toolkit for global state, and React Context for scoped state.  
+Networking: Axios with a configured base URL and timeout handling.  
+Testing Utilities: Jest for unit tests, React Testing Library for component testing, and Supertest for API integration.  
+Environment Configuration: Environment variables for API endpoints, authentication tokens, and feature flags.  
+Build Tools: Node.js, npm, and the app’s build sc...

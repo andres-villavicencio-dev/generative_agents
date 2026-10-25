@@ -1,0 +1,17 @@
+Technical Review and Testing Strategy for the Mobile App
+
+Objective: Ensure the new mobile app is reliable, secure, and scalable while maintaining a clear, maintainable codebase.
+
+Testing Strategy
+
+The app will be evaluated using a layered testing approach:
+
+1. Unit Testing – Each component will be tested in isolation with realistic input data and expected outputs.
+2. Integration Testing – Components will be combined to verify data flow, API interactions, and shared services.
+3. End-to-End Testing – Critical user journeys will be tested in the app environment, including login, navigation, data entry, and error handling.
+4. Accessibility Testing – The app will be checked for keyboard navigation, screen reader support, and responsive behavior across devices.
+5. Security Testing – Authentication, data transmission, and sensitive information handling will be reviewed.
+
+Automation Approach
+
+Automation will support regression, security, and performance testing rather than replace manual e...

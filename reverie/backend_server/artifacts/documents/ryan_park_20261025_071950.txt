@@ -1,0 +1,19 @@
+Technical Decision Log: Notification and Message Delivery
+
+Date: Tuesday, February 14  
+Status: Completed testing and documentation  
+Author: Ryan Park
+
+Objective
+Verify that notifications and messages are delivered reliably, with appropriate retries, error handling, and user feedback, while documenting the trade-offs and decisions made during implementation.
+
+Key Decisions
+
+1. Delivery Strategy  
+   Messages are delivered over the same channel as notifications. The system uses a retry mechanism with a configurable maximum number of attempts. If a message fails after the retry limit is reached, it is marked as failed and sent to the user’s notification center.
+
+2. Retry Behavior  
+   Retries are limited to prevent unnecessary retries. The retry interval is adjusted based on the message age and the channel’s current load. Messages older than 15 minutes are retried with a longer interval, while recent messages use a shorter interval.
+
+3. Error Handling  
+   Network errors are handled ...

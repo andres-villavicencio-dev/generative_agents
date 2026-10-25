@@ -1,0 +1,10 @@
+Technical Review and Decision Log – Mobile App  
+Date: Monday, February 13  
+Reviewer: Ryan Park  
+Project: New Mobile Application
+
+Security and Vulnerability Review
+
+I reviewed the codebase for potential security risks, focusing on authentication, data handling, input validation, and access control. The most notable concern is the lack of input sanitization on user-provided fields. An attacker could potentially inject malicious payloads through form fields, which could lead to unauthorized access or data leakage. I recommend implementing parameterized queries and strict input validation rather than relying on server-side filtering alone.
+
+Another concern is the handling of sensitive data. I found that some fields are stored without encryption, and the response headers do not explicitly indicate whether the response is public or private. This could expose sensitive information if the response is incorrectly interpreted. I recommend adding response headers, encrypting sensitive field...

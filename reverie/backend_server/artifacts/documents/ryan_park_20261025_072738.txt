@@ -1,0 +1,18 @@
+Technical Decision Log: Push Notifications and Real-Time Updates
+
+Date: Tuesday, February 14  
+Status: Completed  
+Author: Ryan Park
+
+Objective
+Document the technical decisions made during the testing of push notifications and real-time updates, including their requirements, architecture, and trade-offs.
+
+Requirements
+Push notifications must be delivered reliably within 10 seconds of an event.
+Real-time updates should update the UI without requiring a page refresh.
+The system must handle delivery failures, duplicate notifications, and stale updates gracefully.
+Notification delivery must be measurable, with clear error logging and user feedback.
+
+Architecture Decisions
+Push notification service: I chose a dedicated notification service with a reliable delivery queue and a fallback to background tasks. This reduces the risk of missing notifications during high load.
+Real-time updates: The architecture uses a WebSocket connection to the backend. The client subscribes to events, updates...

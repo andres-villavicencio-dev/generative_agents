@@ -1,0 +1,11 @@
+Technical Decision Log – Mobile Responsive Design
+
+Date: Tuesday, February 14  
+Status: In progress  
+Objective: Ensure the app functions reliably across mobile, tablet, and desktop screen sizes.
+
+Design decisions
+The app uses a fluid grid system with a base viewport width of 375px. Container widths scale using the `clamp()` function, so padding and margins remain consistent without requiring explicit breakpoints.
+The navigation bar adapts by reducing its height and adjusting the bottom spacing for screens narrower than 320px. On larger screens, the navigation expands to include a hamburger menu.
+The main content area uses a flexible column layout. On mobile, the primary feature card takes the full width; on tablets, the card is centered with a 12px gap; on desktop, the card is left-aligned with a 16px gap.
+Typography is set to 16px base size with a 0.875rem line-height. The font stack prioritizes system fonts for better accessibility, while a secondary font is applied only when the...

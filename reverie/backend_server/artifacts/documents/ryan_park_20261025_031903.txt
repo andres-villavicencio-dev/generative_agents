@@ -1,0 +1,20 @@
+Technical Review and Decision Log  
+Date: Monday, February 13  
+Reviewer: Ryan Park  
+Branch: `main`  
+Commit: `v1.2.0-rc1`
+
+Review Summary
+
+I opened the latest branch and reviewed the most recent commits. The codebase is clean, but several technical decisions require clarification before production.
+
+Technical Decisions
+
+1. State Management  
+   The app uses React Context for global state. I recommend replacing it with Zustand for better type safety, performance, and easier testing. The current implementation lacks a clear separation between shared state and local actions, which could lead to inconsistent behavior.
+
+2. API Integration  
+   The backend is still accepting requests without validating the response structure. I will implement a response schema validator and add a retry mechanism with exponential backoff for transient failures.
+
+3. Error Handling  
+   Errors are displayed inconsistently across the app. I will standardize the error format and ensure that error messages ar...

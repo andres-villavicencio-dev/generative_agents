@@ -1,0 +1,12 @@
+Technical Decision Log: Mobile App Testing and User Feedback
+
+Date: Tuesday, February 14  
+Tester: Ryan Park  
+Focus: Error handling and user feedback
+
+After completing the initial build, I focused on error handling and user feedback. The app should guide users through failures without confusing them, and every unexpected failure should provide clear information about what went wrong and how to recover.
+
+Error Handling
+Network failures: The app should display a clear message indicating that the operation failed, explain the likely cause, and offer a retry option. Offline users should be redirected to a local data store or a cached version of the requested content.
+Authentication failures: Login and session errors should not require users to re-enter credentials. The app should show a concise message and a single “Try again” button.
+Invalid input: Form fields should not display error messages that are too long or unrelated to the actual problem. The message should explain what the us...

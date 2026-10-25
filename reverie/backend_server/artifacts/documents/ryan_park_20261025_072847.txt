@@ -1,0 +1,20 @@
+Technical Decision Log: Export and Import Functionality
+
+Date: Tuesday, February 14  
+Prepared by: Ryan Park  
+Subject: Finalizing the export and import workflow and documenting the technical decisions
+
+Objectives
+
+The goal is to enable reliable data migration between export and import operations without data loss, corruption, or unexpected behavior. The focus is on reproducibility, clear error handling, and a practical user experience.
+
+Technical Decisions
+
+1. Export format and schema  
+   The exported file will use a fixed schema with explicit field names, types, and optional metadata. This ensures that imported data can be validated against the original structure.
+
+2. Import validation  
+   Import will first validate the file’s structure and required fields. Invalid records will be rejected with a descriptive message rather than silently skipped.
+
+3. Data integrity  
+   The import process will preserve existing records and append new ones. Duplicate detection will be performed at...

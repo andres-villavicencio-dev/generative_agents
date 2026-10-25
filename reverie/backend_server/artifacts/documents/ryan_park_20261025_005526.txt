@@ -1,0 +1,23 @@
+Project Requirements and Mobile App Architecture Review
+
+Primary User Roles
+
+1. Registered User  
+Goal: Access the app, create and manage accounts, track fitness and nutrition, and save personalized goals.  
+Main actions: sign up, view activity history, record workouts and meals, set reminders, and check progress.
+
+2. Fitness Coach  
+Goal: Provide personalized guidance, track user progress, and offer actionable feedback.  
+Main actions: create customized plans, review user data, suggest exercises, and explain how to use the app.
+
+3. Healthcare Provider  
+Goal: Monitor user health, recommend evidence-based interventions, and coordinate care.  
+Main actions: review medical history, assess fitness and nutrition data, and suggest professional guidance.
+
+4. App Developer  
+Goal: Build, maintain, and improve the app’s functionality and reliability.  
+Main actions: plan features, implement architecture, test performance, and document technical decisions.
+
+App Architecture Plan
+
+The app wil...

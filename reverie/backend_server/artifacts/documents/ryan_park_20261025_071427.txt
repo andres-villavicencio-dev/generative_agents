@@ -1,0 +1,21 @@
+Technical Decision Log: Profile and Settings Pages  
+Date: Tuesday, February 14  
+Prepared by: Ryan Park  
+
+Overview  
+The profile and settings pages are now the foundation of the app’s personalization workflow. The goal is to make them intuitive, secure, and consistent across devices.
+
+Key Technical Decisions  
+
+1. Authentication and Session Management  
+All profile and settings changes will be tied to a verified session.  
+A token-based session will be used for local changes; a refresh token will be required for persistent updates.  
+The app will not store sensitive data without explicit user confirmation.
+
+2. Profile Structure  
+The profile will contain a single, clearly labeled section for personal information.  
+The settings area will be organized into logical groups: account, notifications, privacy, and preferences.  
+Each setting will have a clear label, a brief description, and an on/off toggle or dropdown where appropriate.
+
+3. Settings Flow  
+Users will select a target dev...

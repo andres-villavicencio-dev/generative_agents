@@ -1,0 +1,19 @@
+Technical Review and Decision Log – Mobile App
+
+Date: Monday, February 13  
+Prepared by: Ryan Park  
+Project: New mobile application
+
+Testing Scope
+
+I tested the app’s error handling and user feedback across the following scenarios:
+Network failures: The app should display a clear connection error, attempt to retry the operation, and provide a fallback when possible.
+Missing or invalid inputs: Invalid data should be rejected with a concise message, and the UI should not crash.
+Loading states: Progress indicators should appear during operations that take more than one second.
+Offline behavior: The app should show an offline notice and offer a way to resume the session.
+User feedback: Errors should be reported immediately, with consistent wording and a clear path to resolve the issue.
+Accessibility: The interface should be readable and usable by users with reduced vision, motor, or cognitive needs.
+
+Technical Decisions
+
+1. Error handling: We will use a centralized error handler to pre...

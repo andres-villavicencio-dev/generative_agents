@@ -1,0 +1,28 @@
+Technical Decision Log: Authentication Flow
+
+Date: Tuesday, February 14  
+Tester: Ryan Park  
+Scope: Mobile app login and authentication flow
+
+Objective
+Verify the authentication flow with valid and invalid credentials and document the technical decisions made during testing.
+
+Test Plan
+
+1. Valid credentials
+Use the correct username and password.
+Confirm successful login, session establishment, and access to protected features.
+Verify that the session remains active after a brief inactivity.
+Check that the app correctly handles the user’s logout.
+
+2. Invalid credentials
+Test with an incorrect username.
+Test with an incorrect password.
+Verify that the app rejects the attempt without exposing sensitive data.
+Confirm that the app displays an appropriate error message.
+Test the behavior when both fields are left blank.
+
+3. Edge cases
+Attempt login with special characters or unusual formatting.
+Test rapid successive login attempts.
+Verify that the app handles expired or invalid tokens co...

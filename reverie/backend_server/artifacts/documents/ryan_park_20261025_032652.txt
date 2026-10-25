@@ -1,0 +1,21 @@
+Integration Test Execution and Technical Decision Log  
+Date: Monday, February 13  
+Project: New Mobile App  
+Reviewer: Ryan Park  
+
+Overview  
+I completed the integration test suite for the new mobile app and verified the affected workflows. The tests confirmed that the core user journeys function correctly, while the integration points between the mobile app and the backend services remain stable.
+
+Test Results  
+Unit tests: All unit tests pass.  
+Integration tests: The critical integration scenarios pass.  
+Affected workflows:  
+User registration and account creation  
+Data retrieval and caching  
+API authentication and authorization  
+Notification delivery and delivery confirmation  
+Non-functional tests: Performance, error handling, and security checks remain pending.
+
+Technical Decisions  
+
+1. Test coverage strategy: The integration suite now covers the majority of the critical user paths. I added a few edge-case tests for error conditions, particularly around incomplete respo...

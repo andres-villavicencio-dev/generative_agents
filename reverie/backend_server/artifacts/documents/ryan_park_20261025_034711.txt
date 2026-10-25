@@ -1,0 +1,19 @@
+Technical Review and Compliance Documentation  
+Project: Mobile App Development  
+Date: February 13, 2025  
+Reviewer: Ryan Park  
+
+Overview  
+I reviewed the current codebase, ran the test suite, and documented the technical decisions made during development. The following sections address the security fixes applied and the compliance considerations that remain.
+
+Security Fixes  
+
+1. Input Validation and Sanitization  
+All user inputs were validated against expected formats and types before being processed.  
+Sensitive fields were sanitized to prevent injection attacks.  
+Out-of-bounds array access was corrected, and unsafe file paths were replaced with validated paths.  
+
+2. Authentication and Authorization  
+Session tokens were refreshed securely and no longer retained in memory after successful authentication.  
+Access controls were updated to enforce role-based permissions and prevent unauthorized access.  
+Passwords were updated to use a stronger hashing algorithm and were reset...

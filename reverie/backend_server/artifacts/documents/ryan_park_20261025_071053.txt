@@ -1,0 +1,15 @@
+Technical Decision Log – Mobile App Integration and Core Feature Review  
+Date: Tuesday, February 14  
+Prepared by: Ryan Park  
+
+Objective  
+Complete the integration of the mobile app’s core features and document the technical decisions that support them. The goal is to verify that requirements, architecture, and implementation work together reliably.
+
+Completed Integration Tests  
+End-to-end test: User creates an account, completes a profile, and submits a request. The request is created, status updates correctly, and the response is returned.  
+Integration test: The app connects to the backend API using the configured environment variables. Authentication, request/response handling, and error responses are validated.  
+Feature integration: The mobile interface, request submission, and response display are tested together. UI states, loading indicators, and error messages are verified.
+
+Core Feature Status  
+Authentication and user management: Working.  
+Request submission and trac...

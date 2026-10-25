@@ -1,0 +1,17 @@
+Technical Decision Log: User Registration and Account Creation
+
+Objective: Document the technical decisions made during testing of the user registration and account creation process.
+
+Approach  
+I followed the requirements closely, testing the registration flow from the initial form submission through account creation, password recovery, and account activation. The goal was to identify edge cases, verify data integrity, and clarify any ambiguities before production.
+
+Key Technical Decisions
+
+1. Registration Form Validation  
+   The form must validate required fields, email format, and password strength. I also tested the ability to create an account without an email address.
+
+2. Email Verification  
+   The system should send an email with a verification link, allow the user to enter it, and confirm successful registration. I also tested the case where the email is invalid or the link has expired.
+
+3. Password Requirements  
+   Passwords must meet the specified strength requirements....

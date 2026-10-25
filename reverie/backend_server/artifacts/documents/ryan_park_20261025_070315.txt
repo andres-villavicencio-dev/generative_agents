@@ -1,0 +1,14 @@
+Technical Decision Log: Mobile App Development  
+Date: Tuesday, February 14, 2025  
+Prepared by: Ryan Park  
+Status: Draft
+
+Purpose
+This document records the technical decisions, test scenarios, data, and expected results for the mobile app. It serves as a reference for the development team, QA, and stakeholders.
+
+Technical Decisions
+
+1. Architecture: The app will use a layered architecture with a shared repository, a service layer, and a presentation layer. State will be managed through a lightweight state store, and local data will use IndexedDB for offline support.
+2. Authentication: Users will authenticate via a secure token-based system. Passwords will be stored using Argon2id, and sessions will be invalidated after inactivity.
+3. Data Storage: All user data will be stored in a secure, encrypted database. Sensitive information will be masked in logs and audit trails.
+4. Testing Strategy: Unit, integration, and end-to-end tests will cover authentication, data persistence, offlin...

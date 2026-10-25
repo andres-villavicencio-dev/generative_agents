@@ -510,6 +510,16 @@ def run_gpt_prompt_daily_plan(persona,
       if financial_summary:
         iss += f"\n{financial_summary}"
 
+    # Outcome memory (GA_LESSONS): recent failures the planner should account for
+    try:
+      from persona.cognitive_modules import lessons as _lessons
+      if _lessons.enabled():
+        _ltxt = _lessons.render(persona.scratch, persona.scratch.curr_time)
+        if _ltxt:
+          iss += f"\n{_ltxt}"
+    except Exception:
+      pass
+
     # Append resource context if resource_manager is available (Phase 2)
     if resource_manager is not None:
       try:

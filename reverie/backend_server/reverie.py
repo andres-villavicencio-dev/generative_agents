@@ -272,6 +272,8 @@ class ReverieServer:
           llm=_econ_llm,
           personas=self.personas,
           bulletin=_econ_bulletin)
+        from persona.cognitive_modules import plan as _plan_mod
+        _plan_mod._ECON_REF["e"] = self.economy
         print(f"[Economy] v2 active: {self.economy}")
       except Exception as _econ_err:
         print(f"[Economy] v2 init failed ({_econ_err.__class__.__name__}) "
@@ -1210,6 +1212,12 @@ class ReverieServer:
                     print(f"[Economy] sale credit failed "
                           f"({_econ_err.__class__.__name__})")
                 self._on_luxury_purchase(persona, item)
+                try:  # a successful purchase resolves the stock-out lessons
+                  from persona.cognitive_modules import lessons as _lessons
+                  _lessons.clear(persona.scratch, "home_stock", item)
+                  _lessons.clear(persona.scratch, "store_stock", item)
+                except Exception:
+                  pass
                 # CAFÉ-ONLY credit (Sep 2026 fix): store sales already
                 # credit the till inside purchase(); crediting Isabella here
                 # too paid her twice — once with the store's own money.
@@ -1221,7 +1229,15 @@ class ReverieServer:
                   self._credit_cafe_sale(item, amount, persona.name)
                 break
               else:
-                self._inject_resource_depleted_event(persona, address, item)
+                _why = "sold_out"
+                try:
+                  if self.economy is not None and (
+                      getattr(persona.scratch, "wallet", 0)
+                      < self.economy.item_price(item) * amount):
+                    _why = "cant_afford"
+                except Exception:
+                  pass
+                self._inject_resource_depleted_event(persona, address, item, reason=_why)
                 all_success = False
                 consumed = True
                 break
@@ -1346,6 +1362,11 @@ class ReverieServer:
     so it is off with it; store income still flows through normal sales."""
     if os.environ.get("GA_PAYDAY", "0") != "1":
       return
+    if os.environ.get("GA_COMMUNITY", "0") == "1":
+      # Fund-paid dividend replaces the printed role-based incomes.
+      if self.economy is not None:
+        self.economy.pay_dividend(self.curr_time)
+      return
     WEEKLY_INCOME = {
       "Isabella Rodriguez": 400.0,
       "Klaus Mueller": 200.0,
@@ -1389,7 +1410,7 @@ class ReverieServer:
           self.resource_manager._update_financial_stress(persona.scratch)
         print(f"[Payday] {persona_name} received ${income:.0f} (wallet: ${persona.scratch.wallet:.0f})")
 
-  def _inject_resource_depleted_event(self, persona, address, item):
+  def _inject_resource_depleted_event(self, persona, address, item, reason=None):
     """
     Inject a perception event into persona's memory when a resource is depleted.
     This triggers awareness and potential replanning.
@@ -1398,6 +1419,21 @@ class ReverieServer:
       # Parse the resource location for a human-readable description
       parts = address.split(":")
       location_name = parts[-1] if parts else address
+
+      # Outcome memory (GA_LESSONS): remember WHY this failed so planning
+      # stops repeating it (broke vs sold out vs own fridge empty).
+      try:
+        from persona.cognitive_modules import lessons as _lessons
+        if _lessons.enabled():
+          _al = address.lower()
+          _commercial = any(k in _al for k in (
+            "counter", "cafe", "supply store", "willows market",
+            "rose and crown pub")) or ("shelves" in _al and "store" in _al)
+          _lessons.record(persona.scratch,
+                          "store_stock" if _commercial else "home_stock",
+                          item, reason or "sold_out", self.curr_time)
+      except Exception as _le:
+        print(f"[Lessons] record failed ({_le.__class__.__name__})")
 
       # Create richer event description with alternatives based on item type
       food_items = ["eggs", "bread", "milk"]
@@ -1897,6 +1933,7 @@ class ReverieServer:
               self.economy.pay_restock_worker(self.curr_time)
               self.economy.weekly_flows(self.curr_time)
               self.economy.consider_hiring(self.curr_time)
+              self.economy.record_presence(self.curr_time)
               self.economy.pay_employees(self.curr_time)
               # hiring encounters: co-located applicant+owner
               _paths = {}

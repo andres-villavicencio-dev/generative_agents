@@ -9,6 +9,9 @@ import math
 import os
 import random 
 import re
+
+# set by ReverieServer so planners can sign agents up for civic work
+_ECON_REF = {}
 import sys
 import time
 import threading
@@ -1435,6 +1438,44 @@ def _determine_action(persona, maze):
           print(f"[UrgentNeed] {persona.name} critical {need} ({val:.0f}) -> '{goal}'")
         break  # one urgent need at a time — highest urgency order above
 
+  # JOBS (GA_JOBS): an employee works their shift. Hiring used to change
+  # nothing about behaviour — `scratch.job` was never read by any planner.
+  try:
+    import economy as _eco
+    _job = getattr(persona.scratch, "job", None)
+    _jn = persona.scratch.curr_time
+    if (_eco.jobs_enabled() and isinstance(_job, dict) and _jn is not None
+        and _eco.SHIFT_START <= _jn.hour < _eco.SHIFT_END
+        and getattr(persona.scratch, "_work_goal_day", None) != _jn.date()
+        and hasattr(persona.scratch, "resource_goals")):
+      _vn = _eco.VENUES[_job["venue"]]["name"]
+      persona.scratch._work_goal_day = _jn.date()
+      # two 30-min goals: the wage needs 60 on-site minutes
+      persona.scratch.resource_goals[:0] = [f"working a shift at {_vn}"] * 2
+      print(f"[Jobs] {persona.name} heading to work at {_vn}")
+  except Exception:
+    pass
+
+  # COMMUNITY WORK (GA_COMMUNITY): agents without a job and short of money
+  # take a paid civic task at a public place, once a day.
+  try:
+    import economy as _eco
+    _cn = persona.scratch.curr_time
+    if (_eco.community_enabled() and _cn is not None
+        and not isinstance(getattr(persona.scratch, "job", None), dict)
+        and (getattr(persona.scratch, "wallet", 0) or 0) < _eco.CIVIC_ELIGIBLE_WALLET
+        and _eco.CIVIC_START <= _cn.hour < _eco.CIVIC_END - 1
+        and getattr(persona.scratch, "_civic_goal_day", None) != _cn.date()
+        and hasattr(persona.scratch, "resource_goals")
+        and _ECON_REF.get("e") is not None):
+      _task = _ECON_REF["e"].pick_civic_task(persona.name, _cn)
+      persona.scratch._civic_goal_day = _cn.date()
+      if _task:
+        persona.scratch.resource_goals[:0] = [_task] * 2
+        print(f"[Community] {persona.name} signed up for {_task}")
+  except Exception:
+    pass
+
   # PROACTIVE GROCERY SHOPPING (Sep 2026 economy revival): inject a
   # shopping goal before hunger goes critical, with a cooldown, so money
   # actually circulates (22/25 agents had never spent a dollar).
@@ -1483,7 +1524,17 @@ def _determine_action(persona, maze):
                     "(The Willows Market and Pharmacy)")
     _already = any("grocer" in g.lower()
                    for g in getattr(persona.scratch, "resource_goals", []))
-    if (_hunger < _threshold and _cooldown_ok and _open and _wallet >= 30
+    # Outcome memory (GA_LESSONS): an empty home pantry is a reason to shop even
+    # while hunger is still high — otherwise the agent keeps trying to cook.
+    _stock_out = False
+    try:
+      from persona.cognitive_modules import lessons as _lessons
+      _stock_out = _lessons.enabled() and bool(
+        _lessons.live(persona.scratch, _now, kind="home_stock"))
+    except Exception:
+      pass
+    if ((_hunger < _threshold or _stock_out) and _cooldown_ok and _open
+        and _wallet >= 30
         and not _already and hasattr(persona.scratch, "resource_goals")):
       persona.scratch.resource_goals.insert(0, _shop_goal)
       persona.scratch.last_grocery_attempt = _now

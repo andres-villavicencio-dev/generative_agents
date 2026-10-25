@@ -331,6 +331,8 @@ class Scratch:
             for k, v in scratch_load["_drive_served"].items()}
         except Exception:
           self._drive_served = {}
+      if isinstance(scratch_load.get("lessons"), dict):
+        self.lessons = scratch_load["lessons"]
       # Cooldown stamps (grocery / luxury / status thought) survive resume
       for _k in self._STAMP_FIELDS:
         _v = (scratch_load.get("_stamps") or {}).get(_k)
@@ -470,6 +472,9 @@ class Scratch:
       scratch["_drive_served"] = {
         k: v.strftime("%B %d, %Y, %H:%M:%S")
         for k, v in self._drive_served.items() if isinstance(v, datetime.datetime)}
+
+    if getattr(self, "lessons", None):
+      scratch["lessons"] = self.lessons
 
     _stamps = {}
     for _k in self._STAMP_FIELDS:

@@ -110,6 +110,37 @@ RESTOCK_WORKER = "Tom Moreno"
 RESTOCK_WAGE_SHARE = 0.10     # of previous day's combined sales
 EMPLOYEE_WAGE_SHARE = 0.10    # of venue's daily sales, per employee
 EMPLOYE_WAGE_FLOOR = 5.0      # a shift always pays at least this
+SHIFT_START, SHIFT_END = 10, 14   # GA_JOBS: paid shift window (sim hours)
+MIN_SHIFT_PRESENCE_MIN = 60       # GA_JOBS: minutes on site to earn the wage
+
+
+def jobs_enabled():
+    import os
+    return os.environ.get("GA_JOBS", "0") == "1"
+
+# Community fund (GA_COMMUNITY): tax accumulates, community work and the
+# Monday dividend are paid out of it — nothing is created from nothing.
+FUND_SALES_TAX = 0.05         # of every venue sale, skimmed at the register
+FUND_DRAW_TAX = 0.10          # of every owner draw
+FUND_DIVIDEND_SHARE = 0.5     # of the fund shared out each Monday
+FUND_DIVIDEND_CAP = 40.0      # per agent
+CIVIC_START, CIVIC_END = 10, 16
+CIVIC_ELIGIBLE_WALLET = 60.0  # below this (and no job) an agent takes civic work
+CIVIC_TASKS = {
+    "park": {"name": "park upkeep at Johnson Park",
+             "keys": ("johnson park",), "rate": 6.0, "slots": 2},
+    "library": {"name": "helping out at the Oak Hill College library",
+                "keys": ("oak hill college", "library"), "rate": 6.0, "slots": 2},
+    "tutor": {"name": "tutoring at the Oak Hill College classroom",
+              "keys": ("oak hill college", "classroom"), "rate": 7.0, "slots": 2},
+}
+
+
+def community_enabled():
+    import os
+    return os.environ.get("GA_COMMUNITY", "0") == "1"
+
+
 WAGE_HOUR = 22                # 10 PM: employee payday + daily owner draw
 RESTOCK_HOUR = 6              # 6 AM: delivery wage + daily-intake rollover
 HIRING_HOUR = 7               # 7 AM: owners consider posting openings
@@ -149,6 +180,11 @@ class EconomyManager:
             "last_restock_wage_day": -1,
             "last_wage_day": -1,
             "yesterday_sales": 0.0,
+            "fund": {"balance": 0.0, "in": 0.0, "out": 0.0},
+            "civic": {},               # persona -> task id taken today
+            "civic_day": -1,
+            "civic_paid_day": -1,
+            "last_dividend_day": -1,
         }
         self._load()
         self._apply_init = False
@@ -208,8 +244,9 @@ class EconomyManager:
             vid = venue_id if venue_id in VENUES else None
             if vid is None:
                 return
+            tax = self._tax_to_fund(price, FUND_SALES_TAX, vid, "sales tax")
             self.state["tills"][vid] = round(
-                self.state["tills"][vid] + price, 2)
+                self.state["tills"][vid] + price - tax, 2)
             self.state["daily_intake"][vid] = round(
                 self.state["daily_intake"][vid] + price, 2)
             self._log_pay("sale", buyer_name, price, vid,
@@ -297,6 +334,154 @@ class EconomyManager:
         except Exception as e:
             print(f"[Economy] restock wage failed: {e}")
 
+    def record_presence(self, sim_time):
+        """GA_JOBS: accumulate on-site minutes for employees during their shift;
+        GA_COMMUNITY: likewise for the civic task each agent took today."""
+        try:
+            last = getattr(self, "_presence_t", None)
+            self._presence_t = sim_time
+            if last is None or not (jobs_enabled() or community_enabled()):
+                return
+            dt = (sim_time - last).total_seconds() / 60.0
+            if dt <= 0 or dt > 30:
+                return
+            pres = self.__dict__.setdefault("_presence", {})
+            if jobs_enabled() and SHIFT_START <= sim_time.hour < SHIFT_END:
+                for vid, emps in self.state["employees"].items():
+                    for name in emps:
+                        p = self._personas.get(name)
+                        if p is not None and self.venue_of_address(
+                                p.scratch.act_address) == vid:
+                            pres[name] = pres.get(name, 0.0) + dt
+                            self._staff_meal(name, p.scratch, pres[name], sim_time)
+            if community_enabled() and CIVIC_START <= sim_time.hour < CIVIC_END:
+                cp = self.__dict__.setdefault("_civic_presence", {})
+                for name, tid in self.state["civic"].items():
+                    p = self._personas.get(name)
+                    if p is not None and self._at_task(tid, p.scratch.act_address):
+                        cp[name] = cp.get(name, 0.0) + dt
+                        self._staff_meal(name, p.scratch, cp[name], sim_time)
+        except Exception as e:
+            print(f"[Economy] presence tracking failed: {e}")
+
+    # -- community fund -----------------------------------------------------
+    def _tax_to_fund(self, amount, rate, venue_id, why):
+        """Skim `rate` of `amount` into the community fund. Returns the tax
+        (0 when GA_COMMUNITY is off). The caller removes it from the payer."""
+        if not community_enabled() or amount <= 0:
+            return 0.0
+        tax = round(amount * rate, 2)
+        if tax <= 0:
+            return 0.0
+        f = self.state["fund"]
+        f["balance"] = round(f["balance"] + tax, 2)
+        f["in"] = round(f["in"] + tax, 2)
+        self._log_pay("tax", why, tax, venue_id)
+        return tax
+
+    def _at_task(self, tid, address):
+        a = (address or "").lower()
+        return bool(a) and all(k in a for k in CIVIC_TASKS[tid]["keys"])
+
+    def pick_civic_task(self, name, sim_time):
+        """Sign `name` up for the open task with the most free slots (one per
+        day). Returns the task's goal text, or None."""
+        if not community_enabled():
+            return None
+        day = sim_time.toordinal()
+        if self.state["civic_day"] != day:
+            self.state["civic_day"] = day
+            self.state["civic"] = {}
+        if name in self.state["civic"]:
+            return None
+        taken = list(self.state["civic"].values())
+        free = {t: c["slots"] - taken.count(t) for t, c in CIVIC_TASKS.items()}
+        tid = max(free, key=free.get)
+        if free[tid] <= 0:
+            return None
+        self.state["civic"][name] = tid
+        return CIVIC_TASKS[tid]["name"]
+
+    def pay_community(self, sim_time):
+        """10 PM: pay today's civic workers from the fund (pro-rata when the
+        fund is short; no presence -> no pay)."""
+        if not community_enabled() or sim_time.hour < WAGE_HOUR:
+            return
+        day = sim_time.toordinal()
+        if self.state.get("civic_paid_day") == day:
+            return
+        self.state["civic_paid_day"] = day
+        cp = self.__dict__.setdefault("_civic_presence", {})
+        owed = {}
+        for name, tid in self.state["civic"].items():
+            mins = cp.get(name, 0.0)
+            if mins >= MIN_SHIFT_PRESENCE_MIN and name in (self._personas or {}):
+                owed[name] = round(CIVIC_TASKS[tid]["rate"] * mins / 60.0, 2)
+        cp.clear()
+        f = self.state["fund"]
+        total = sum(owed.values())
+        scale = min(1.0, f["balance"] / total) if total > 0 else 0.0
+        for name, amt in owed.items():
+            pay = round(amt * scale, 2)
+            if pay <= 0:
+                continue
+            f["balance"] = round(f["balance"] - pay, 2)
+            f["out"] = round(f["out"] + pay, 2)
+            s = self._personas[name].scratch
+            s.wallet = round(getattr(s, "wallet", 0.0) + pay, 2)
+            self._relax_stress(s)
+            self._log_pay("community", name, pay, None,
+                          note=CIVIC_TASKS[self.state["civic"][name]]["name"])
+            print(f"[Economy] {name} earned ${pay:.2f} community work "
+                  f"(fund ${f['balance']:.0f}, wallet ${s.wallet:.0f})")
+        if owed and scale < 1.0:
+            print(f"[Economy] community fund short: paid {scale:.0%} of wages")
+        self.save()
+
+    def pay_dividend(self, sim_time):
+        """Monday 6 AM payday: an equal share of part of the fund to everyone."""
+        if not community_enabled() or not self._personas:
+            return 0.0
+        import os
+        wd = int(os.environ.get("GA_DIVIDEND_WEEKDAY", "0"))   # Monday
+        hr = int(os.environ.get("GA_DIVIDEND_HOUR", "6"))
+        if sim_time.weekday() != wd or sim_time.hour < hr:
+            return 0.0
+        day = sim_time.toordinal()
+        if self.state["last_dividend_day"] == day:
+            return 0.0
+        self.state["last_dividend_day"] = day
+        f = self.state["fund"]
+        each = min(FUND_DIVIDEND_CAP,
+                   round(f["balance"] * FUND_DIVIDEND_SHARE / len(self._personas), 2))
+        if each <= 0:
+            return 0.0
+        for name, p in self._personas.items():
+            f["balance"] = round(f["balance"] - each, 2)
+            f["out"] = round(f["out"] + each, 2)
+            p.scratch.wallet = round(getattr(p.scratch, "wallet", 0.0) + each, 2)
+            self._relax_stress(p.scratch)
+            self._log_pay("dividend", name, each, None)
+        print(f"[Payday] community dividend ${each:.2f} each "
+              f"(fund ${f['balance']:.0f})")
+        self.save()
+        return each
+
+    def _staff_meal(self, name, scratch, on_site_min, sim_time):
+        """GA_JOBS: a broke employee on shift is fed once a day (venue eats the
+        cost). Without it a $1 wallet means an empty fridge and no way out."""
+        if on_site_min < 30 or getattr(scratch, "wallet", 0) >= 30:
+            return
+        fed = self.__dict__.setdefault("_staff_fed", {})
+        if fed.get(name) == sim_time.toordinal():
+            return
+        fed[name] = sim_time.toordinal()
+        needs = getattr(scratch, "needs", None)
+        if isinstance(needs, dict):
+            needs["hunger"] = max(needs.get("hunger", 0), 75)
+        print(f"[Economy] {name} fed a staff meal on shift "
+              f"(wallet ${getattr(scratch, 'wallet', 0):.0f})")
+
     def pay_employees(self, sim_time):
         """10 PM daily: each employee gets 10% of the venue's daily
         intake (floor $5), from the till — owner tops up from wallet if
@@ -308,6 +493,7 @@ class EconomyManager:
             if self.state["last_wage_day"] == day or not self._personas:
                 return
             self.state["last_wage_day"] = day
+            self.pay_community(sim_time)
             for vid, emps in self.state["employees"].items():
                 intake = self.state["daily_intake"].get(vid, 0.0)
                 if not emps:
@@ -319,6 +505,12 @@ class EconomyManager:
                 for name in emps:
                     if name not in self._personas:
                         continue
+                    if jobs_enabled():
+                        _pm = self.__dict__.setdefault("_presence", {}).pop(name, 0.0)
+                        if _pm < MIN_SHIFT_PRESENCE_MIN:
+                            print(f"[Economy] {name} no-show at {VENUES[vid]['name']} "
+                                  f"({_pm:.0f} min on site) — no wage")
+                            continue
                     till = self.state["tills"][vid]
                     from_till = min(per, max(0.0, till))
                     from_owner = round(per - from_till, 2)
@@ -334,6 +526,8 @@ class EconomyManager:
                     print(f"[Economy] {name} earned ${per:.2f} shift wage "
                           f"at {VENUES[vid]['name']} "
                           f"(wallet ${s.wallet:.0f})")
+            if jobs_enabled():
+                self.__dict__.setdefault("_presence", {}).clear()
             self._owner_draws(sim_time)
             self.save()
         except Exception as e:
@@ -381,6 +575,8 @@ class EconomyManager:
             draw = round(max(0.0, till - cfg["float"] - reserve), 2)
             if draw > 0:
                 self.state["tills"][vid] = round(till - draw, 2)
+                draw = round(draw - self._tax_to_fund(
+                    draw, FUND_DRAW_TAX, vid, "draw tax"), 2)
                 s = self._personas[owner].scratch
                 s.wallet = round(getattr(s, "wallet", 0.0) + draw, 2)
                 self._relax_stress(s)
@@ -591,6 +787,7 @@ class EconomyManager:
                               self.state["employees"].items()},
                 "postings": {v: p for v, p in self.state["postings"].items()},
                 "daily_intake": dict(self.state["daily_intake"]),
+                "fund": dict(self.state["fund"]),
             }
         except Exception:
             return {}

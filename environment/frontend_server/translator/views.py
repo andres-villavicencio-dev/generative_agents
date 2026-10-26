@@ -409,6 +409,19 @@ def get_agent_needs(request, sim_code, persona_name):
     })
 
 
+def get_agent_cards(request, sim_code):
+    """Live wallet / needs / fridge / job per agent (backend snapshot every ~1 sim-minute)."""
+    for base in ("storage", "compressed_storage"):
+        path = f"{base}/{sim_code}/resources/agent_cards.json"
+        if os.path.exists(path):
+            try:
+                with open(path) as f:
+                    return JsonResponse(json.load(f))
+            except (json.JSONDecodeError, IOError):
+                break
+    return JsonResponse({})
+
+
 def get_world_resources(request, sim_code):
     resource_paths = [
         f"storage/{sim_code}/resources/world_state.json",

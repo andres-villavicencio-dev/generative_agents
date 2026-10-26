@@ -134,11 +134,11 @@ def test_owners_and_employees_get_no_civic_task(monkeypatch):
     assert e.pick_civic_task("Maria Lopez", t) is not None
 
 
-def test_half_percent_tax_on_small_sales_is_not_rounded_away(monkeypatch):
+def test_tax_on_tiny_sales_is_not_rounded_away(monkeypatch):
     monkeypatch.setenv("GA_COMMUNITY", "1")
     e, _ = _econ()
     till = e.state["tills"]["cafe"]
-    for _ in range(200):                      # 200 x $1.00 sales = $200
-        e.credit_sale("cafe", "coffee", 1, "Klaus Mueller", 1.0)
-    assert e.state["fund"]["balance"] == 1.0  # 0.5% of $200
-    assert abs(e.state["tills"]["cafe"] - (till + 199.0)) < 0.011
+    for _ in range(200):                      # 200 x $0.10 sales = $20; 5% = half a cent each
+        e.credit_sale("cafe", "coffee", 1, "Klaus Mueller", 0.10)
+    assert e.state["fund"]["balance"] == 1.0  # 5% of $20, carried across sales
+    assert abs(e.state["tills"]["cafe"] - (till + 19.0)) < 0.011

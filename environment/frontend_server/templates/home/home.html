@@ -122,7 +122,7 @@
 								'<span style="position:absolute; top:-2px; height:18px; width:2px; background:#333; left:' + (100 * v.yesterday / mx).toFixed(1) + '%"></span></span>' +
 								'<span style="width:5.5em; text-align:right">$' + v.today.toFixed(2) + '</span></div>';
 						}).join("");
-						document.getElementById("rs-taxsum").textContent = "· 0.5% to the fund";
+						document.getElementById("rs-taxsum").textContent = "· sales tax goes to the fund";
 						tEl.innerHTML = sl.recent.length ? sl.recent.map(function(r) {
 							return '<tr><td style="color:#777">' + (r.t || "") + '</td><td>' + r.buyer + '</td><td>' + (r.item || "") +
 								'</td><td>' + (r.venue || "").replace("The ", "").split(" ")[0] + '</td><td style="text-align:right">$' + r.price.toFixed(2) + '</td></tr>';
@@ -177,6 +177,7 @@
 					  <p style="font-size:1.2em"><strong>Current Action:</strong> <br><span id="current_action__{{ p_name_os }}"></span></p>
 					  <p style="font-size:1.2em"><strong>Location:</strong> <br><span id="target_address__{{ p_name_os }}"></span></p>
 					  <p style="font-size:1.2em"><strong>Current Conversation:</strong> <br><span id="chat__{{ p_name_os }}"></span></p>
+					  <div class="agent-card-stats" id="card__{{ p_name_os }}" style="font-size:1.05em; color:#333">…</div>
 					</div>
 			  </div>
 			</div>	
@@ -201,6 +202,37 @@
 <!-- partial -->
 <script src='https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js'></script>
 <script src="{% static 'js/rich_anims.js' %}?v=20261022a"></script>
+
+		<script>
+		(function() {
+			var SIM = "{{ sim_code }}";
+			var NEEDS = ["hunger","energy","hydration","hygiene","bladder","social","comfort","stimulation","status"];
+			function bar(k, v) {
+				var c = v < 20 ? "#B22222" : (v < 45 ? "#d98e04" : "#3d8b5f");
+				return '<span style="display:inline-block; width:11.5em; margin:1px 1.2em 1px 0"><span style="display:inline-block; width:6em">' + k + '</span>' +
+					'<span style="display:inline-block; width:3.8em; height:9px; background:#d0d0d0; border-radius:3px; vertical-align:middle">' +
+					'<span style="display:block; height:9px; width:' + Math.max(0, Math.min(100, v)) + '%; background:' + c + '; border-radius:3px"></span></span> ' + v + '</span>';
+			}
+			function cards() {
+				fetch("/api/agent_cards/" + SIM + "/").then(function(r){ return r.json(); }).then(function(d) {
+					Object.keys(d).forEach(function(name) {
+						var el = document.getElementById("card__" + name.replace(/ /g, "_"));
+						if (!el) return;
+						var c = d[name], f = c.fridge || {};
+						var fr = ["eggs","bread","milk","coffee_beans"].map(function(k){ return k.replace("_beans","") + " " + (f[k] === undefined ? "–" : f[k]); }).join(" · ");
+						var broke = c.wallet < 30;
+						var work = c.job ? "job: " + c.job : (c.civic ? "civic: " + c.civic : "no job");
+						el.innerHTML = '<div><strong>Wallet:</strong> <span style="color:' + (broke ? "#B22222" : "#3d8b5f") + '">$' + c.wallet.toFixed(2) + '</span>' +
+							' &nbsp;·&nbsp; <strong>Stress:</strong> ' + c.stress + ' &nbsp;·&nbsp; ' + work + '</div>' +
+							'<div><strong>Fridge:</strong> ' + fr + '</div>' +
+							'<div style="margin-top:2px">' + NEEDS.filter(function(k){ return c.needs[k] !== undefined; }).map(function(k){ return bar(k, c.needs[k]); }).join("") + '</div>' +
+							(c.goals && c.goals.length ? '<div style="color:#777"><strong>Goals:</strong> ' + c.goals.join(" · ") + '</div>' : "");
+					});
+				}).catch(function(){});
+			}
+			cards(); setInterval(cards, 10000);
+		})();
+		</script>
 {% include 'home/main_script.html' %}
 {% endblock content %}
 

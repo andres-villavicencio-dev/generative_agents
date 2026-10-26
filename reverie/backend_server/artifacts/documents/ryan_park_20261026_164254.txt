@@ -1,0 +1,7 @@
+Technical Review and App Progress Log – Wednesday, February 15
+
+I woke at 9:00 AM, completed the morning routine, and reviewed the day’s priorities. My main focus is finishing the mobile app: reviewing requirements, planning the architecture, building the core features, testing, and documenting the technical decisions. I also want to research the latest technologies so I can stay ahead of the curve.
+
+The technical decisions I’ve made so far are pragmatic and focused on maintainability. I chose a modular architecture with a clear separation of concerns, which makes the code easier to extend and debug. The core features follow a straightforward user flow, with the main screens and navigation kept simple. I’ve prioritized the most frequently used paths and avoided over-engineering the current scope.
+
+I am still evaluating whether to use a more modern framework for the backend and whether to refactor the existing dependencies. These decisions will be documented in the technical decision...

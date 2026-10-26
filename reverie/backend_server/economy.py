@@ -112,6 +112,7 @@ EMPLOYEE_WAGE_SHARE = 0.10    # of venue's daily sales, per employee
 EMPLOYE_WAGE_FLOOR = 5.0      # a shift always pays at least this
 SHIFT_START, SHIFT_END = 10, 14   # GA_JOBS: paid shift window (sim hours)
 MIN_SHIFT_PRESENCE_MIN = 60       # GA_JOBS: minutes on site to earn the wage
+CIVIC_PRESENCE_MIN = 30           # GA_COMMUNITY: civic task wage (agents reached sites ~60-100 min at most)
 
 
 def jobs_enabled():
@@ -120,8 +121,8 @@ def jobs_enabled():
 
 # Community fund (GA_COMMUNITY): tax accumulates, community work and the
 # Monday dividend are paid out of it — nothing is created from nothing.
-FUND_SALES_TAX = 0.005        # 0.5% of every venue sale, taken at the register (buyer pays the same price)
-FUND_DRAW_TAX = 0.10          # of every owner draw
+FUND_SALES_TAX = 0.05         # 5% of every venue sale, taken at the register (buyer pays the same price)
+FUND_DRAW_TAX = 0.20          # of every owner draw
 FUND_SEED = 150.0             # starting balance of a new fund (a town treasury)
 FUND_DIVIDEND_SHARE = 0.5     # of the fund shared out each Monday
 FUND_DIVIDEND_CAP = 40.0      # per agent
@@ -433,7 +434,7 @@ class EconomyManager:
         owed = {}
         for name, tid in self.state["civic"].items():
             mins = cp.get(name, 0.0)
-            if mins >= MIN_SHIFT_PRESENCE_MIN and name in (self._personas or {}):
+            if mins >= CIVIC_PRESENCE_MIN and name in (self._personas or {}):
                 owed[name] = round(CIVIC_TASKS[tid]["rate"] * mins / 60.0, 2)
         cp.clear()
         f = self._fund()

@@ -1,0 +1,11 @@
+Wednesday, February 15
+
+After John shared the mayoral candidates’ proposals, I organized my notes and looked for a practical way to compare them. My goal was simple: improve value and quality without making the proposals overly complicated.
+
+On value, I compared the proposals with the café’s sales records. The lowest-cost option falls within the $4.50–$6.50 range, while higher-priced proposals offer better ingredients, more consistent portions, or additional services. I also checked menu prices and timing: a slower breakfast or lunch could be more expensive if served later, and a rushed service might lower quality. The proposals should not simply be priced differently; their actual execution matters.
+
+On quality, the oatmeal and banana-slice proposal stands out. The oatmeal is prepared fresh, while the banana slices are fresh, not pre-cut and preserved. This simple difference affects both taste and cost. The proposal may also include more balanced portions and better presentation, though the exact benefits depend on whether the café follows the same serving standards as before.
+
+Implementation matters most. I need to test the proposals with a realistic lunch or breakfast order, check whether the quality differences are reproducible, and compare them with the café’s actual sales figures. The proposals should remain straightforward and achievable, so voters can understand what is being offered without feeling overwhelmed.
+
+Eddy Lin

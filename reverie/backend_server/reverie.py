@@ -1109,6 +1109,18 @@ class ReverieServer:
       if any(keyword in longer for longer in _matched):
         continue
       _matched.append(keyword)
+      # Cafe prep is stocked by the venue (the daily wholesale delivery is
+      # already booked in the economy ledger). Drawing it from the owner's
+      # HOME fridge as well emptied it in a few sub-tasks and left her
+      # repeatedly unable to cook (74 depletion events/day in communityexp).
+      if (keyword in ("preparing cafe", "preparing food")
+          and "hobbs cafe" in (persona.scratch.act_address or "").lower()):
+        try:
+          from economy import community_enabled
+          if community_enabled():
+            continue
+        except Exception:
+          pass
 
       for resource_pattern, item, amount in consumptions:
         # Find matching resource address based on pattern and persona location
@@ -1354,6 +1366,43 @@ class ReverieServer:
     except Exception as e:
       print(f"[Payday] Warning: store till sweep failed: {e}")
       return 0.0
+
+  def _write_agent_cards(self):
+    """Snapshot of each agent's live money/needs/fridge for the home-page
+    cards (scratch.json only refreshes at checkpoints). Atomic write; the
+    frontend reads resources/agent_cards.json."""
+    try:
+      civic = {}
+      if self.economy is not None:
+        civic = self.economy.state.get("civic", {}) or {}
+      cards = {}
+      for name, p in self.personas.items():
+        sc = p.scratch
+        first = name.split()[0].lower()
+        fridge = {}
+        for addr, st in self.resource_manager.world_state.items():
+          if "refrigerator" in addr.lower() and first in addr.lower():
+            fridge = {k: round(v, 1) for k, v in st.items()
+                      if isinstance(v, (int, float))}
+            break
+        job = getattr(sc, "job", None)
+        cards[name] = {
+          "wallet": round(getattr(sc, "wallet", 0.0) or 0.0, 2),
+          "stress": round(getattr(sc, "financial_stress", 0.0) or 0.0, 2),
+          "needs": {k: round(v) for k, v in (getattr(sc, "needs", None) or {}).items()
+                    if isinstance(v, (int, float))},
+          "job": (job.get("venue") or job.get("role")) if isinstance(job, dict) else None,
+          "civic": civic.get(name),
+          "fridge": fridge,
+          "goals": list(getattr(sc, "resource_goals", []) or [])[:3],
+        }
+      out = os.path.join(self.sim_folder, "resources", "agent_cards.json")
+      tmp = out + ".tmp"
+      with open(tmp, "w") as f:
+        json.dump(cards, f)
+      os.replace(tmp, out)
+    except Exception as e:
+      print(f"[Reverie] agent cards snapshot failed ({e.__class__.__name__})")
 
   def _check_and_do_payday(self):
     """Phase 5: Weekly payday — credit each agent a role-based income every
@@ -1946,6 +1995,9 @@ class ReverieServer:
               self.economy.try_hire_encounters(_paths)
             except Exception as _econ_err:
               print(f"[Economy] tick failed ({_econ_err.__class__.__name__})")
+
+          if self.step % 6 == 0:
+            self._write_agent_cards()
 
           # Phase 5: Weekly payday check
           try:

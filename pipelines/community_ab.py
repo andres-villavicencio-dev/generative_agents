@@ -22,8 +22,11 @@ EXP = ("Environment=GA_COMMUNITY=1\nEnvironment=GA_PAYDAY=1\nEnvironment=GA_JOBS
 
 if __name__ == "__main__":
     res = []
-    for sim, unit, exp in (("communityctl", "ga-communityctl", False),
-                           ("communityexp", "ga-communityexp", True)):
+    arms = (("communityctl", "ga-communityctl", False),
+            ("communityexp", "ga-communityexp", True))
+    if os.environ.get("AB_ONLY_EXP") == "1":   # baseline = existing adaptctl/verify_1
+        arms = arms[1:]
+    for sim, unit, exp in arms:
         base = c.ENV_BASE
         c.ENV_BASE = base + (EXP if exp else "")
         res.append(c.run_arm(sim, unit, "0"))

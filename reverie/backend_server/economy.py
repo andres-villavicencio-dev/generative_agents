@@ -120,8 +120,9 @@ def jobs_enabled():
 
 # Community fund (GA_COMMUNITY): tax accumulates, community work and the
 # Monday dividend are paid out of it — nothing is created from nothing.
-FUND_SALES_TAX = 0.05         # of every venue sale, skimmed at the register
+FUND_SALES_TAX = 0.005        # 0.5% of every venue sale, taken at the register (buyer pays the same price)
 FUND_DRAW_TAX = 0.10          # of every owner draw
+FUND_SEED = 150.0             # starting balance of a new fund (a town treasury)
 FUND_DIVIDEND_SHARE = 0.5     # of the fund shared out each Monday
 FUND_DIVIDEND_CAP = 40.0      # per agent
 CIVIC_START, CIVIC_END = 10, 16
@@ -180,7 +181,7 @@ class EconomyManager:
             "last_restock_wage_day": -1,
             "last_wage_day": -1,
             "yesterday_sales": 0.0,
-            "fund": {"balance": 0.0, "in": 0.0, "out": 0.0},
+            "fund": {"balance": 0.0, "in": 0.0, "out": 0.0, "seeded": False},
             "civic": {},               # persona -> task id taken today
             "civic_day": -1,
             "civic_paid_day": -1,
@@ -370,14 +371,28 @@ class EconomyManager:
         (0 when GA_COMMUNITY is off). The caller removes it from the payer."""
         if not community_enabled() or amount <= 0:
             return 0.0
-        tax = round(amount * rate, 2)
+        # whole cents only: the sub-cent remainder carries to the next sale,
+        # so a 0.5% tax on a $1 item is not rounded away
+        f = self._fund()
+        owed = amount * rate + f.get("carry", 0.0)
+        tax = round(int(owed * 100) / 100.0, 2)
+        f["carry"] = round(owed - tax, 6)
         if tax <= 0:
             return 0.0
-        f = self.state["fund"]
         f["balance"] = round(f["balance"] + tax, 2)
         f["in"] = round(f["in"] + tax, 2)
         self._log_pay("tax", why, tax, venue_id)
         return tax
+
+    def _fund(self):
+        """The fund dict; a new fund gets its one-off seed (GA_COMMUNITY only)."""
+        f = self.state["fund"]
+        if community_enabled() and not f.get("seeded"):
+            f["seeded"] = True
+            f["balance"] = round(f["balance"] + FUND_SEED, 2)
+            f["in"] = round(f["in"] + FUND_SEED, 2)
+            self._log_pay("seed", "town treasury", FUND_SEED, None)
+        return f
 
     def _at_task(self, tid, address):
         a = (address or "").lower()
@@ -394,6 +409,9 @@ class EconomyManager:
             self.state["civic"] = {}
         if name in self.state["civic"]:
             return None
+        if any(name in e for e in self.state["employees"].values()) or any(
+                c["owner"] == name for c in VENUES.values()):
+            return None                      # owners and employees have a job
         taken = list(self.state["civic"].values())
         free = {t: c["slots"] - taken.count(t) for t, c in CIVIC_TASKS.items()}
         tid = max(free, key=free.get)
@@ -418,7 +436,7 @@ class EconomyManager:
             if mins >= MIN_SHIFT_PRESENCE_MIN and name in (self._personas or {}):
                 owed[name] = round(CIVIC_TASKS[tid]["rate"] * mins / 60.0, 2)
         cp.clear()
-        f = self.state["fund"]
+        f = self._fund()
         total = sum(owed.values())
         scale = min(1.0, f["balance"] / total) if total > 0 else 0.0
         for name, amt in owed.items():
@@ -451,7 +469,7 @@ class EconomyManager:
         if self.state["last_dividend_day"] == day:
             return 0.0
         self.state["last_dividend_day"] = day
-        f = self.state["fund"]
+        f = self._fund()
         each = min(FUND_DIVIDEND_CAP,
                    round(f["balance"] * FUND_DIVIDEND_SHARE / len(self._personas), 2))
         if each <= 0:
@@ -706,6 +724,7 @@ class EconomyManager:
                     posting.setdefault("applicants", []).append(name)
                     if self._decide_hire(vid, name):
                         self.state["employees"][vid].append(name)
+                        self.state["civic"].pop(name, None)   # job beats civic work
                         s = self._personas[name].scratch
                         s.job = {"venue": vid, "employer": cfg["owner"],
                                  "wage_share": EMPLOYEE_WAGE_SHARE}

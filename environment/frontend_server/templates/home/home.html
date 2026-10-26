@@ -51,6 +51,9 @@
 			<div class="row" style="margin-top:0.4em; font-size:1.0em">
 				<div class="col-md-12"><strong>Activity:</strong> <span id="rs-activity">…</span></div>
 			</div>
+			<div class="row" style="margin-top:0.4em; font-size:1.0em">
+				<div class="col-md-12"><strong>Community fund:</strong> <span id="rs-fund">…</span></div>
+			</div>
 			<div class="row" style="margin-top:0.4em; font-size:0.95em; color:#555">
 				<div class="col-md-4">Engine: <span id="rs-enginedetail">…</span></div>
 				<div class="col-md-4">Services: <span id="rs-services">…</span></div>
@@ -94,6 +97,10 @@
 							(lc ? " · last: " + lc.caller + (lc.persona ? " (" + lc.persona + ")" : "") + " " + dur(lc.age_s) + " ago" : "");
 						actEl.style.color = (lc && lc.age_s > 180) ? "#B22222" : "";
 					} else { actEl.textContent = "—"; }
+
+					var fd = s.fund, fdEl = document.getElementById("rs-fund");
+					fdEl.textContent = fd ? "$" + fd.balance.toFixed(2) + " (collected $" + fd["in"].toFixed(2) +
+						" · paid out $" + fd.out.toFixed(2) + ")" : "off / none yet";
 
 					var g = s.gpu;
 					document.getElementById("rs-gpu").textContent = g ? (g.util + "% · " + g.vram_used + "/" + g.vram_total + " MB") : "—";

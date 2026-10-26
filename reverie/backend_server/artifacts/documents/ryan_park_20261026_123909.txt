@@ -1,0 +1,14 @@
+Test Case for the New Feature: Automated Build and Deployment Pipeline
+
+Feature: The automated build and deployment pipeline should verify that the latest code compiles without errors, runs the required unit and integration tests, and deploys the updated artifact to the production environment.
+
+Test Steps:
+
+1. Pull the latest code from the repository and run the automated build.
+2. Verify that the build completes without errors and that the generated artifact is stored in the expected location.
+3. Execute the unit and integration tests defined in the feature’s test suite.
+4. Confirm that all tests pass and that the test results are recorded in the test report.
+5. Trigger the deployment process and confirm that the updated artifact is deployed to production.
+6. Check the production environment for the expected changes and verify that the application behaves correctly.
+7. Retest the deployed changes and record any failures or regressions.
+8. Document the test steps, results, and any d...

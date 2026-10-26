@@ -27,6 +27,7 @@ def _econ(tmp=None):
         town[n] = types.SimpleNamespace(name=n, scratch=sc)
     e = EconomyManager(tmp or tempfile.mkdtemp())
     e.attach(llm=lambda p: "NO", personas=town, bulletin=lambda t: None)
+    e.state["fund"]["seeded"] = True          # tests start from an empty fund
     return e, town
 
 
@@ -51,8 +52,9 @@ def test_sales_tax_goes_to_fund_and_till_gets_net(monkeypatch):
     e, _ = _econ()
     till = e.state["tills"]["cafe"]
     e.credit_sale("cafe", "coffee", 1, "Klaus Mueller", 100.0)
-    assert e.state["fund"]["balance"] == 5.0
-    assert e.state["tills"]["cafe"] == till + 95.0
+    tax = 100.0 * economy.FUND_SALES_TAX
+    assert e.state["fund"]["balance"] == tax
+    assert e.state["tills"]["cafe"] == till + 100.0 - tax
     assert e.state["daily_intake"]["cafe"] == 100.0
 
 
@@ -75,7 +77,7 @@ def test_fund_persists(monkeypatch):
     e, _ = _econ(tmp)
     e.credit_sale("cafe", "coffee", 1, "Klaus Mueller", 100.0)
     e.save()
-    assert EconomyManager(tmp).state["fund"]["balance"] == 5.0
+    assert EconomyManager(tmp).state["fund"]["balance"] == 100.0 * economy.FUND_SALES_TAX
 
 
 def test_community_pay_needs_presence_and_respects_fund(monkeypatch):
@@ -112,3 +114,31 @@ def test_dividend_capped_and_never_exceeds_fund(monkeypatch):
     assert each == economy.FUND_DIVIDEND_CAP
     assert e.state["fund"]["balance"] == 1000.0 - each * len(NAMES)
     assert e.pay_dividend(datetime.datetime(2023, 2, 20, 7, 0, 0)) == 0.0
+
+
+def test_new_fund_is_seeded_once(monkeypatch):
+    monkeypatch.setenv("GA_COMMUNITY", "1")
+    e, _ = _econ()
+    e.state["fund"].update(seeded=False, balance=0.0, **{"in": 0.0})
+    assert e._fund()["balance"] == economy.FUND_SEED
+    assert e._fund()["balance"] == economy.FUND_SEED
+
+
+def test_owners_and_employees_get_no_civic_task(monkeypatch):
+    monkeypatch.setenv("GA_COMMUNITY", "1")
+    e, _ = _econ()
+    e.state["employees"]["cafe"] = ["Klaus Mueller"]
+    t = datetime.datetime(2023, 2, 15, 9, 0, 0)
+    assert e.pick_civic_task("Isabella Rodriguez", t) is None   # cafe owner
+    assert e.pick_civic_task("Klaus Mueller", t) is None        # employee
+    assert e.pick_civic_task("Maria Lopez", t) is not None
+
+
+def test_half_percent_tax_on_small_sales_is_not_rounded_away(monkeypatch):
+    monkeypatch.setenv("GA_COMMUNITY", "1")
+    e, _ = _econ()
+    till = e.state["tills"]["cafe"]
+    for _ in range(200):                      # 200 x $1.00 sales = $200
+        e.credit_sale("cafe", "coffee", 1, "Klaus Mueller", 1.0)
+    assert e.state["fund"]["balance"] == 1.0  # 0.5% of $200
+    assert abs(e.state["tills"]["cafe"] - (till + 199.0)) < 0.011

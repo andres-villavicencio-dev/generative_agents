@@ -755,6 +755,16 @@ def get_run_stats(request, sim_code):
     except OSError:
         pass
 
+    # --- community fund (GA_COMMUNITY): balance + lifetime in/out ---
+    stats["fund"] = None
+    try:
+        with open(f"storage/{sim_code}/resources/economy_v2.json") as f:
+            fund = json.load(f).get("fund")
+        if fund:
+            stats["fund"] = {k: fund.get(k, 0.0) for k in ("balance", "in", "out")}
+    except (IOError, ValueError):
+        pass
+
     return JsonResponse(stats)
 
 

@@ -15,15 +15,16 @@ import chatfix_ab as c
 c.ORIGIN, c.CKPT, c.ORIGIN_LAST_MV = "verify_1", 17280, 17279
 c.STEPS = int(os.environ.get("AB_STEPS", "6000"))
 c.END_STEP = c.CKPT + c.STEPS
-c.MAX_WALL_S = 6 * 3600
+c.MAX_WALL_S = int(float(os.environ.get("AB_MAX_HOURS", "6")) * 3600)
 EXP = ("Environment=GA_COMMUNITY=1\nEnvironment=GA_PAYDAY=1\nEnvironment=GA_JOBS=1\n"
        "Environment=GA_LESSONS=1\nEnvironment=GA_DIVIDEND_WEEKDAY=2\n"
-       "Environment=GA_DIVIDEND_HOUR=21\n")
+       "Environment=GA_DIVIDEND_HOUR=21\nEnvironment=GA_HOME_FRIDGES=1\n")
 
 if __name__ == "__main__":
     res = []
+    sfx = os.environ.get("AB_SUFFIX", "")      # e.g. "2" -> communityexp2
     arms = (("communityctl", "ga-communityctl", False),
-            ("communityexp", "ga-communityexp", True))
+            ("communityexp" + sfx, "ga-communityexp" + sfx, True))
     if os.environ.get("AB_ONLY_EXP") == "1":   # baseline = existing adaptctl/verify_1
         arms = arms[1:]
     for sim, unit, exp in arms:
@@ -31,5 +32,5 @@ if __name__ == "__main__":
         c.ENV_BASE = base + (EXP if exp else "")
         res.append(c.run_arm(sim, unit, "0"))
         c.ENV_BASE = base
-        json.dump(res, open(f"{c.REPO}/community_ab_runs.json", "w"), indent=1)
+        json.dump(res, open(f"{c.REPO}/community_ab_runs{os.environ.get('AB_SUFFIX', '')}.json", "w"), indent=1)
     print("DONE", res, flush=True)

@@ -1,4 +1,4 @@
-"""Outcome memory: what failed recently, and why (GA_LESSONS=1 enables).
+"""Outcome memory: what failed recently, and why (on by default; GA_LESSONS=0 disables).
 
 Before this, a failed purchase / empty fridge became a one-off memory event and
 a one-replan fallback goal; the next day's plan repeated the same attempt
@@ -22,7 +22,7 @@ _MAX = 40
 
 
 def enabled():
-  return os.environ.get("GA_LESSONS", "0") == "1"
+  return os.environ.get("GA_LESSONS", "1") == "1"
 
 
 def _key(kind, target):

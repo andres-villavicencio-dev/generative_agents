@@ -204,6 +204,9 @@ class WorldResourceManager:
             print("[ResourceManager] Initializing with default world state")
             self.world_state = dict(self.DEFAULT_WORLD_STATE)
 
+        # name -> that persona's home fridge address (GA_HOME_FRIDGES)
+        self.home_fridge_of = {}
+
         # Seed venue shelves added after this sim's world_state was saved
         # (e.g. the luxury display, Oct 22 2026) with their full stock now —
         # waiting for the 6 AM delivery left a day with nothing to buy.
@@ -630,6 +633,29 @@ class WorldResourceManager:
         with self._lock_mutex:
             self._cleanup_expired_locks(self.current_tick)
             return self.resource_locks.get(lock_key)
+
+    HOME_FRIDGE_STOCK = {"eggs": 6, "bread": 4, "milk": 1.0, "coffee_beans": 1.0}
+
+    def ensure_home_fridges(self, personas):
+        """GA_HOME_FRIDGES=1: every agent gets a home fridge — one per household
+        (shared by everyone whose living area is in the same house). The three
+        original fridges (Isabella, Klaus, Maria) are kept as they are."""
+        self.home_fridge_of = {}
+        if os.environ.get("GA_HOME_FRIDGES", "1") != "1":
+            return
+        for name, p in personas.items():
+            first = name.split()[0].lower()
+            own = next((a for a in self.world_state
+                        if "refrigerator" in a.lower() and first in a.lower()), None)
+            if own is None:
+                la = getattr(p.scratch, "living_area", None) or ""
+                parts = la.split(":")
+                sector = parts[1].strip() if len(parts) > 1 else f"{name}'s home"
+                own = f"{sector}:kitchen:refrigerator"
+                if own not in self.world_state:
+                    self.world_state[own] = dict(self.HOME_FRIDGE_STOCK,
+                                                 last_restocked="February 13, 2023, 06:00:00")
+            self.home_fridge_of[name] = own
 
     def save(self, sim_folder=None):
         """

@@ -72,7 +72,7 @@ def test_presence_outside_shift_does_not_count(monkeypatch):
 
 
 def test_flag_off_keeps_legacy_pay(monkeypatch):
-    monkeypatch.delenv("GA_JOBS", raising=False)
+    monkeypatch.setenv("GA_JOBS", "0")
     e, town = _econ()
     e.pay_employees(datetime.datetime(2023, 2, 15, 22, 0, 0))
     assert town["Klaus Mueller"].scratch.wallet > 100.0

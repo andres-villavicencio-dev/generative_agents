@@ -117,7 +117,7 @@ CIVIC_PRESENCE_MIN = 30           # GA_COMMUNITY: civic task wage (agents reache
 
 def jobs_enabled():
     import os
-    return os.environ.get("GA_JOBS", "0") == "1"
+    return os.environ.get("GA_JOBS", "1") == "1"
 
 # Community fund (GA_COMMUNITY): tax accumulates, community work and the
 # Monday dividend are paid out of it — nothing is created from nothing.
@@ -140,7 +140,7 @@ CIVIC_TASKS = {
 
 def community_enabled():
     import os
-    return os.environ.get("GA_COMMUNITY", "0") == "1"
+    return os.environ.get("GA_COMMUNITY", "1") == "1"
 
 
 WAGE_HOUR = 22                # 10 PM: employee payday + daily owner draw

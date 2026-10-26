@@ -41,7 +41,8 @@ def _work(e, who, address, minutes, hour=10):
         e.record_presence(t)
 
 
-def test_off_by_default():
+def test_off_when_disabled(monkeypatch):
+    monkeypatch.setenv("GA_COMMUNITY", "0")
     e, _ = _econ()
     e.credit_sale("cafe", "coffee", 1, "Klaus Mueller", 100.0)
     assert e.state["fund"]["balance"] == 0.0

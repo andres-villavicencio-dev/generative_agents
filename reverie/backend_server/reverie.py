@@ -249,6 +249,8 @@ class ReverieServer:
     # Attach to maze for easy access throughout the cognitive modules
     self.maze.resource_manager = self.resource_manager
 
+    self.resource_manager.ensure_home_fridges(self.personas)
+
     # Economy v2 (Oct 2026): the 25-agent town economy — per-venue tills,
     # owner draws, restock job, student stipends, LLM hiring market.
     # Gate GA_ECONOMY2 (default ON; =0 opts out). Fail-open everywhere.
@@ -996,11 +998,12 @@ class ReverieServer:
 
       # Which home fridge does this persona own?
       persona_first = persona.name.split()[0].lower()
-      home_fridge = None
-      for address in self.resource_manager.world_state:
-        if "refrigerator" in address.lower() and persona_first in address.lower():
-          home_fridge = address
-          break
+      home_fridge = self.resource_manager.home_fridge_of.get(persona.name)
+      if not home_fridge:
+        for address in self.resource_manager.world_state:
+          if "refrigerator" in address.lower() and persona_first in address.lower():
+            home_fridge = address
+            break
       if not home_fridge:
         return  # no home fridge to stock
 
@@ -1094,6 +1097,7 @@ class ReverieServer:
     act_lower = act_description.lower()
     persona_name = persona.name
     curr_location = persona.scratch.act_address or ""
+    persona_first = persona_name.split()[0].lower()
 
     all_success = True
 
@@ -1135,7 +1139,8 @@ class ReverieServer:
 
           # Prefer persona's own resources (their apartment/home)
           persona_first = persona_name.split()[0].lower()
-          is_home = persona_first in address_lower
+          is_home = (persona_first in address_lower
+                     or address == self.resource_manager.home_fridge_of.get(persona_name))
 
           # Check location match
           location_match = False
@@ -1269,6 +1274,11 @@ class ReverieServer:
         if not consumed:
           for address in self.resource_manager.world_state:
             if resource_pattern.lower() in address.lower():
+              # never draw another household's fridge
+              if "refrigerator" in address.lower() and (
+                  address != self.resource_manager.home_fridge_of.get(persona_name)
+                  and persona_first not in address.lower()):
+                continue
               success = self.resource_manager.consume(address, item, amount)
               if success:
                 consumed = True
@@ -1380,11 +1390,13 @@ class ReverieServer:
         sc = p.scratch
         first = name.split()[0].lower()
         fridge = {}
-        for addr, st in self.resource_manager.world_state.items():
-          if "refrigerator" in addr.lower() and first in addr.lower():
-            fridge = {k: round(v, 1) for k, v in st.items()
-                      if isinstance(v, (int, float))}
-            break
+        _fa = self.resource_manager.home_fridge_of.get(name)
+        if _fa is None:
+          _fa = next((a for a in self.resource_manager.world_state
+                      if "refrigerator" in a.lower() and first in a.lower()), None)
+        if _fa in self.resource_manager.world_state:
+          fridge = {k: round(v, 1) for k, v in self.resource_manager.world_state[_fa].items()
+                    if isinstance(v, (int, float))}
         job = getattr(sc, "job", None)
         cards[name] = {
           "wallet": round(getattr(sc, "wallet", 0.0) or 0.0, 2),
@@ -1406,12 +1418,12 @@ class ReverieServer:
 
   def _check_and_do_payday(self):
     """Phase 5: Weekly payday — credit each agent a role-based income every
-    7 sim-days. DISABLED by default (Oct 2026, user call): env
-    GA_PAYDAY=1 re-enables. The store-owner till sweep is part of payday,
+    7 sim-days. ON by default (fund-paid dividend); env
+    GA_PAYDAY=0 disables. The store-owner till sweep is part of payday,
     so it is off with it; store income still flows through normal sales."""
-    if os.environ.get("GA_PAYDAY", "0") != "1":
+    if os.environ.get("GA_PAYDAY", "1") != "1":
       return
-    if os.environ.get("GA_COMMUNITY", "0") == "1":
+    if os.environ.get("GA_COMMUNITY", "1") == "1":
       # Fund-paid dividend replaces the printed role-based incomes.
       if self.economy is not None:
         self.economy.pay_dividend(self.curr_time)

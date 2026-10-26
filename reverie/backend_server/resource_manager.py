@@ -240,6 +240,18 @@ class WorldResourceManager:
                 print(f"[ResourceManager] Deduped legacy store key '{k}' "
                       f"into canonical '{canonical}'")
 
+        # Same split for the cafe: DEFAULT_WORLD_STATE carries a legacy
+        # 'Hobbs Cafe:front counter:prepared_food' (sandwiches 0) next to the
+        # canonical 'the Ville:Hobbs Cafe:cafe:counter' that the 6 AM delivery
+        # fills. Diners matched the legacy key first and found the cafe "out of
+        # sandwiches" all day. The canonical key wins; the legacy one is dropped.
+        for _legacy, _canon in (
+                ("Hobbs Cafe:front counter:prepared_food", "the Ville:Hobbs Cafe:cafe:counter"),
+                ("Hobbs Cafe:kitchen:coffee machine", "the Ville:Hobbs Cafe:cafe:coffee machine")):
+            if _legacy in self.world_state and _canon in self.world_state:
+                self.world_state.pop(_legacy)
+                print(f"[ResourceManager] Deduped legacy cafe key '{_legacy}'")
+
         # Resource locks for shared resources (concurrent contention)
         # Format: {address: {"locked_by": persona_name, "until_tick": tick_number}}
         self.resource_locks = {}

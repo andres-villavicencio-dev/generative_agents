@@ -27,3 +27,9 @@ def test_off_by_default(tmp_path, monkeypatch):
     rm = WorldResourceManager(str(tmp_path))
     rm.ensure_home_fridges({"Eddy Lin": _p("the Ville:Lin family's house:x")})
     assert rm.home_fridge_of == {}
+
+
+def test_legacy_cafe_counter_is_dropped(tmp_path):
+    rm = WorldResourceManager(str(tmp_path))
+    assert "Hobbs Cafe:front counter:prepared_food" not in rm.world_state
+    assert "the Ville:Hobbs Cafe:cafe:counter" in rm.world_state

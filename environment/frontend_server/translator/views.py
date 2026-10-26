@@ -765,6 +765,32 @@ def get_run_stats(request, sim_code):
     except (IOError, ValueError):
         pass
 
+    # --- sales: recent ticker + per-venue intake/till (economy v2 ledger) ---
+    stats["sales"] = None
+    try:
+        with open(f"storage/{sim_code}/resources/economy_v2.json") as f:
+            eco = json.load(f)
+        log = eco.get("pay_log", [])
+        taxes = [x for x in log if x.get("kind") == "tax" and x.get("who") == "sales tax"]
+        recent = [x for x in log if x.get("kind") == "sale"][-12:]
+        venues = {}
+        names = {"cafe": "Hobbs Cafe", "pub": "The Rose and Crown Pub",
+                 "grocery": "Harvey Oak Supply Store",
+                 "market": "The Willows Market and Pharmacy"}
+        for vid, label in names.items():
+            venues[label] = {"today": eco.get("daily_intake", {}).get(vid, 0.0),
+                             "yesterday": eco.get("yesterday_intake", {}).get(vid, 0.0),
+                             "till": eco.get("tills", {}).get(vid, 0.0)}
+        stats["sales"] = {
+            "recent": [{"buyer": x.get("who"), "venue": x.get("venue"),
+                        "item": x.get("note"), "price": x.get("amount"),
+                        "t": x.get("t")} for x in reversed(recent)],
+            "venues": venues,
+            "recent_tax": round(sum(x.get("amount", 0) for x in taxes), 2),
+        }
+    except (IOError, ValueError):
+        pass
+
     return JsonResponse(stats)
 
 

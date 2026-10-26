@@ -778,6 +778,9 @@ class EconomyManager:
     def _log_pay(self, kind, who, amount, venue_id, note=None):
         try:
             entry = {"kind": kind, "who": who, "amount": round(amount, 2)}
+            _t = getattr(self, "_presence_t", None)   # sim clock, set every step
+            if _t is not None:
+                entry["t"] = _t.strftime("%b %d %H:%M")
             if venue_id:
                 entry["venue"] = VENUES[venue_id]["name"]
             if note:

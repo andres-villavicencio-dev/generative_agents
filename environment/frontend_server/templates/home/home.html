@@ -54,6 +54,12 @@
 			<div class="row" style="margin-top:0.4em; font-size:1.0em">
 				<div class="col-md-12"><strong>Community fund:</strong> <span id="rs-fund">…</span></div>
 			</div>
+			<div class="row" style="margin-top:0.6em; font-size:0.95em">
+				<div class="col-md-7"><strong>Sales today by venue</strong> <span style="color:#777">(yesterday as tick)</span>
+					<div id="rs-venues" style="margin-top:0.3em">…</div></div>
+				<div class="col-md-5"><strong>Recent sales</strong> <span id="rs-taxsum" style="color:#777"></span>
+					<table id="rs-sales" style="width:100%; font-size:0.9em; margin-top:0.3em"></table></div>
+			</div>
 			<div class="row" style="margin-top:0.4em; font-size:0.95em; color:#555">
 				<div class="col-md-4">Engine: <span id="rs-enginedetail">…</span></div>
 				<div class="col-md-4">Services: <span id="rs-services">…</span></div>
@@ -101,6 +107,27 @@
 					var fd = s.fund, fdEl = document.getElementById("rs-fund");
 					fdEl.textContent = fd ? "$" + fd.balance.toFixed(2) + " (collected $" + fd["in"].toFixed(2) +
 						" · paid out $" + fd.out.toFixed(2) + ")" : "off / none yet";
+
+					// Sales: per-venue bars (today, tick = yesterday) + recent-sales ticker
+					var sl = s.sales, vEl = document.getElementById("rs-venues"), tEl = document.getElementById("rs-sales");
+					if (sl) {
+						var vs = sl.venues, mx = 1;
+						Object.keys(vs).forEach(function(k) { mx = Math.max(mx, vs[k].today, vs[k].yesterday); });
+						vEl.innerHTML = Object.keys(vs).map(function(k) {
+							var v = vs[k];
+							return '<div style="display:flex; align-items:center; margin:2px 0">' +
+								'<span style="width:11em">' + k + '</span>' +
+								'<span style="flex:1; background:#d8d8d8; height:14px; position:relative; border-radius:3px">' +
+								'<span style="display:block; height:14px; width:' + (100 * v.today / mx).toFixed(1) + '%; background:#3d8b5f; border-radius:3px"></span>' +
+								'<span style="position:absolute; top:-2px; height:18px; width:2px; background:#333; left:' + (100 * v.yesterday / mx).toFixed(1) + '%"></span></span>' +
+								'<span style="width:5.5em; text-align:right">$' + v.today.toFixed(2) + '</span></div>';
+						}).join("");
+						document.getElementById("rs-taxsum").textContent = "· 0.5% to the fund";
+						tEl.innerHTML = sl.recent.length ? sl.recent.map(function(r) {
+							return '<tr><td style="color:#777">' + (r.t || "") + '</td><td>' + r.buyer + '</td><td>' + (r.item || "") +
+								'</td><td>' + (r.venue || "").replace("The ", "").split(" ")[0] + '</td><td style="text-align:right">$' + r.price.toFixed(2) + '</td></tr>';
+						}).join("") : '<tr><td>no sales yet</td></tr>';
+					} else { vEl.textContent = "—"; tEl.innerHTML = ""; }
 
 					var g = s.gpu;
 					document.getElementById("rs-gpu").textContent = g ? (g.util + "% · " + g.vram_used + "/" + g.vram_total + " MB") : "—";

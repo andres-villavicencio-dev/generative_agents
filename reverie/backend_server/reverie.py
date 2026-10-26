@@ -1385,6 +1385,60 @@ class ReverieServer:
       print(f"[Payday] Warning: store till sweep failed: {e}")
       return 0.0
 
+  def _perceive_venue_offer(self):
+    """An agent standing in a shop sees what is on offer (stock + prices), once
+    per venue per day, as a memory event — so "breakfast at Hobbs Cafe" can be
+    chosen from what the counter really has."""
+    if self.economy is None:
+      return
+    ws = self.resource_manager.world_state
+    for name, persona in self.personas.items():
+      try:
+        s = persona.scratch
+        vid = self.economy.venue_of_address(s.act_address or "")
+        if vid is None:
+          continue
+        day = self.curr_time.toordinal()
+        seen = s.__dict__.setdefault("_offer_seen", set())
+        if (vid, day) in seen:
+          continue
+        seen.add((vid, day))
+        from economy import VENUES
+        key = VENUES[vid]["address_key"]
+        have, out = [], []
+        for addr, st in ws.items():
+          if key not in addr.lower() or not addr.lower().startswith("the ville:"):
+            continue
+          for item, qty in st.items():
+            if item in ("max", "last_delivery", "last_restocked") or not isinstance(qty, (int, float)):
+              continue
+            if item == "coffee_beans":          # sold by the cup, not by the bean
+              if qty >= 1:
+                have.append(f"fresh coffee (${self.economy.item_price('coffee'):.2f} a cup)")
+              else:
+                out.append("coffee")
+              continue
+            price = self.economy.item_price(item)
+            if qty >= 1:
+              have.append(f"{int(qty)} {item.replace('_', ' ')} (${price:.2f} each)")
+            else:
+              out.append(item.replace("_", " "))
+        if not have and not out:
+          continue
+        desc = (f"{persona.name} looks over what {VENUES[vid]['name']} has on offer: "
+                + (", ".join(have) if have else "nothing in stock")
+                + (f". Sold out: {', '.join(out)}." if out else "."))
+        from persona.prompt_template.gpt_structure import get_embedding
+        try:
+          emb = get_embedding(desc)
+        except Exception:
+          emb = [0.0] * 768
+        persona.a_mem.add_event(
+          self.curr_time, None, persona.name, "looks over", "menu", desc,
+          {persona.name, VENUES[vid]["name"], "menu", "food"}, 3, (desc, emb), [])
+      except Exception as e:
+        print(f"[Reverie] venue offer failed for {name}: {e.__class__.__name__}")
+
   def _write_agent_cards(self):
     """Snapshot of each agent's live money/needs/fridge for the home-page
     cards (scratch.json only refreshes at checkpoints). Atomic write; the
@@ -2018,6 +2072,7 @@ class ReverieServer:
 
           if self.step % 6 == 0:
             self._write_agent_cards()
+            self._perceive_venue_offer()
 
           # Phase 5: Weekly payday check
           try:

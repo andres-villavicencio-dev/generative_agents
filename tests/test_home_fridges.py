@@ -33,3 +33,9 @@ def test_legacy_cafe_counter_is_dropped(tmp_path):
     rm = WorldResourceManager(str(tmp_path))
     assert "Hobbs Cafe:front counter:prepared_food" not in rm.world_state
     assert "the Ville:Hobbs Cafe:cafe:counter" in rm.world_state
+
+
+def test_cafe_meal_falls_back_to_pastries():
+    import reverie as R
+    src = open(R.__file__).read()
+    assert '"pastries", "sandwiches"' in src and "a cup of coffee with it" in src

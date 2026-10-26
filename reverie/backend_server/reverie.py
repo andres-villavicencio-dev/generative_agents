@@ -1120,7 +1120,16 @@ class ReverieServer:
       if (keyword in ("eating", "breakfast", "lunch", "dinner", "meal")
           and os.environ.get("GA_HOME_FRIDGES", "1") == "1"
           and "hobbs cafe" in (persona.scratch.act_address or "").lower()):
-        consumptions = [("counter", "sandwiches", 1)]
+        # Any counter food is a meal: pastries at breakfast, sandwiches
+        # otherwise, whichever is left when the first choice is sold out.
+        _cn = next((v for k, v in self.resource_manager.world_state.items()
+                    if k.lower().endswith("hobbs cafe:cafe:counter")), {})
+        _order = (("pastries", "sandwiches") if keyword == "breakfast"
+                  else ("sandwiches", "pastries"))
+        _pick = next((i for i in _order if _cn.get(i, 0) >= 1), _order[0])
+        consumptions = [("counter", _pick, 1)]
+        if keyword == "breakfast":              # a cup of coffee with it
+          consumptions.append(("coffee machine", "coffee_beans", 0.1))
       # Cafe prep is stocked by the venue (the daily wholesale delivery is
       # already booked in the economy ledger). Drawing it from the owner's
       # HOME fridge as well emptied it in a few sub-tasks and left her

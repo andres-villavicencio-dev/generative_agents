@@ -654,6 +654,26 @@ def _laya_shadow_location(act_desp, persona, maze, sector, arena):
     pass
 
 
+_VENUE_TOKENS = ("harvey oak supply store", "supply store", "hobbs cafe", "hobbs café",
+                 "willows market", "rose and crown")
+
+
+def _venue_in_activity(act_desp, persona, act_world):
+  """The persona-known sector an activity explicitly names ("... at/to <venue>"),
+  or None."""
+  import re as _re
+  low = (act_desp or "").lower()
+  tree = persona.s_mem.tree.get(act_world, {})
+  for tok in _VENUE_TOKENS:
+    if _re.search(r"(\b(at|to|in)\s+|\()(the )?" + _re.escape(tok), low):
+      key = tok.replace("é", "e")
+      for sec in tree:
+        if key.split()[0] in sec.lower().replace("é", "e") and (
+            key.split()[-1] in sec.lower().replace("é", "e")):
+          return sec
+  return None
+
+
 def resolve_action_location(act_desp, persona, maze):
   """(world, sector, arena, game_object) for an action. PERF (Oct 21 2026):
   one unified cloud call (run_gpt_prompt_action_location) instead of the
@@ -670,6 +690,15 @@ def resolve_action_location(act_desp, persona, maze):
       sector = arena = obj = None
     if sector:
       _laya_shadow_location(act_desp, persona, maze, sector, arena)
+  # An activity that names its venue ("buying groceries at the Harvey Oak Supply
+  # Store") must happen there: a small model picked the home fridge instead,
+  # and the "stay in the current area" rule then pinned the agent at it for
+  # hours. Override the area; the room/object are re-resolved for it.
+  _forced = _venue_in_activity(act_desp, persona, act_world)
+  if _forced and sector and _forced.lower() != str(sector).lower():
+    print(f"[Location] {persona.name}: '{act_desp[:50]}' resolved to "
+          f"'{sector}' -> forcing '{_forced}'")
+    sector, arena, obj = _forced, None, None
   if not sector:
     sector = generate_action_sector(act_desp, persona, maze)
   if not arena:

@@ -1,0 +1,15 @@
+Technical Documentation Update – Mobile App
+
+Date: Wednesday, February 15  
+Status: In progress
+
+I’m currently finishing the mobile app by reviewing requirements, planning the architecture, building the core features, testing, and documenting the technical decisions. The latest technologies I’ve been researching include:
+React Native with Expo for faster development and shared platform code  
+TypeScript for stricter type safety and clearer code contracts  
+Tailwind CSS for rapid, responsive UI styling  
+GraphQL for flexible API design and better data fetching patterns  
+Firebase for real-time database, authentication, and hosting
+
+These tools should help me reduce architectural debt and make the app easier to maintain. I’ve also updated the technical decision log to reflect the current stack and included links to the relevant documentation.
+
+I’ll continue the remaining features and documentation during the next sprint, then review the final code and test coverage before submitting t...

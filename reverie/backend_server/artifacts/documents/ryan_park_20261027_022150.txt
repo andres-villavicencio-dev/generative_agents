@@ -1,0 +1,11 @@
+Technical Documentation Update – Mobile App
+
+Date: Wednesday, February 15  
+Status: In progress  
+Author: Ryan Park
+
+I’m finishing the mobile app by reviewing requirements, planning the architecture, building the core features, testing, and documenting the technical decisions. The latest technologies are shaping how I structure the system: React Native for cross-platform development, TypeScript for type safety, and Node.js for the backend. I’m also considering serverless functions and edge computing to reduce latency and simplify scaling.
+
+The architecture should support modular feature delivery, easy onboarding, and clear integration points. I’ll use a layered structure with a shared dependency graph, versioned API contracts, and automated integration tests. Documentation will include architecture diagrams, API references, deployment procedures, and a decision log for future maintenance.
+
+I’m also researching how to improve the mobile experience: performance optimization, offline c...

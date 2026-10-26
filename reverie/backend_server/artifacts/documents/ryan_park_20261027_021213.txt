@@ -1,0 +1,11 @@
+Technical Documentation Update – Mobile App
+
+Date: Wednesday, February 15  
+Prepared by: Ryan Park  
+Status: In progress
+
+I am currently finishing the mobile app by reviewing requirements, planning the architecture, building the core features, testing, and documenting the technical decisions. I also want to stay ahead of the curve by researching the latest technologies.
+
+The app’s architecture should remain modular and maintainable. I am using a layered structure with a shared dependency injection layer, a service layer for business logic, and a presentation layer for UI components. The core features will be built first, then connected through unit and integration tests, with a clear plan for performance and accessibility testing.
+
+I am also considering a hybrid mobile approach. A native implementation will support the existing hardware and platform-specific requirements, while a cross-platform layer will allow future reuse of shared code and reduce development time. The mobile team...

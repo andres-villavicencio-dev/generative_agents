@@ -774,7 +774,7 @@ def get_run_stats(request, sim_code):
         with open(f"storage/{sim_code}/resources/economy_v2.json") as f:
             fund = json.load(f).get("fund")
         if fund:
-            stats["fund"] = {k: fund.get(k, 0.0) for k in ("balance", "in", "out")}
+            stats["fund"] = {k: fund.get(k, 0.0) for k in ("balance", "in", "out", "rate", "need")}
     except (IOError, ValueError):
         pass
 

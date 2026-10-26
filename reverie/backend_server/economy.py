@@ -123,6 +123,8 @@ def jobs_enabled():
 # Monday dividend are paid out of it — nothing is created from nothing.
 FUND_SALES_TAX = 0.05         # 5% of every venue sale, taken at the register (buyer pays the same price)
 FUND_DRAW_TAX = 0.20          # of every owner draw
+FUND_SALES_TAX_MAX = 0.30     # ceiling of the dynamic sales tax
+CIVIC_EXPECTED_HOURS = 1.0    # paid hours assumed per signed-up civic worker (two 30-min goals)
 FUND_SEED = 150.0             # starting balance of a new fund (a town treasury)
 FUND_DIVIDEND_SHARE = 0.5     # of the fund shared out each Monday
 FUND_DIVIDEND_CAP = 40.0      # per agent
@@ -246,7 +248,7 @@ class EconomyManager:
             vid = venue_id if venue_id in VENUES else None
             if vid is None:
                 return
-            tax = self._tax_to_fund(price, FUND_SALES_TAX, vid, "sales tax")
+            tax = self._tax_to_fund(price, self.sales_tax_rate(), vid, "sales tax")
             self.state["tills"][vid] = round(
                 self.state["tills"][vid] + price - tax, 2)
             self.state["daily_intake"][vid] = round(
@@ -367,6 +369,31 @@ class EconomyManager:
             print(f"[Economy] presence tracking failed: {e}")
 
     # -- community fund -----------------------------------------------------
+    def sales_tax_rate(self):
+        """Dynamic sales tax: today's civic wage bill (signed-up workers x rate
+        x expected hours), minus what the fund already collected today, spread
+        over the sales still expected today (yesterday's total as the
+        forecast). Never below FUND_SALES_TAX nor above FUND_SALES_TAX_MAX."""
+        try:
+            if not community_enabled():
+                return FUND_SALES_TAX
+            f = self.state["fund"]
+            now = getattr(self, "_presence_t", None)
+            day = now.toordinal() if now is not None else None
+            civic = self.state["civic"] if self.state.get("civic_day") == day else {}
+            need = sum(CIVIC_TASKS[t]["rate"] * CIVIC_EXPECTED_HOURS
+                       for t in civic.values())
+            got = f.get("today_in", 0.0) if f.get("today_day") == day else 0.0
+            seen = sum(self.state["daily_intake"].values())
+            forecast = max(sum(self.state["yesterday_intake"].values()), seen)
+            left = forecast - seen
+            rate = (need - got) / left if (need > got and left > 0) else 0.0
+            rate = min(max(rate, FUND_SALES_TAX), FUND_SALES_TAX_MAX)
+            f["rate"], f["need"] = round(rate, 4), round(need, 2)
+            return rate
+        except Exception:
+            return FUND_SALES_TAX
+
     def _tax_to_fund(self, amount, rate, venue_id, why):
         """Skim `rate` of `amount` into the community fund. Returns the tax
         (0 when GA_COMMUNITY is off). The caller removes it from the payer."""
@@ -382,6 +409,12 @@ class EconomyManager:
             return 0.0
         f["balance"] = round(f["balance"] + tax, 2)
         f["in"] = round(f["in"] + tax, 2)
+        now = getattr(self, "_presence_t", None)
+        if now is not None:                      # tax collected today (rate control)
+            d = now.toordinal()
+            if f.get("today_day") != d:
+                f["today_day"], f["today_in"] = d, 0.0
+            f["today_in"] = round(f.get("today_in", 0.0) + tax, 2)
         self._log_pay("tax", why, tax, venue_id)
         return tax
 
@@ -821,3 +854,29 @@ class EconomyManager:
             return f"<EconomyManager {t}>"
         except Exception:
             return "<EconomyManager>"
+
+def town_brief(econ=None):
+    """Short Smallville primer for the daily-plan prompt: how money, the
+    community fund and civic work work here. Live numbers when `econ` is set."""
+    if not community_enabled():
+        return ""
+    f = (econ.state["fund"] if econ is not None else {}) or {}
+    rate = f.get("rate") or FUND_SALES_TAX
+    bal = f.get("balance")
+    fund = (f" It holds ${bal:.0f} right now." if bal is not None else "")
+    lines = [
+        "About Smallville's economy: you earn money from a job at Hobbs Cafe, "
+        "the Harvey Oak Supply Store, The Willows Market or The Rose and Crown "
+        "Pub (the owner may hire you), and you spend it on food and drink. Your "
+        "fridge at home runs out, so groceries at the Supply Store or Market are "
+        "a regular errand; a meal at the cafe costs a few dollars.",
+        f"The town keeps a Community Fund: about {rate * 100:.0f}% of every sale "
+        "and of owners' daily draws is collected automatically (nobody pays "
+        f"extra).{fund} The fund pays residents who do "
+        "civic work between 10 AM and 4 PM (park upkeep at Johnson Park, helping "
+        "at the Oak Hill College library, tutoring in its classroom; about "
+        "$6-7 an hour, paid at 10 PM for at least 30 minutes on site), and "
+        "pays every resident a small dividend once a week. Community tasks are "
+        "posted on the community bulletin board at Johnson Park.",
+    ]
+    return " ".join(lines)

@@ -106,7 +106,7 @@
 
 					var fd = s.fund, fdEl = document.getElementById("rs-fund");
 					fdEl.textContent = fd ? "$" + fd.balance.toFixed(2) + " (collected $" + fd["in"].toFixed(2) +
-						" · paid out $" + fd.out.toFixed(2) + ")" : "off / none yet";
+						" · paid out $" + fd.out.toFixed(2) + ")" + (fd.rate ? " · tax " + (100 * fd.rate).toFixed(1) + "% (civic bill today $" + (fd.need || 0).toFixed(2) + ")" : "") : "off / none yet";
 
 					// Sales: per-venue bars (today, tick = yesterday) + recent-sales ticker
 					var sl = s.sales, vEl = document.getElementById("rs-venues"), tEl = document.getElementById("rs-sales");
@@ -122,7 +122,7 @@
 								'<span style="position:absolute; top:-2px; height:18px; width:2px; background:#333; left:' + (100 * v.yesterday / mx).toFixed(1) + '%"></span></span>' +
 								'<span style="width:5.5em; text-align:right">$' + v.today.toFixed(2) + '</span></div>';
 						}).join("");
-						document.getElementById("rs-taxsum").textContent = "· sales tax goes to the fund";
+						document.getElementById("rs-taxsum").textContent = "· "+((s.fund&&s.fund.rate)?(100*s.fund.rate).toFixed(1)+"% ":"")+"sales tax goes to the fund";
 						tEl.innerHTML = sl.recent.length ? sl.recent.map(function(r) {
 							return '<tr><td style="color:#777">' + (r.t || "") + '</td><td>' + r.buyer + '</td><td>' + (r.item || "") +
 								'</td><td>' + (r.venue || "").replace("The ", "").split(" ")[0] + '</td><td style="text-align:right">$' + r.price.toFixed(2) + '</td></tr>';

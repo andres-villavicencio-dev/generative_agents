@@ -1113,6 +1113,14 @@ class ReverieServer:
       if any(keyword in longer for longer in _matched):
         continue
       _matched.append(keyword)
+      # A meal eaten AT the cafe is bought from the cafe counter, not taken
+      # from the diner's home fridge (home fridges made every breakfast at
+      # Hobbs Cafe a free meal: 18 sales/day, the owner's till never reached
+      # her float and she earned nothing).
+      if (keyword in ("eating", "breakfast", "lunch", "dinner", "meal")
+          and os.environ.get("GA_HOME_FRIDGES", "1") == "1"
+          and "hobbs cafe" in (persona.scratch.act_address or "").lower()):
+        consumptions = [("counter", "sandwiches", 1)]
       # Cafe prep is stocked by the venue (the daily wholesale delivery is
       # already booked in the economy ledger). Drawing it from the owner's
       # HOME fridge as well emptied it in a few sub-tasks and left her

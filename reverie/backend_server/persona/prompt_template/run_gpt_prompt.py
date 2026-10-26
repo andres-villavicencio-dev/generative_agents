@@ -520,6 +520,16 @@ def run_gpt_prompt_daily_plan(persona,
     except Exception:
       pass
 
+    # Smallville primer: money, the community fund, civic work
+    try:
+      from economy import town_brief
+      from persona.cognitive_modules import plan as _plan_mod
+      _tb = town_brief(_plan_mod._ECON_REF.get("e"))
+      if _tb:
+        iss += f"\n{_tb}"
+    except Exception:
+      pass
+
     # Append resource context if resource_manager is available (Phase 2)
     if resource_manager is not None:
       try:

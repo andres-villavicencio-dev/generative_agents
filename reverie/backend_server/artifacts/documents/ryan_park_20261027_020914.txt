@@ -1,0 +1,10 @@
+Technical Documentation Update – February 15
+
+Overview
+
+This document updates the mobile application’s technical architecture and documentation to reflect the latest industry practices and the development decisions made during the current build cycle. The goal is to make the codebase, deployment strategy, and technical decisions easier to understand, maintain, and extend.
+
+Updated Architecture
+Core architecture: The mobile app now uses a layered architecture with a unified API layer, a feature-agnostic service layer, and a modular UI layer. This structure supports faster feature development while preserving component reuse.
+State management: Local state is managed with React Context and React Query, while shared application state is handled via a lightweight Redux-like store. This reduces coupling between the UI and business logic.
+API design: The application now follows a RESTful API with clear request/response contracts, versioning, and standardized error handling. The API is desi...

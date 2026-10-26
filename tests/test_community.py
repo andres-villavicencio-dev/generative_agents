@@ -143,3 +143,22 @@ def test_tax_on_tiny_sales_is_not_rounded_away(monkeypatch):
         e.credit_sale("cafe", "coffee", 1, "Klaus Mueller", 0.10)
     assert e.state["fund"]["balance"] == 1.0  # 5% of $20, carried across sales
     assert abs(e.state["tills"]["cafe"] - (till + 19.0)) < 0.011
+
+
+def test_dynamic_tax_rises_with_civic_bill(monkeypatch):
+    import datetime
+    from economy import CIVIC_TASKS, CIVIC_EXPECTED_HOURS, FUND_SALES_TAX
+    monkeypatch.setenv("GA_COMMUNITY", "1")
+    e, _ = _econ()
+    t = datetime.datetime(2023, 2, 15, 11, 0)
+    e._presence_t = t
+    e.state["civic_day"] = t.toordinal()
+    e.state["yesterday_intake"] = {"cafe": 100.0, "pub": 100.0, "grocery": 100.0, "market": 100.0}
+    assert e.sales_tax_rate() == FUND_SALES_TAX                 # nobody on civic duty
+    e.state["civic"] = {n: "tutor" for n in ("A", "B", "C", "D", "E", "F")}
+    need = 6 * CIVIC_TASKS["tutor"]["rate"] * CIVIC_EXPECTED_HOURS
+    assert abs(e.sales_tax_rate() - need / 400.0) < 1e-3        # exactly the bill / forecast sales
+    for _ in range(40):
+        e.credit_sale("cafe", "coffee", 1, "Klaus Mueller", 10.0)
+    assert e.state["fund"]["today_in"] > 0
+    assert e.sales_tax_rate() <= 0.30

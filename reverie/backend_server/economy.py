@@ -48,7 +48,7 @@ VENUES = {
         "name": "Hobbs Cafe",
         "owner": "Isabella Rodriguez",
         "address_key": "hobbs cafe",
-        "float": 200.0,
+        "float": 60.0,   # wages and owner draws come only from the till above this; 200 left the cafe unable to pay anyone
         "max_employees": 2,
         "restock": {"coffee_beans": 30, "sandwiches": 20, "pastries": 20},
         "wholesale": {"coffee_beans": 1.0, "sandwiches": 2.25, "pastries": 1.50},

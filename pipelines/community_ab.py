@@ -18,7 +18,8 @@ c.END_STEP = c.CKPT + c.STEPS
 c.MAX_WALL_S = int(float(os.environ.get("AB_MAX_HOURS", "6")) * 3600)
 EXP = ("Environment=GA_COMMUNITY=1\nEnvironment=GA_PAYDAY=1\nEnvironment=GA_JOBS=1\n"
        "Environment=GA_LESSONS=1\nEnvironment=GA_DIVIDEND_WEEKDAY=2\n"
-       "Environment=GA_DIVIDEND_HOUR=21\nEnvironment=GA_HOME_FRIDGES=1\n")
+       "Environment=GA_DIVIDEND_HOUR=21\nEnvironment=GA_HOME_FRIDGES=1\n"
+       + ("Environment=GA_FREE_CHOICE=1\n" if os.environ.get("AB_FREE_CHOICE") == "1" else ""))
 
 if __name__ == "__main__":
     res = []

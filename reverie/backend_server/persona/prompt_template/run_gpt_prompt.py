@@ -4302,3 +4302,90 @@ def run_gpt_prompt_commitments(persona, transcript, test_input=None, verbose=Fal
                                   __func_validate, __func_clean_up,
                                   model_hint="planning")
   return output
+
+
+def run_gpt_prompt_choose_activity(persona, sched_item, sched_next, pulls):
+  """GA_FREE_CHOICE: the agent decides what to do for the next block. Its
+  schedule item is a STRONG SUGGESTION (option 0); the pulls are the things
+  the town offers or its body asks for (jobs, civic tasks, groceries, a
+  luxury, a drive); it may also do something of its own. Returns
+  {"choice": 0 | k | "own", "activity": str, "minutes": int, "why": str} or
+  None when the model's answer cannot be parsed (the caller then behaves as
+  before: schedule first)."""
+  s = persona.scratch
+  name = s.get_str_name()
+  first = s.get_str_firstname()
+  now = s.curr_time
+  parts = [s.get_str_iss()]
+  try:
+    parts.append(f"Current physical/emotional state: {s.get_str_needs_summary()}")
+    fin = s.get_str_financial_summary()
+    if fin:
+      parts.append(fin)
+  except Exception:
+    pass
+  try:
+    from persona.cognitive_modules import lessons as _lessons
+    if _lessons.enabled():
+      txt = _lessons.render(s, now)
+      if txt:
+        parts.append(txt)
+  except Exception:
+    pass
+  try:
+    recent = [e.description for e in persona.a_mem.seq_event[-3:]]
+    if recent:
+      parts.append("Recently " + first + " noticed: " + " | ".join(recent))
+  except Exception:
+    pass
+  where = (s.act_address or "").split(":")[1:3]
+  opts = [f"0. Follow the plan: {sched_item}"
+          + (f" (next on the plan: {sched_next})" if sched_next else "")]
+  for k, g in enumerate(pulls, 1):
+    opts.append(f"{k}. {g}")
+  prompt = (
+    "\n".join(p for p in parts if p) + "\n\n"
+    f"It is {now.strftime('%A %H:%M')}. {first} is at {' / '.join(where) or 'home'}.\n"
+    f"{first} planned this morning to do: {sched_item}. That plan is a strong "
+    f"suggestion, but {first} is free to do something else if it fits "
+    f"{s.get_str_firstname()}'s state, money, mood or an opportunity better.\n\n"
+    "Options for the next while:\n" + "\n".join(opts) + "\n"
+    f"X. Something else of {first}'s own choosing (a short action)\n\n"
+    "Prefer option 0 unless there is a real reason to change. Answer in this "
+    "exact format:\n"
+    "choice: <0, a number, or X>\n"
+    "activity: <only if X: a short action, e.g. 'reading in the park'>\n"
+    "minutes: <15 to 120>\n"
+    "why: <one short sentence>")
+  gpt_param = {"engine": "text-davinci-002", "max_tokens": 120,
+               "temperature": 0.3, "top_p": 1, "stream": False,
+               "frequency_penalty": 0, "presence_penalty": 0, "stop": None}
+
+  def _parse(resp):
+    t = str(resp)
+    m = re.search(r"choice\s*[:=]\s*(\w+)", t, re.I)
+    if not m:
+      return None
+    tok = m.group(1).upper()
+    if tok == "X":
+      a = re.search(r"activity\s*[:=]\s*(.+)", t, re.I)
+      act = a.group(1).strip().strip("'\"") if a else ""
+      if not act or act.startswith("<"):
+        return None
+      choice = "own"
+    elif tok.isdigit() and 0 <= int(tok) <= len(pulls):
+      choice, act = int(tok), ""
+    else:
+      return None
+    mm = re.search(r"minutes\s*[:=]\s*(\d+)", t, re.I)
+    mins = max(15, min(120, int(mm.group(1)))) if mm else 30
+    w = re.search(r"why\s*[:=]\s*(.+)", t, re.I)
+    return {"choice": choice, "activity": act, "minutes": mins,
+            "why": w.group(1).strip() if w else ""}
+
+  out = safe_generate_response(
+    prompt, gpt_param, 2, None,
+    lambda r, prompt="": _parse(r) is not None,
+    lambda r, prompt="": _parse(r),
+    free_form=True, cache=False)
+  return out if isinstance(out, dict) else None

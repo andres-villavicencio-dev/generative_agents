@@ -694,7 +694,28 @@ def resolve_action_location(act_desp, persona, maze):
   # Store") must happen there: a small model picked the home fridge instead,
   # and the "stay in the current area" rule then pinned the agent at it for
   # hours. Override the area; the room/object are re-resolved for it.
-  _forced = _venue_in_activity(act_desp, persona, act_world)
+  # Civic tasks name a sector + room ("helping out at the Oak Hill College
+  # library"); the model resolved it to "Dorm for Oak Hill College" (the
+  # fuzzy "oak hill college" match), so the worker sat in a dorm room and the
+  # civic presence check never matched (Klaus, communityexp5: wage unpaid).
+  try:
+    import economy as _eco
+    _low = (act_desp or "").lower()
+    _tree = persona.s_mem.tree.get(act_world, {})
+    for _t in _eco.CIVIC_TASKS.values():
+      if _t["name"].lower() in _low or all(k in _low for k in _t["keys"]):
+        _sec = next((x for x in _tree if x.lower() == _t["keys"][0]), None)
+        if _sec:
+          _ar = next((a for a in _tree[_sec] if a.lower() == _t["keys"][-1]), None)
+          if _ar or len(_t["keys"]) == 1 or _t["keys"][-1] == _t["keys"][0]:
+            if str(sector).lower() != _sec.lower() or (_ar and str(arena).lower() != _ar.lower()):
+              print(f"[Location] {persona.name}: civic '{act_desp[:50]}' resolved to "
+                    f"'{sector}' -> forcing '{_sec}:{_ar}'")
+            sector, arena, obj = _sec, _ar, None
+        break
+  except Exception:
+    pass
+  _forced = None if (sector and arena) else _venue_in_activity(act_desp, persona, act_world)
   if _forced and sector and _forced.lower() != str(sector).lower():
     print(f"[Location] {persona.name}: '{act_desp[:50]}' resolved to "
           f"'{sector}' -> forcing '{_forced}'")
@@ -1342,6 +1363,59 @@ def _long_term_planning(persona, new_day, maze=None):
 
 
 
+FREE_CHOICE_SAFETY = 10     # a need below this is handled by rule, not choice
+
+
+def free_choice_enabled():
+  return os.environ.get("GA_FREE_CHOICE", "0") == "1"
+
+
+def _free_choice(persona):
+  """One decision for the next block. Returns {"choice", "activity",
+  "minutes", "why", "pulls"} or None (legacy behaviour: pulls first, then the
+  schedule). Records compliance on scratch for the agent card / metrics."""
+  s = persona.scratch
+  now = s.curr_time
+  sched = s.f_daily_schedule
+  if not sched or now is None:
+    return None
+  idx = s.get_f_daily_schedule_index()
+  if idx >= len(sched):
+    return None
+  item = sched[idx][0]
+  nxt = sched[idx + 1][0] if idx + 1 < len(sched) else ""
+  needs = getattr(s, "needs", None) or {}
+  if any(isinstance(v, (int, float)) and v < FREE_CHOICE_SAFETY
+         for k, v in needs.items() if k != "status"):
+    return None
+  asleep = re.search(r"\b(sleep|sleeping|asleep|bed)\b", item.lower()) is not None
+  pulls = list(s.resource_goals)
+  if asleep or (getattr(s, "chatting_with", None)):
+    return None
+  from persona.prompt_template.run_gpt_prompt import run_gpt_prompt_choose_activity
+  out = run_gpt_prompt_choose_activity(persona, item, nxt, pulls)
+  if out is None:
+    return None
+  out["pulls"] = pulls
+  stats = getattr(s, "choice_stats", None)
+  if not isinstance(stats, dict):
+    stats = {"decisions": 0, "complied": 0, "pull": 0, "own": 0, "last": ""}
+  stats["decisions"] += 1
+  if out["choice"] == 0:
+    stats["complied"] += 1
+    shown = "follows the plan"
+  elif out["choice"] == "own":
+    stats["own"] += 1
+    shown = f"own: {out['activity']}"
+  else:
+    stats["pull"] += 1
+    shown = f"takes '{pulls[out['choice'] - 1]}'"
+  stats["last"] = f"{shown} — {out['why']}"[:160]
+  s.choice_stats = stats
+  print(f"[Choice] {persona.name} {shown} (plan: {item[:50]}) why: {out['why'][:80]}")
+  return out
+
+
 def _determine_action(persona, maze):
   """
   Creates the next action sequence for the persona.
@@ -1601,13 +1675,34 @@ def _determine_action(persona, maze):
   except Exception:
     pass  # status must never crash the plan loop
 
+  # FREE CHOICE (GA_FREE_CHOICE): the schedule is a strong suggestion, not an
+  # order. The rule-injected goals above become options the agent weighs
+  # against its plan; it may also do something of its own. Critical needs
+  # (< FREE_CHOICE_SAFETY) bypass the choice so nobody starves by choice.
+  _own_act = _own_min = None
+  if free_choice_enabled() and hasattr(persona.scratch, "resource_goals"):
+    try:
+      _decision = _free_choice(persona)
+    except Exception as _fc_err:
+      print(f"[Choice] error ({type(_fc_err).__name__}: {_fc_err}) — legacy")
+      _decision = None
+    if _decision is not None:
+      _pulls = _decision["pulls"]
+      _c = _decision["choice"]
+      persona.scratch.resource_goals = []      # offered once; unchosen ones lapse
+      if _c == "own":
+        _own_act, _own_min = _decision["activity"], _decision["minutes"]
+        persona.scratch.resource_goals = [_own_act]
+      elif _c != 0:
+        persona.scratch.resource_goals = [_pulls[_c - 1]]
+
   if hasattr(persona.scratch, "resource_goals") and persona.scratch.resource_goals:
     resource_goal = persona.scratch.resource_goals.pop(0)
     print(f"[ResourceGoal] {persona.name} pursuing: {resource_goal}")
 
     # Use the resource goal as the action description
     act_desp = resource_goal
-    act_dura = 30  # 30 minutes for resource-driven actions
+    act_dura = _own_min or 30  # 30 minutes for resource-driven actions
 
     # Determine the target location based on the goal
     act_world, act_sector, act_arena, act_game_object = \

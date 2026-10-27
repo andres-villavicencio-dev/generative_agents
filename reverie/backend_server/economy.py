@@ -111,7 +111,7 @@ RESTOCK_WAGE_SHARE = 0.10     # of previous day's combined sales
 EMPLOYEE_WAGE_SHARE = 0.10    # of venue's daily sales, per employee
 EMPLOYE_WAGE_FLOOR = 5.0      # a shift always pays at least this
 SHIFT_START, SHIFT_END = 10, 14   # GA_JOBS: paid shift window (sim hours)
-MIN_SHIFT_PRESENCE_MIN = 60       # GA_JOBS: minutes on site to earn the wage
+MIN_SHIFT_PRESENCE_MIN = 45       # GA_JOBS: minutes on site to earn the wage (two 30-min goals minus the walk in; 60 was unreachable: Yuriko 50, Hailey 59.x)
 CIVIC_PRESENCE_MIN = 30           # GA_COMMUNITY: civic task wage (agents reached sites ~60-100 min at most)
 
 
@@ -132,11 +132,11 @@ CIVIC_START, CIVIC_END = 10, 16
 CIVIC_ELIGIBLE_WALLET = 60.0  # below this (and no job) an agent takes civic work
 CIVIC_TASKS = {
     "park": {"name": "park upkeep at Johnson Park",
-             "keys": ("johnson park",), "rate": 6.0, "slots": 2},
+             "keys": ("johnson park",), "rate": 6.0, "slots": 99},
     "library": {"name": "helping out at the Oak Hill College library",
-                "keys": ("oak hill college", "library"), "rate": 6.0, "slots": 2},
+                "keys": ("oak hill college", "library"), "rate": 6.0, "slots": 99},
     "tutor": {"name": "tutoring at the Oak Hill College classroom",
-              "keys": ("oak hill college", "classroom"), "rate": 7.0, "slots": 2},
+              "keys": ("oak hill college", "classroom"), "rate": 7.0, "slots": 99},
 }
 
 
@@ -317,9 +317,11 @@ class EconomyManager:
                         continue
                     share = round(wage * intake / sales, 2)
                     # pay proportionally from each venue till
-                    from_float = max(0.0, self.state["tills"][vid]
-                                     - VENUES[vid]["float"])
-                    pay = round(min(share, from_float), 2)
+                    # The 6 AM wholesale bill is debited just before this
+                    # runs and drains the till to the float or below, so a
+                    # float-gated wage was $0 (communityexp5); the owner's
+                    # draw already left this wage in the till.
+                    pay = round(min(share, max(0.0, self.state["tills"][vid])), 2)
                     if pay > 0:
                         self.state["tills"][vid] = round(
                             self.state["tills"][vid] - pay, 2)

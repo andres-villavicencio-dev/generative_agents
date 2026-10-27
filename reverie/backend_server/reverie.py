@@ -42,6 +42,8 @@ import chat_time as _chat_time
 # LLM concurrency: 3-4 decode slots fit the 8GB 3070 with the 4b lane model
 # (q8_0 KV cache). Threads beyond this just queue at the daemon.
 GA_MOVE_WORKERS = int(os.environ.get("GA_MOVE_WORKERS", "6"))
+EATING_KEYWORDS = ("eating", "breakfast", "lunch", "dinner", "meal")
+MEAL_COOLDOWN_MIN = int(os.environ.get("GA_MEAL_COOLDOWN_MIN", "90"))
 
 # from selenium import webdriver  # not needed for local run
 
@@ -1125,6 +1127,19 @@ class ReverieServer:
       if any(keyword in longer for longer in _matched):
         continue
       _matched.append(keyword)
+      # One meal = one consumption. Every 5-minute sub-task of a meal
+      # ("have lunch (washing hands)", "(eating the main course)", ...) is a
+      # new description and used to consume the whole meal again (~120 meal
+      # transitions per agent in 6 sim-hours, which emptied the fridges); a
+      # failed meal also replanned every step, so agents shuffled between
+      # home and the cafe. Cooldown per agent, stamped on the ATTEMPT.
+      if keyword in EATING_KEYWORDS:
+        _now = self.curr_time
+        _last = getattr(persona.scratch, "last_meal_consumed", None)
+        if (_last is not None and _now is not None
+            and (_now - _last).total_seconds() < MEAL_COOLDOWN_MIN * 60):
+          continue
+        persona.scratch.last_meal_consumed = _now
       # A meal eaten AT the cafe is bought from the cafe counter, not taken
       # from the diner's home fridge (home fridges made every breakfast at
       # Hobbs Cafe a free meal: 18 sales/day, the owner's till never reached
@@ -1497,6 +1512,7 @@ class ReverieServer:
           "civic": civic.get(name),
           "fridge": fridge,
           "goals": list(getattr(sc, "resource_goals", []) or [])[:3],
+          "choice": getattr(sc, "choice_stats", None),
         }
       out = os.path.join(self.sim_folder, "resources", "agent_cards.json")
       tmp = out + ".tmp"

@@ -995,6 +995,8 @@ class ReverieServer:
       act_lower = (act_description or "").lower()
       if not any(k in act_lower for k in ("grocery", "groceries", "shopping", "buy")):
         return  # not a shopping action
+      if "luxury" in act_lower:
+        return  # a luxury purchase is not a grocery run
 
       # Which home fridge does this persona own?
       persona_first = persona.name.split()[0].lower()
@@ -1034,10 +1036,20 @@ class ReverieServer:
       staples = ["eggs", "bread", "milk", "coffee_beans"]
       bought = []
       from resource_manager import ITEM_PRICES
+      _budget = max(0.0, (getattr(s, "wallet", 0.0) or 0.0)) * 0.35
+      _spent = 0.0
       for item in staples:
         home_stock = self.resource_manager.world_state[home_fridge].get(item, 0)
         if home_stock < 5:
           qty = 10  # buy a batch
+          # Never spend more than ~35% of the wallet on one stock-up: a $100
+          # agent used to put $52 on a single trip and then starve at the till.
+          _left = _budget - _spent
+          _unit = ITEM_PRICES.get(item, 1.0)
+          qty = int(min(qty, _left // _unit))
+          if qty < 1:
+            continue
+          _spent += _unit * qty
           if self.resource_manager.purchase(store_addr, item, qty, s):
             bought.append((item, qty))
             self.resource_manager.restock(home_fridge, item, qty)
@@ -1130,6 +1142,13 @@ class ReverieServer:
         consumptions = [("counter", _pick, 1)]
         if keyword == "breakfast":              # a cup of coffee with it
           consumptions.append(("coffee machine", "coffee_beans", 0.1))
+      # A grocery trip is paid ONCE, by _process_shopping (which also carries
+      # the goods home). This mapping used to charge 5 eggs/3 bread/2 milk
+      # on top for goods that went nowhere (communityexp4: ~$9 lost per trip).
+      if (any(c[1] == "eggs" and c[0] in ("shelves", "grocery store shelf")
+              for c in consumptions)
+          and self.resource_manager.home_fridge_of.get(persona_name)):
+        continue
       # Cafe prep is stocked by the venue (the daily wholesale delivery is
       # already booked in the economy ledger). Drawing it from the owner's
       # HOME fridge as well emptied it in a few sub-tasks and left her

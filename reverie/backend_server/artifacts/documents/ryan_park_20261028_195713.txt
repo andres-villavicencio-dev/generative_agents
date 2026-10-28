@@ -1,0 +1,16 @@
+Feature Requirements: Mobile App – “Quick Tasks”
+
+Objective  
+Create a mobile-first task management app that helps users organize, prioritize, and complete their daily work. The app should be lightweight, intuitive, and reliable on mobile devices.
+
+Core Requirements  
+Users can add tasks, set priorities, and assign due dates.  
+Completed tasks should be marked with a check and automatically move to a “done” state.  
+The app should support multiple categories and allow users to filter tasks by priority, date, or category.  
+Users should be able to edit, delete, or reorder tasks without losing their progress.  
+Notifications should appear when a task is due, while overdue tasks should be highlighted.  
+The interface should be responsive across tablets and phones, with a clear navigation bar and accessible controls.
+
+Expected Behavior  
+When a user opens the app, the dashboard displays their completed tasks, pending tasks, and an empty state with a helpful message.  
+Adding a task shou...

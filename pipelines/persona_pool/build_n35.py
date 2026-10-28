@@ -5,7 +5,12 @@ Usage: build_n35.py [--force]"""
 import copy, json, os, shutil, subprocess, sys
 REPO = "/home/andus/Projects/generative_agents"
 ST = f"{REPO}/environment/frontend_server/storage"
-SRC, DST, TEMPLATE = f"{ST}/verify_1", f"{ST}/verify_n35", f"{ST}/base_the_ville_n25/personas/Adam Smith"
+N50 = "--n50" in sys.argv           # 50 agents on the_ville_50 (implies --base)
+MAZE = "the_ville_50" if N50 else "the_ville_n50"
+BASE_MODE = "--base" in sys.argv or N50       # fresh day-one start (Feb 13 00:00) instead of the verify_1 checkpoint
+SRC = f"{ST}/base_the_ville_n25" if BASE_MODE else f"{ST}/verify_1"
+DST = f"{ST}/base_the_ville_n50" if N50 else (f"{ST}/base_the_ville_n35" if BASE_MODE else f"{ST}/verify_n35")
+TEMPLATE = f"{ST}/base_the_ville_n25/personas/Adam Smith"
 sys.path.insert(0, f"{REPO}/reverie/backend_server")
 import maze as M
 
@@ -13,7 +18,7 @@ PUBLIC = ["Oak Hill College", "The Willows Market and Pharmacy", "Harvey Oak Sup
           "Johnson Park", "The Rose and Crown Pub", "Hobbs Cafe"]
 CIVIC = ["Willow Clinic", "Town Hall", "Police Station", "Fire and Rescue", "Smallville Gazette"]
 
-mz = M.Maze("the_ville_n50")
+mz = M.Maze(MAZE)
 objs = {}                       # (sector, arena) -> [objects]
 spawn = {}                      # (sector, arena) -> (x, y)
 for y in range(mz.maze_height):
@@ -38,6 +43,8 @@ if "--force" in sys.argv and os.path.exists(DST):
 if not os.path.exists(DST):
     subprocess.run(["cp", "-a", SRC, DST], check=True)
 profiles = json.load(open(f"{REPO}/pipelines/persona_pool/profiles.json"))
+if N50:
+    profiles.update(json.load(open(f"{REPO}/pipelines/persona_pool/profiles2.json")))
 
 # existing residents learn the new civic buildings
 for name in os.listdir(f"{DST}/personas"):
@@ -47,9 +54,10 @@ for name in os.listdir(f"{DST}/personas"):
         sm["the Ville"][sec] = sector_tree(sec)
     json.dump(sm, open(p, "w"))
 
-env_p = f"{DST}/environment/17280.json"
+env_p = f"{DST}/environment/{0 if BASE_MODE else 17280}.json"
 mv_p = f"{DST}/movement/17279.json"
-env, mv = json.load(open(env_p)), json.load(open(mv_p))
+env = json.load(open(env_p))
+mv = {"persona": {}} if BASE_MODE else json.load(open(mv_p))
 meta_p = f"{DST}/reverie/meta.json"
 meta = json.load(open(meta_p))
 for name, pr in profiles.items():
@@ -75,15 +83,17 @@ for name, pr in profiles.items():
             sm["the Ville"][sec] = t
     json.dump(sm, open(f"{folder}/spatial_memory.json", "w"))
     x, y = spawn[(home_sec, home_ar)]
-    env[name] = {"maze": "the_ville_n50", "x": x, "y": y}
+    env[name] = {"maze": MAZE, "x": x, "y": y}
     mv["persona"][name] = {"movement": [x, y], "pronunciatio": "😴",
                            "description": f"sleeping @ {pr['living_area']}:bed", "chat": None}
     if name not in meta["persona_names"]:
         meta["persona_names"].append(name)
     print(f"{name:20s} home {pr['living_area']}  spawn {(x, y)}")
 for k in env:
-    env[k]["maze"] = "the_ville_n50"
-meta["maze_name"] = "the_ville_n50"
-meta["fork_sim_code"] = "verify_1"
-json.dump(env, open(env_p, "w")); json.dump(mv, open(mv_p, "w")); json.dump(meta, open(meta_p, "w"), indent=2)
+    env[k]["maze"] = MAZE
+meta["maze_name"] = MAZE
+meta["fork_sim_code"] = "base_the_ville_n25" if BASE_MODE else "verify_1"
+json.dump(env, open(env_p, "w")); json.dump(meta, open(meta_p, "w"), indent=2)
+if not BASE_MODE:
+    json.dump(mv, open(mv_p, "w"))
 print("personas now", len(meta["persona_names"]))

@@ -118,3 +118,13 @@ def test_laya_choose_state_and_target():
     assert keys == ["plan", "pull1", "own"] and state["who"] == "Ann"
     t = vote_target([0, "own"], keys)
     assert abs(sum(t) - 1) < 1e-9 and t[0] == t[2]
+
+
+def test_purchases_wait_for_arrival_and_fridge_match_is_full_name():
+    import inspect
+    from reverie import ReverieServer
+    src = inspect.getsource(ReverieServer)
+    assert "_pending_act" in src and "def _arrived" in src
+    import resource_manager
+    rm = inspect.getsource(resource_manager.WorldResourceManager.ensure_home_fridges)
+    assert "full in a.lower()" in rm and "first in a.lower()" not in rm

@@ -1,0 +1,110 @@
+{
+ "Willow Court 1": [
+  4,
+  101,
+  18,
+  27
+ ],
+ "Willow Court 2": [
+  24,
+  101,
+  18,
+  27
+ ],
+ "Willow Court 3": [
+  44,
+  101,
+  18,
+  27
+ ],
+ "Willow Court 4": [
+  64,
+  101,
+  18,
+  27
+ ],
+ "Willow Court 5": [
+  92,
+  101,
+  18,
+  27
+ ],
+ "Willow Court 6": [
+  112,
+  101,
+  18,
+  27
+ ],
+ "Willow Court 7": [
+  132,
+  101,
+  18,
+  27
+ ],
+ "Willow Court 8": [
+  152,
+  101,
+  18,
+  27
+ ],
+ "Willow Court 9": [
+  4,
+  131,
+  18,
+  27
+ ],
+ "Willow Court 10": [
+  24,
+  131,
+  18,
+  27
+ ],
+ "Willow Court 11": [
+  44,
+  131,
+  18,
+  27
+ ],
+ "Willow Court 12": [
+  64,
+  131,
+  18,
+  27
+ ],
+ "Maple Co-living": [
+  150,
+  70,
+  36,
+  27
+ ],
+ "Willow Clinic": [
+  144,
+  8,
+  32,
+  28
+ ],
+ "Town Hall": [
+  144,
+  46,
+  23,
+  20
+ ],
+ "Police Station": [
+  178,
+  8,
+  10,
+  19
+ ],
+ "Fire and Rescue": [
+  178,
+  28,
+  10,
+  19
+ ],
+ "Smallville Gazette": [
+  178,
+  48,
+  10,
+  19
+ ]
+}

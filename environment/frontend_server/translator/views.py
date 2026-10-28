@@ -34,6 +34,22 @@ def _map_json(sim_code, folder="storage"):
   return f"assets/{name}/visuals/{name}.json"
 
 
+def _read_json_retry(path, tries=8, delay=0.15):
+  """json.load that survives the backend rewriting the file at that instant
+  (curr_step.json / curr_sim_code.json / environment/<step>.json are rewritten in place
+  every step, and during a restart they are briefly empty or half-written)."""
+  import time as _t
+  last = None
+  for _ in range(tries):
+    try:
+      with open(path) as f:
+        return json.load(f)
+    except (ValueError, OSError) as e:
+      last = e
+      _t.sleep(delay)
+  raise last
+
+
 def landing(request): 
   context = {}
   template = "landing/landing.html"
@@ -129,11 +145,8 @@ def home(request):
     template = "home/error_start_backend.html"
     return render(request, template, context)
 
-  with open(f_curr_sim_code) as json_file:  
-    sim_code = json.load(json_file)["sim_code"]
-  
-  with open(f_curr_step) as json_file: 
-    step = json.load(json_file)["step"]
+  sim_code = _read_json_retry(f_curr_sim_code)["sim_code"]
+  step = _read_json_retry(f_curr_step)["step"]
 
   # NOTE: We intentionally do NOT delete curr_step.json here.
   # The original Stanford code deleted it to enforce one-shot initialization,
@@ -168,8 +181,8 @@ def home(request):
     if candidates:
       step = candidates[0]
       curr_json = f'storage/{sim_code}/environment/{str(step)}.json'
-  with open(curr_json) as json_file: 
-    persona_init_pos_dict = json.load(json_file)
+  persona_init_pos_dict = _read_json_retry(curr_json)
+  if True:
     for key, val in persona_init_pos_dict.items():
       if key in persona_names_set:
         persona_init_pos += [[key, val["x"], val["y"]]]
@@ -569,6 +582,32 @@ def _backend_proc_env_gates():
         return {}
 
 
+def _laya_serving(gates):
+    """Which laya the live backend talks to: (port, checkpoint name). The backend's GA_LAYA_URL
+    names the port; the matching ga-laya*.service unit names the checkpoint."""
+    import glob, re
+    m = re.search(r":(\d+)", gates.get("GA_LAYA_URL", ""))
+    port = int(m.group(1)) if m else 8018
+    ckpt = ""
+    for f in glob.glob(os.path.expanduser("~/.config/systemd/user/ga-laya*.service")):
+        try:
+            txt = open(f).read()
+        except OSError:
+            continue
+        if f"LAYA_PORT={port}" in txt:
+            c = re.search(r"LAYA_CKPT=(\S+)", txt)
+            unit = os.path.basename(f)[:-len(".service")]
+            try:   # several units can share a port (v5/v6): trust the one that is running
+                import subprocess
+                active = subprocess.run(["systemctl", "--user", "is-active", unit], capture_output=True,
+                                        text=True, timeout=5).stdout.strip() == "active"
+            except Exception:
+                active = False
+            if c and (active or not ckpt):
+                ckpt = os.path.basename(c.group(1))
+    return port, ckpt
+
+
 def _backend_unit():
     """systemd unit name owning the live reverie backend, or None."""
     import subprocess
@@ -601,7 +640,7 @@ def _probe_service(port, path="/health"):
         # a response with ANY status means the service is listening
         if 400 <= e.code < 600 and e.code not in (501, 502, 503, 504):
             return "up"
-        if port == 8018:
+        if path == "/v1/systemone":
             # laya speaks POST-only /v1/systemone; 501/502/503 on GET are
             # just the stdlib server refusing unsupported verbs
             body = json.dumps({"model": "probe", "state": {"who": "probe", "event": "health check"},
@@ -732,8 +771,16 @@ def get_run_stats(request, sim_code):
 
     # --- backend gates (live process env) ---
     gates = _backend_proc_env_gates()
+    _lport, _lckpt = _laya_serving(gates)
     stats["engine"] = {
         "laya_enabled": gates.get("GA_LAYA_POIGNANCY") == "1",
+        "laya_port": _lport,
+        "laya_model": _lckpt,
+        "laya_tasks": [t for t, on in (("poignancy", gates.get("GA_LAYA_POIGNANCY") == "1"),
+                                       ("choose", gates.get("GA_CHOICE_LAYA") == "1"),
+                                       ("location", gates.get("GA_LOC_LAYA") == "live"),
+                                       ("location-shadow", gates.get("GA_LOC_LAYA") == "shadow"),
+                                       ("decomp-cache*", gates.get("GA_DECOMP_CACHE") == "1")) if on],
         "rizzo_fallback": gates.get("GA_RIZZO_POIGNANCY") == "1",
         "rizzo_reflex": gates.get("GA_RIZZO_REFLEX") == "1",
         "cloudjev": gates.get("GA_CLOUDJEV") == "1",
@@ -744,7 +791,7 @@ def get_run_stats(request, sim_code):
 
     # --- decision services ---
     stats["services"] = {
-        "laya": _probe_service(8018, "/v1/systemone"),
+        "laya": _probe_service(_lport, "/v1/systemone"),
         "rizzo": _probe_service(8017, "/health"),
         "ga_ollama": _probe_service(11436, "/api/version"),
     }

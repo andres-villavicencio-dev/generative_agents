@@ -16,6 +16,26 @@ PICKS = {  # candidate slot -> (home arena "sector:arena", relationship hooks to
  "teen (Moreno spare room)": ("Moreno family's house:empty bedroom", "is Tom and Jane Moreno's teenage child; dual-enrolled at Oak Hill College; friends with Eddy Lin"),
  "newcomer job seeker": ("Maple Co-living:room 2", "just arrived in town, looking for work; asks Isabella Rodriguez and Arthur Burton about openings"),
 }
+PICKS2 = {  # second group (15) -> 50 agents
+ "paramedic":            ("Willow Court 1:bedroom 2", "flatmate of Dr. Chad Kibler; works the Willow Clinic and rides with Hua Lai when there is an emergency; Sam and Jennifer Moore are his regular calls"),
+ "college lecturer":     ("Willow Court 2:bedroom 2", "teaches literature at Oak Hill College; mentors Ayesha Khan and Klaus Mueller; shares a house with librarian Andrea Lovetro; Mei Lin is a colleague"),
+ "barista":              ("Willow Court 3:bedroom 2", "works the counter at Hobbs Cafe for Isabella Rodriguez; shares a house with baker Sharon Antle; Maria Lopez is a friend"),
+ "night cook":           ("Willow Court 8:bedroom 2", "cooks the evening shift at Arthur Burton's Rose and Crown Pub; Carlos Gomez drinks there most nights"),
+ "pub waitress":         ("Maple Co-living:room 3", "waits tables at the Rose and Crown Pub for Arthur Burton while finishing a graduate degree; friends with Abigail Chen and Hailey Johnson"),
+ "delivery driver":      ("Willow Court 9:bedroom 1", "delivers stock between Harvey Oak Supply Store, the Willows Market and Hobbs Cafe; works with Tom Moreno and Carmen Ortiz"),
+ "handyman / plumber":   ("Willow Court 9:bedroom 2", "fixes pipes and roofs around town; regularly called by the Moore family, Tom Moreno and Isabella Rodriguez; shares a house with the delivery driver"),
+ "mechanic":             ("Willow Court 10:bedroom 1", "runs a small garage; fixes Tom Moreno's and Ryan Park's vehicles; loves restoring old cars"),
+ "junior accountant":    ("Maple Co-living:room 4", "keeps books for the shops; Yuriko Yamamoto mentors them and Ryan Park is a friend"),
+ "chaplain / counsellor":("Willow Court 8:bedroom 1", "town chaplain and counsellor; Jane Moreno and Klaus Mueller seek their advice; runs a weekly listening hour at Johnson Park"),
+ "fitness trainer":      ("Maple Co-living:room 5", "runs morning classes in Johnson Park; trains Wolfgang Schulz and Mei Lin; friends with Francisco Lopez"),
+ "piano teacher / musician": ("Willow Court 10:bedroom 2", "teaches piano and plays at Hobbs Cafe on weekends; Eddy Lin is a student; Isabella Rodriguez books him for events"),
+ "retired nurse (elder)":("Willow Court 4:bedroom 2", "retired engineer who does precise woodworking; neighbours with gardener Amilcar Rosales; old friends with Sam Moore"),
+ "retired elder":        ("Willow Court 11:bedroom 1", "retired storyteller who reads to children at the library and gardens in Johnson Park; friends with Jennifer Moore"),
+ "hairdresser":          ("Willow Court 11:bedroom 2", "owns a small salon; Jane Moreno, Mei Lin and Isabella Rodriguez are regulars"),
+}
+import os as _os
+if _os.environ.get("GROUP") == "2":
+    PICKS = PICKS2
 EXAMPLE = {
  "innate": "thoughtful, reflective, intellectual",
  "learned": "Adam Smith is a philosopher who loves to explore different ideas. He is always looking for ways to challenge people’s preconceptions.",
@@ -73,4 +93,4 @@ Return ONLY JSON with keys innate (3 adjectives), learned (2 sentences: who they
                       "living_area": f"the Ville:{home.split(':')[0]}:{home.split(':')[1]}",
                       **{k: j[k] for k in EXAMPLE}, "uuid": c["uuid"], "sex": c["sex"]}
     print(c["name"], "|", j["innate"], "|", j["learned"][:100], flush=True)
-json.dump(out, open("pipelines/persona_pool/profiles.json", "w"), indent=1, ensure_ascii=False)
+json.dump(out, open("pipelines/persona_pool/profiles2.json" if _os.environ.get("GROUP") == "2" else "pipelines/persona_pool/profiles.json", "w"), indent=1, ensure_ascii=False)

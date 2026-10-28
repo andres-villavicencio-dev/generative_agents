@@ -9,6 +9,15 @@ BASE = {"Chad Kibler": ("Ryan_Park", 150), "Andrea Lovetro": ("Jane_Moreno", 200
         "Carl Demissie": ("Tom_Moreno", 180), "Ethel Langley": ("Carmen_Ortiz", 260),
         "Michael Poirier": ("Eddy_Lin", 330), "Maria Urban": ("Tamara_Taylor", 40)}
 
+BASE2 = {"Tony Stewart": ("Ryan_Park", 240), "Cledith Hardin": ("Adam_Smith", 100), "Eugene Johnson": ("Klaus_Mueller", 260),
+         "David Puskar": ("Giorgio_Rossi", 300), "Ana Abad": ("Abigail_Chen", 210), "Dalton Robinson": ("John_Lin", 80),
+         "Job Amely": ("Arthur_Burton", 160), "Jeanne Love": ("Jane_Moreno", 120), "Eugene Middlebrooks": ("Rajiv_Patel", 20),
+         "Jason O'Brien": ("Sam_Moore", 200), "Jenny Rivera": ("Maria_Lopez", 150), "Nair Viggiani": ("Francisco_Lopez", 270),
+         "Victor Rosales": ("Sam_Moore", 320), "Amber Williamson": ("Jennifer_Moore", 250), "Diane Bosse": ("Hailey_Johnson", 90)}
+import sys as _sys
+if "--group2" in _sys.argv:
+    BASE = BASE2
+
 def recolor(im, deg):
     px = im.load()
     for y in range(im.height):

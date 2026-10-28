@@ -5,7 +5,7 @@
 <br>
 <br>
 <div>
-	<div id="game-container" style="text-align: center"></div>
+	<div id="game-container" style="text-align: center; touch-action: none"></div>
 
 	<div style="width:55%; margin: 0 auto; margin-top:4.5em">
 		<h3 style="margin-bottom:-0.5em; font-size:1.5em">Current Time:</h3>
@@ -78,7 +78,7 @@
 
 					var eng = s.engine || {};
 					var chip = document.getElementById("rs-engine");
-					var mode = eng.laya_enabled ? "laya v3" : (eng.cloudjev ? "cloud jev" : (eng.rizzo_fallback ? "rizzo" : "legacy"));
+					var lv = (eng.laya_model || "").match(/v\d+/); var mode = eng.laya_enabled ? ("laya " + (lv ? lv[0] : "")).trim() : (eng.cloudjev ? "cloud jev" : (eng.rizzo_fallback ? "rizzo" : "legacy"));
 					chip.textContent = "engine: " + mode;
 					chip.className = "label " + (mode === "legacy" ? "label-warning" : "label-primary");
 
@@ -134,7 +134,8 @@
 
 					var svc = s.services || {};
 					document.getElementById("rs-enginedetail").textContent =
-						"laya " + (eng.laya_enabled ? "ON" : "off") +
+						"laya " + (eng.laya_enabled ? "ON" : "off") + (eng.laya_model ? " (" + eng.laya_model + " :" + eng.laya_port + ")" : "") +
+						((eng.laya_tasks || []).length ? " [" + eng.laya_tasks.join(", ") + "]" : "") +
 						" · chat: " + (eng.chat_model || "default") +
 						" · artifact: " + (eng.artifact_model || "default");
 					document.getElementById("rs-services").textContent =

@@ -1,0 +1,15 @@
+Day’s Priorities and Technical Decisions  
+Date: Wednesday, February 15  
+Reviewer: Ryan Park  
+
+Priorities  
+1. Finish the mobile app by the end of the day.  
+2. Document the architecture and key technical decisions.  
+3. Complete the core features, testing, and release preparation.  
+4. Review the latest technologies and update the tech stack where needed.  
+
+Technical Decisions  
+Architecture: I will use a layered architecture with a modular feature store, a shared dependency layer, and a clean separation of concerns. The mobile app will follow a single-page application pattern with a persistent session.  
+Core Features: Authentication, user profiles, task management, and notifications will be implemented first. The app will be accessible from the browser and mobile device.  
+Tech Stack: I will use React for the UI, TypeScript for type safety, and Node.js with Express for the backend. Local storage will persist session data, while the backend will use a REST API.  
+Testing: Unit ...

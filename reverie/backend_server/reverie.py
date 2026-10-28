@@ -983,6 +983,22 @@ class ReverieServer:
     s.resource_goals.append("buying groceries at the Harvey Oak Supply Store")
     s.last_grocery_attempt = now
 
+  def _arrived(self, persona):
+    """True when the persona stands in the sector its current action is addressed to.
+    Purchases and consumption used to fire the moment an action began, i.e. while the
+    agent was still at home — groceries were bought without going to the store."""
+    try:
+      addr = persona.scratch.act_address
+      if not addr:
+        return True
+      parts = addr.split(":")
+      if len(parts) < 2:
+        return True
+      tile = self.maze.access_tile(persona.scratch.curr_tile)
+      return (tile.get("sector") or "").lower() == parts[1].strip().lower()
+    except Exception:
+      return True
+
   def _process_shopping(self, persona, act_description):
     """FIX (shopping loop): when a persona is AT the supply store with a
     grocery goal, actually buy goods — purchase() deducts wallet money and
@@ -1965,22 +1981,39 @@ class ReverieServer:
               chronicle_milestone(persona, "birthday",
                 f"{persona.name} turned {new_age}", sim_folder)
 
+            # A purchase/consumption deferred until arrival fires on the step the agent gets there
+            _pend = getattr(persona.scratch, "_pending_act", None)
+            if _pend:
+              if _pend != persona.scratch.act_description:
+                persona.scratch._pending_act = None          # the plan changed first
+              elif persona_name not in _frozen_now and self._arrived(persona):
+                persona.scratch._pending_act = None
+                try:
+                  self.consume_resources_for_action(persona, _pend)
+                  self._process_shopping(persona, _pend)
+                except Exception as e:
+                  print(f"[Reverie] Warning: deferred consumption failed: {e}")
+
             # Satisfy needs when persona transitions to a new action
             curr_act_description = persona.scratch.act_description
             if persona_name in _frozen_now:
               curr_act_description = prev_act_description
             if curr_act_description != prev_act_description:
               self.satisfy_needs_for_action(persona, curr_act_description)
-              # Consume world resources for the action (Phase 2)
-              try:
-                self.consume_resources_for_action(persona, curr_act_description)
-              except Exception as e:
-                print(f"[Reverie] Warning: resource consumption failed: {e}")
-              # Shopping loop: buy and carry groceries home (Phase 5 fix)
-              try:
-                self._process_shopping(persona, curr_act_description)
-              except Exception as e:
-                print(f"[Reverie] Warning: shopping processing failed: {e}")
+              # Consume world resources / shop only once the agent is THERE; until
+              # then the action is pending (see the arrival check below).
+              if self._arrived(persona):
+                persona.scratch._pending_act = None
+                try:
+                  self.consume_resources_for_action(persona, curr_act_description)
+                except Exception as e:
+                  print(f"[Reverie] Warning: resource consumption failed: {e}")
+                try:
+                  self._process_shopping(persona, curr_act_description)
+                except Exception as e:
+                  print(f"[Reverie] Warning: shopping processing failed: {e}")
+              else:
+                persona.scratch._pending_act = curr_act_description
               # Artifact creation and interaction (Phase 6)
               try:
                 self.try_create_artifact(persona, curr_act_description)

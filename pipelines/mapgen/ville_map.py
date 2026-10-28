@@ -60,7 +60,7 @@ class Map:
                     self.put(n, dx + xx, dy + yy, rm.get(v, v))
 
     # -- output ----------------------------------------------------------
-    EXTRA_SETS = [("blocks_n50_a", 40001), ("blocks_n50_b", 40081)]   # new special-block gids
+    EXTRA_SETS = [("blocks_n50_a", 40001), ("blocks_n50_b", 40081), ("blocks_n50_c", 40161), ("blocks_n50_d", 40241)]   # new special-block gids
 
     def save_tmx(self, out):
         t = self.text

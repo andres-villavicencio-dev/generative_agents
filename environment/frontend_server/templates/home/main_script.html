@@ -228,10 +228,8 @@
 	  // which already renders correct individual sprites. Frame layout comes
 	  // from the characters/atlas.json (same 20-frame sheet for every persona).
 	  {% for p in persona_names %}
-	    {% with 'assets/characters/'|add:p.1|add:'.png' as image_static %}
-	      this.load.atlas("{{p.0}}", "{% static image_static %}",
+	      this.load.atlas("{{p.0|escapejs}}", "{% static 'assets/characters/' %}{{p.1|escapejs}}.png",
 	                                     "{% static 'assets/characters/atlas.json' %}");
-	    {% endwith %}
 	  {% endfor %}
 	  }
 
@@ -372,9 +370,42 @@
 	  });
 
 	  // Pinch to zoom
-	  this.input.on('wheel', function(pointer, objs, dx, dy) {
-	    const newZoom = Phaser.Math.Clamp(camera.zoom - dy * 0.001, 0.5, 3);
+	  // The minimum zoom is whatever fits the WHOLE map in the canvas (the 50-agent map is
+	  // 6400x5120 px, far larger than the old 4480x3200 one); the wheel zooms multiplicatively so
+	  // zooming out stays smooth at small scales. Press F to fit the whole map and stop following.
+	  const fitZoom = Math.min(this.scale.width / map.widthInPixels, this.scale.height / map.heightInPixels);
+	  const minZoom = Math.min(0.5, fitZoom);
+	  const scene = this;
+	  function applyZoom(z) {
+	    const newZoom = Phaser.Math.Clamp(z, minZoom, 3);
 	    camera.setZoom(newZoom);
+	    // Zoomed out far enough that the map is smaller than the canvas: drop the bounds so the
+	    // map can sit centred instead of pinned to a corner with black beside it.
+	    if (newZoom <= fitZoom * 1.02) { camera.removeBounds(); camera.centerOn(map.widthInPixels / 2, map.heightInPixels / 2); }
+	    else { camera.setBounds(0, 0, map.widthInPixels, map.heightInPixels); }
+	  }
+	  // Mouse wheel and trackpad pinch (browsers send a pinch as a wheel event with ctrlKey).
+	  this.input.on('wheel', function(pointer, objs, dx, dy) {
+	    const k = (pointer.event && pointer.event.ctrlKey) ? 0.01 : 0.0015;
+	    applyZoom(camera.zoom * Math.exp(-dy * k));
+	  });
+	  // Two-finger pinch on touch screens.
+	  this.input.addPointer(1);
+	  let pinchDist = 0, pinchZoom = 1;
+	  this.events.on('update', function() {
+	    const p1 = scene.input.pointer1, p2 = scene.input.pointer2;
+	    if (p1.isDown && p2.isDown) {
+	      isDragging = false;
+	      const d = Phaser.Math.Distance.Between(p1.x, p1.y, p2.x, p2.y);
+	      if (!pinchDist) { pinchDist = d; pinchZoom = camera.zoom; camera.stopFollow(); }
+	      else if (d > 0) applyZoom(pinchZoom * d / pinchDist);
+	    } else { pinchDist = 0; }
+	  });
+	  this.input.keyboard.on('keydown-F', function() {
+	    camera.stopFollow();
+	    camera.removeBounds();
+	    camera.setZoom(fitZoom);
+	    camera.centerOn(map.widthInPixels / 2, map.heightInPixels / 2);
 	  });
 
 	  // *** SET UP PERSONAS *** 

@@ -146,11 +146,14 @@ CIVIC_TASKS = {
                 "rate": 7.0, "slots": 99, "public": True},
     "townhall": {"name": "working at Town Hall", "keys": ("town hall",),
                  "rate": 8.0, "slots": 99, "public": True},
+    "lecture": {"name": "teaching at the Oak Hill College classroom",
+                "keys": ("oak hill college", "classroom"), "rate": 8.0, "slots": 99, "public": True},
     "records": {"name": "staffing the Oak Hill College library desk",
                 "keys": ("oak hill college", "library"), "rate": 7.0, "slots": 99, "public": True},
 }
 PUBLIC_JOBS = {"Chad Kibler": "clinic", "Hua Lai": "police", "Lesbia Martinez": "gazette",
-               "Carl Demissie": "townhall", "Andrea Lovetro": "records"}
+               "Carl Demissie": "townhall", "Andrea Lovetro": "records",
+               "Tony Stewart": "clinic", "Cledith Hardin": "lecture"}
 
 
 def community_enabled():

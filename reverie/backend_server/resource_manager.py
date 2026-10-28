@@ -656,9 +656,11 @@ class WorldResourceManager:
         if os.environ.get("GA_HOME_FRIDGES", "1") != "1":
             return
         for name, p in personas.items():
-            first = name.split()[0].lower()
+            # Full-name match: matching the FIRST name alone gave Maria Urban Maria
+            # Lopez's fridge and Carl Demissie Carlos Gomez's ("carl" in "carlos").
+            full = name.lower()
             own = next((a for a in self.world_state
-                        if "refrigerator" in a.lower() and first in a.lower()), None)
+                        if "refrigerator" in a.lower() and full in a.lower()), None)
             if own is None:
                 la = getattr(p.scratch, "living_area", None) or ""
                 parts = la.split(":")

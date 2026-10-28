@@ -8,8 +8,9 @@ sys.path.insert(0, os.path.dirname(__file__))
 from ville_map import Map, VIS
 
 A = "/home/andus/Projects/generative_agents/environment/frontend_server/static_dirs/assets"
-SRC, DST = f"{A}/the_ville", f"{A}/the_ville_n50"
-W, H = 200, 130
+MAP = os.environ.get("MAP", "the_ville_n50")      # the_ville_50 = the 160-row, 50-agent map
+SRC, DST = f"{A}/the_ville", f"{A}/{MAP}"
+W, H = 200, int(os.environ.get("MAP_H", "130"))
 FIRST_NEW = 40000            # new block gids (extra tilesets reuse blocks.png)
 
 def read_blocks(f):
@@ -97,6 +98,9 @@ HALL_AR = {"classroom": "council chamber", "library": "records office", "hallway
 placed = {}
 for i, x in enumerate((4, 24, 44, 64, 92, 112, 132, 152)):
     placed[f"Willow Court {i+1}"] = place(DUPLEX, (x, 101), f"Willow Court {i+1}", DUPLEX_AR)
+if H >= 160:                      # third row of houses (Willow Court 9-12)
+    for i, x in enumerate((4, 24, 44, 64)):
+        placed[f"Willow Court {9+i}"] = place(DUPLEX, (x, 131), f"Willow Court {9+i}", DUPLEX_AR)
 placed["Maple Co-living"] = place(COWORK, (150, 70), "Maple Co-living", COWORK_AR)
 placed["Willow Clinic"] = place(CLINIC, (144, 8), "Willow Clinic", CLINIC_AR)
 placed["Town Hall"] = place(HALL, (144, 46), "Town Hall", HALL_AR)
@@ -113,6 +117,8 @@ ROADS = [(122, 37, 20, 3),      # east seam through the old forest edge
          (140, 6, 38, 2),       # north spur to the studios
          (176, 6, 2, 64),       # studios' lane
          (140, 44, 22, 2), (140, 67, 14, 2), (150, 96, 30, 2)]   # clinic / town hall / co-living
+if H >= 160:
+    ROADS += [(84, 100, 4, 32), (2, 128, 90, 2)]          # to the third row
 def road(x, y, w, h):
     for yy in range(h):
         for xx in range(w):
@@ -132,8 +138,8 @@ if os.path.exists(DST):
 shutil.copytree(SRC, DST, ignore=shutil.ignore_patterns("*.html", "visuals"))
 os.makedirs(f"{DST}/visuals", exist_ok=True)
 os.symlink("../../the_ville/visuals/map_assets", f"{DST}/visuals/map_assets")
-m.save_tmx(f"{DST}/visuals/the_ville_n50.tmx")
-m.save_json(f"{SRC}/visuals/the_ville_jan7.json", f"{DST}/visuals/the_ville_n50.json")
+m.save_tmx(f"{DST}/visuals/{MAP}.tmx")
+m.save_json(f"{SRC}/visuals/the_ville_jan7.json", f"{DST}/visuals/{MAP}.json")
 # matrices: original region verbatim from the shipped csv (they differ from the tmx in 100 hand-patched
 # cells), new region from the new map
 def old_grid(f):

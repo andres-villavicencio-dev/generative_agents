@@ -4,7 +4,7 @@ import sys, collections
 sys.path.insert(0, "/home/andus/Projects/generative_agents/reverie/backend_server")
 import maze as M
 M.env_matrix = "/home/andus/Projects/generative_agents/environment/frontend_server/static_dirs/assets/the_ville_n50/matrix"
-mz = M.Maze("the_ville_n50")
+mz = M.Maze(__import__("os").environ.get("MAP", "the_ville_n50"))
 W, H = mz.maze_width, mz.maze_height
 start = next((x, y) for y in range(H) for x in range(W)
              if mz.tiles[y][x]["sector"] == "Hobbs Cafe" and not mz.tiles[y][x]["collision"])

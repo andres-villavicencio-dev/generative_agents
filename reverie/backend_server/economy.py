@@ -137,7 +137,20 @@ CIVIC_TASKS = {
                 "keys": ("oak hill college", "library"), "rate": 6.0, "slots": 99},
     "tutor": {"name": "tutoring at the Oak Hill College classroom",
               "keys": ("oak hill college", "classroom"), "rate": 7.0, "slots": 99},
+    # town services: assigned to named residents (PUBLIC_JOBS), never picked at random
+    "clinic": {"name": "working at the Willow Clinic", "keys": ("willow clinic",),
+               "rate": 9.0, "slots": 99, "public": True},
+    "police": {"name": "working at the Police Station", "keys": ("police station",),
+               "rate": 8.0, "slots": 99, "public": True},
+    "gazette": {"name": "working at the Smallville Gazette", "keys": ("smallville gazette",),
+                "rate": 7.0, "slots": 99, "public": True},
+    "townhall": {"name": "working at Town Hall", "keys": ("town hall",),
+                 "rate": 8.0, "slots": 99, "public": True},
+    "records": {"name": "staffing the Oak Hill College library desk",
+                "keys": ("oak hill college", "library"), "rate": 7.0, "slots": 99, "public": True},
 }
+PUBLIC_JOBS = {"Chad Kibler": "clinic", "Hua Lai": "police", "Lesbia Martinez": "gazette",
+               "Carl Demissie": "townhall", "Andrea Lovetro": "records"}
 
 
 def community_enabled():
@@ -443,13 +456,20 @@ class EconomyManager:
         if self.state["civic_day"] != day:
             self.state["civic_day"] = day
             self.state["civic"] = {}
+        pj = PUBLIC_JOBS.get(name)
+        if pj:                                   # a town-service post, every day
+            if name in self.state["civic"]:
+                return None
+            self.state["civic"][name] = pj
+            return CIVIC_TASKS[pj]["name"]
         if name in self.state["civic"]:
             return None
         if any(name in e for e in self.state["employees"].values()) or any(
                 c["owner"] == name for c in VENUES.values()):
             return None                      # owners and employees have a job
         taken = list(self.state["civic"].values())
-        free = {t: c["slots"] - taken.count(t) for t, c in CIVIC_TASKS.items()}
+        free = {t: c["slots"] - taken.count(t) for t, c in CIVIC_TASKS.items()
+                if not c.get("public")}
         tid = max(free, key=free.get)
         if free[tid] <= 0:
             return None

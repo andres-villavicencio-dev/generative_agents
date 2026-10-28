@@ -1,0 +1,815 @@
+[
+ {
+  "persona": "John Lin",
+  "laya": {
+   "plan": 0.4762,
+   "pull1": 0.1904,
+   "own": 0.3334
+  },
+  "lat": 3.9770610332489014,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Arthur Burton",
+  "laya": {
+   "plan": 0.4113,
+   "own": 0.5887
+  },
+  "lat": 1.9162800312042236,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Ayesha Khan",
+  "laya": {
+   "plan": 0.3643,
+   "pull1": 0.1843,
+   "pull2": 0.1436,
+   "own": 0.3078
+  },
+  "lat": 2.2609493732452393,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Adam Smith",
+  "laya": {
+   "plan": 0.487,
+   "pull1": 0.2033,
+   "own": 0.3097
+  },
+  "lat": 2.619433879852295,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Ayesha Khan",
+  "laya": {
+   "plan": 0.7427,
+   "own": 0.2573
+  },
+  "lat": 2.069728136062622,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Eddy Lin",
+  "laya": {
+   "plan": 0.6504,
+   "own": 0.3496
+  },
+  "lat": 1.6055285930633545,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Francisco Lopez",
+  "laya": {
+   "plan": 0.40314031403140316,
+   "pull1": 0.16631663166316632,
+   "own": 0.43054305430543055
+  },
+  "lat": 1.1165647506713867,
+  "glm": "own",
+  "b2": "plan"
+ },
+ {
+  "persona": "Arthur Burton",
+  "laya": {
+   "plan": 0.3881,
+   "own": 0.6119
+  },
+  "lat": 1.350780725479126,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Carlos Gomez",
+  "laya": {
+   "plan": 0.4915,
+   "pull1": 0.1622,
+   "own": 0.3463
+  },
+  "lat": 3.526401996612549,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Wolfgang Schulz",
+  "laya": {
+   "plan": 0.5495,
+   "own": 0.4505
+  },
+  "lat": 2.872891902923584,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Sam Moore",
+  "laya": {
+   "plan": 0.4235,
+   "own": 0.5765
+  },
+  "lat": 1.0101580619812012,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Tamara Taylor",
+  "laya": {
+   "plan": 0.4684,
+   "own": 0.5316
+  },
+  "lat": 1.0819661617279053,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "John Lin",
+  "laya": {
+   "plan": 0.5198,
+   "own": 0.4802
+  },
+  "lat": 1.2932896614074707,
+  "glm": "own",
+  "b2": "own"
+ },
+ {
+  "persona": "Ayesha Khan",
+  "laya": {
+   "plan": 0.6818,
+   "own": 0.3182
+  },
+  "lat": 1.5014879703521729,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Carlos Gomez",
+  "laya": {
+   "plan": 0.5914,
+   "own": 0.4086
+  },
+  "lat": 1.131772518157959,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Wolfgang Schulz",
+  "laya": {
+   "plan": 0.5688,
+   "own": 0.4312
+  },
+  "lat": 1.3492143154144287,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Mei Lin",
+  "laya": {
+   "plan": 0.5626,
+   "pull1": 0.1564,
+   "own": 0.281
+  },
+  "lat": 1.1376419067382812,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Giorgio Rossi",
+  "laya": {
+   "plan": 0.523,
+   "own": 0.477
+  },
+  "lat": 1.3587567806243896,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Yuriko Yamamoto",
+  "laya": {
+   "plan": 0.5941,
+   "own": 0.4059
+  },
+  "lat": 1.3108363151550293,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Adam Smith",
+  "laya": {
+   "plan": 0.68,
+   "own": 0.32
+  },
+  "lat": 1.3379530906677246,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Giorgio Rossi",
+  "laya": {
+   "plan": 0.596,
+   "own": 0.404
+  },
+  "lat": 1.3200867176055908,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Giorgio Rossi",
+  "laya": {
+   "plan": 0.4379,
+   "own": 0.5621
+  },
+  "lat": 1.3517580032348633,
+  "glm": "plan",
+  "b2": null
+ },
+ {
+  "persona": "Giorgio Rossi",
+  "laya": {
+   "plan": 0.6143,
+   "own": 0.3857
+  },
+  "lat": 1.3996789455413818,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Ayesha Khan",
+  "laya": {
+   "plan": 0.6281,
+   "own": 0.3719
+  },
+  "lat": 1.4898419380187988,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Adam Smith",
+  "laya": {
+   "plan": 0.3426,
+   "pull1": 0.2855,
+   "own": 0.3719
+  },
+  "lat": 1.4113812446594238,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Giorgio Rossi",
+  "laya": {
+   "plan": 0.6012,
+   "own": 0.3988
+  },
+  "lat": 1.300523042678833,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Jennifer Moore",
+  "laya": {
+   "plan": 0.606,
+   "own": 0.394
+  },
+  "lat": 1.6381022930145264,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Latoya Williams",
+  "laya": {
+   "plan": 0.5779,
+   "own": 0.4221
+  },
+  "lat": 2.3452420234680176,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Carmen Ortiz",
+  "laya": {
+   "plan": 0.6599,
+   "own": 0.3401
+  },
+  "lat": 1.1678657531738281,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Sam Moore",
+  "laya": {
+   "plan": 0.5644,
+   "own": 0.4356
+  },
+  "lat": 2.865011215209961,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Tamara Taylor",
+  "laya": {
+   "plan": 0.7347,
+   "own": 0.2653
+  },
+  "lat": 2.6913790702819824,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Isabella Rodriguez",
+  "laya": {
+   "plan": 0.4783,
+   "own": 0.5217
+  },
+  "lat": 0.828624963760376,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Abigail Chen",
+  "laya": {
+   "plan": 0.4856,
+   "pull1": 0.2061,
+   "own": 0.3083
+  },
+  "lat": 1.6311216354370117,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Latoya Williams",
+  "laya": {
+   "plan": 0.7075,
+   "own": 0.2925
+  },
+  "lat": 1.8346223831176758,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Wolfgang Schulz",
+  "laya": {
+   "plan": 0.4141,
+   "own": 0.5859
+  },
+  "lat": 1.7900214195251465,
+  "glm": "own",
+  "b2": "own"
+ },
+ {
+  "persona": "Carlos Gomez",
+  "laya": {
+   "plan": 0.4086,
+   "own": 0.5914
+  },
+  "lat": 4.878800392150879,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Ayesha Khan",
+  "laya": {
+   "plan": 0.6716,
+   "own": 0.3284
+  },
+  "lat": 1.7419869899749756,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Arthur Burton",
+  "laya": {
+   "plan": 0.6222,
+   "own": 0.3778
+  },
+  "lat": 1.4477598667144775,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Carlos Gomez",
+  "laya": {
+   "plan": 0.4114,
+   "own": 0.5886
+  },
+  "lat": 1.200376272201538,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Eddy Lin",
+  "laya": {
+   "plan": 0.787,
+   "own": 0.213
+  },
+  "lat": 1.5177466869354248,
+  "glm": null,
+  "b2": "own"
+ },
+ {
+  "persona": "Francisco Lopez",
+  "laya": {
+   "plan": 0.5627,
+   "own": 0.4373
+  },
+  "lat": 2.011012315750122,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "John Lin",
+  "laya": {
+   "plan": 0.674,
+   "own": 0.326
+  },
+  "lat": 2.6054577827453613,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Jane Moreno",
+  "laya": {
+   "plan": 0.5398,
+   "own": 0.4602
+  },
+  "lat": 1.0181159973144531,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Carmen Ortiz",
+  "laya": {
+   "plan": 0.7035,
+   "own": 0.2965
+  },
+  "lat": 2.0113205909729004,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Jennifer Moore",
+  "laya": {
+   "plan": 0.5548,
+   "own": 0.4452
+  },
+  "lat": 1.332273244857788,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Tamara Taylor",
+  "laya": {
+   "plan": 0.74,
+   "own": 0.26
+  },
+  "lat": 1.0041406154632568,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Abigail Chen",
+  "laya": {
+   "plan": 0.493,
+   "own": 0.507
+  },
+  "lat": 1.5230381488800049,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Eddy Lin",
+  "laya": {
+   "plan": 0.7843,
+   "own": 0.2157
+  },
+  "lat": 2.299550771713257,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Isabella Rodriguez",
+  "laya": {
+   "plan": 0.4822,
+   "own": 0.5178
+  },
+  "lat": 1.2480123043060303,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Arthur Burton",
+  "laya": {
+   "plan": 0.6992,
+   "own": 0.3008
+  },
+  "lat": 1.2472546100616455,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Wolfgang Schulz",
+  "laya": {
+   "plan": 0.2239,
+   "pull1": 0.375,
+   "own": 0.4011
+  },
+  "lat": 1.1236248016357422,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Carlos Gomez",
+  "laya": {
+   "plan": 0.4307,
+   "own": 0.5693
+  },
+  "lat": 1.5861845016479492,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Francisco Lopez",
+  "laya": {
+   "plan": 0.5868,
+   "own": 0.4132
+  },
+  "lat": 1.349628210067749,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Arthur Burton",
+  "laya": {
+   "plan": 0.4595,
+   "pull1": 0.2598,
+   "own": 0.2807
+  },
+  "lat": 1.8362066745758057,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Adam Smith",
+  "laya": {
+   "plan": 0.6356,
+   "own": 0.3644
+  },
+  "lat": 5.0488317012786865,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Sam Moore",
+  "laya": {
+   "plan": 0.6038,
+   "own": 0.3962
+  },
+  "lat": 1.7314422130584717,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Rajiv Patel",
+  "laya": {
+   "plan": 0.3991,
+   "own": 0.6009
+  },
+  "lat": 2.212768316268921,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Jane Moreno",
+  "laya": {
+   "plan": 0.4665,
+   "pull1": 0.1467,
+   "own": 0.3868
+  },
+  "lat": 2.272125720977783,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Mei Lin",
+  "laya": {
+   "plan": 0.7253,
+   "own": 0.2747
+  },
+  "lat": 1.5088021755218506,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Wolfgang Schulz",
+  "laya": {
+   "plan": 0.4564,
+   "own": 0.5436
+  },
+  "lat": 0.8844587802886963,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Jane Moreno",
+  "laya": {
+   "plan": 0.4977,
+   "own": 0.5023
+  },
+  "lat": 3.414156436920166,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Sam Moore",
+  "laya": {
+   "plan": 0.6131,
+   "own": 0.3869
+  },
+  "lat": 3.5386719703674316,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Isabella Rodriguez",
+  "laya": {
+   "plan": 0.4851,
+   "own": 0.5149
+  },
+  "lat": 2.836643695831299,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Wolfgang Schulz",
+  "laya": {
+   "plan": 0.4127,
+   "own": 0.5873
+  },
+  "lat": 1.4438261985778809,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Jennifer Moore",
+  "laya": {
+   "plan": 0.6696,
+   "own": 0.3304
+  },
+  "lat": 1.4126434326171875,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Giorgio Rossi",
+  "laya": {
+   "plan": 0.6478,
+   "own": 0.3522
+  },
+  "lat": 1.3408668041229248,
+  "glm": "plan",
+  "b2": null
+ },
+ {
+  "persona": "Sam Moore",
+  "laya": {
+   "plan": 0.6403,
+   "own": 0.3597
+  },
+  "lat": 1.4079015254974365,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Ayesha Khan",
+  "laya": {
+   "plan": 0.7461,
+   "own": 0.2539
+  },
+  "lat": 1.5968194007873535,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Wolfgang Schulz",
+  "laya": {
+   "plan": 0.4313,
+   "own": 0.5687
+  },
+  "lat": 1.2923102378845215,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Latoya Williams",
+  "laya": {
+   "plan": 0.6076,
+   "own": 0.3924
+  },
+  "lat": 1.2497847080230713,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Adam Smith",
+  "laya": {
+   "plan": 0.5987,
+   "own": 0.4013
+  },
+  "lat": 1.338021993637085,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Jane Moreno",
+  "laya": {
+   "plan": 0.403,
+   "own": 0.597
+  },
+  "lat": 1.400824785232544,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Francisco Lopez",
+  "laya": {
+   "plan": 0.5594,
+   "own": 0.4406
+  },
+  "lat": 1.336585521697998,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Ryan Park",
+  "laya": {
+   "plan": 0.5977,
+   "pull1": 0.1565,
+   "own": 0.2458
+  },
+  "lat": 1.3964600563049316,
+  "glm": "plan",
+  "b2": null
+ },
+ {
+  "persona": "Ryan Park",
+  "laya": {
+   "plan": 0.747,
+   "own": 0.253
+  },
+  "lat": 1.4161458015441895,
+  "glm": "own",
+  "b2": null
+ },
+ {
+  "persona": "Yuriko Yamamoto",
+  "laya": {
+   "plan": 0.6006,
+   "own": 0.3994
+  },
+  "lat": 3.3393335342407227,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Carlos Gomez",
+  "laya": {
+   "plan": 0.4303,
+   "own": 0.5697
+  },
+  "lat": 2.499630928039551,
+  "glm": "plan",
+  "b2": "plan"
+ },
+ {
+  "persona": "Francisco Lopez",
+  "laya": {
+   "plan": 0.6657,
+   "own": 0.3343
+  },
+  "lat": 1.3059167861938477,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Isabella Rodriguez",
+  "laya": {
+   "plan": 0.5629,
+   "own": 0.4371
+  },
+  "lat": 1.2642648220062256,
+  "glm": "plan",
+  "b2": "own"
+ },
+ {
+  "persona": "Adam Smith",
+  "laya": {
+   "plan": 0.7604,
+   "own": 0.2396
+  },
+  "lat": 1.429225206375122,
+  "glm": "plan",
+  "b2": "own"
+ }
+]

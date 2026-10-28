@@ -469,9 +469,28 @@ def run_gpt_prompt_action_location(action_description, persona, maze):
   gpt_param = {"engine": "text-davinci-002", "max_tokens": 60,
                "temperature": 0, "top_p": 1, "stream": False,
                "frequency_penalty": 0, "presence_penalty": 0, "stop": None}
+  _lmode = os.environ.get("GA_LOC_LAYA", "off")
+  if _lmode == "live":
+    try:
+      from persona.prompt_template.laya_loc import decide as _loc_decide
+      _r = _loc_decide(prompt, name)
+      if _r and _r["sector"] in sectors:
+        _ar = _r["arena"] if _r["arena"] in (tree.get(_r["sector"]) or {}) else None
+        if _ar is not None:
+          _objs = [o for o in (tree[_r["sector"]].get(_ar) or []) if o]
+          return (_r["sector"], _ar, _r["obj"] if _objs else "<random>")
+    except Exception:
+      pass
   out = safe_generate_response(prompt, gpt_param, 3, (None, None, None),
                                __func_validate, __func_clean_up)
-  return out if isinstance(out, tuple) else (None, None, None)
+  out = out if isinstance(out, tuple) else (None, None, None)
+  if _lmode == "shadow" and out[0]:
+    try:
+      from persona.prompt_template.laya_loc import shadow as _loc_shadow
+      _loc_shadow(prompt, name, out)
+    except Exception:
+      pass
+  return out
 
 
 def run_gpt_prompt_daily_plan(persona,
@@ -1013,10 +1032,24 @@ def run_gpt_prompt_task_decomp(persona,
   print (prompt)
   # FIX: free_form=True - task decomp needs multi-line numbered list output,
   # not a single {"output": "..."} JSON string. Schema constraint breaks this.
-  output = safe_generate_response(prompt, gpt_param, 5, get_fail_safe(),
-                                   __func_validate, __func_clean_up,
-                                   free_form=True,
-                                   model_hint="planning")
+  _dc_on = os.environ.get("GA_DECOMP_CACHE", "0") == "1"
+  output = None
+  if _dc_on:
+    try:
+      from persona.prompt_template import decomp_cache as _dcache
+      output = _dcache.lookup(persona, task, duration)
+    except Exception:
+      output = None
+  if not output:
+    output = safe_generate_response(prompt, gpt_param, 5, get_fail_safe(),
+                                     __func_validate, __func_clean_up,
+                                     free_form=True,
+                                     model_hint="planning")
+    if _dc_on:
+      try:
+        _dcache.add(persona, task, duration, output)
+      except Exception:
+        pass
 
   # TODO THERE WAS A BUG HERE...
   # This is for preventing overflows...
@@ -4341,8 +4374,25 @@ def run_gpt_prompt_choose_activity(persona, sched_item, sched_next, pulls):
   where = (s.act_address or "").split(":")[1:3]
   opts = [f"0. Follow the plan: {sched_item}"
           + (f" (next on the plan: {sched_next})" if sched_next else "")]
+  def _pull_note(g):
+    # What the pull is worth, so skipping it is an informed choice (free
+    # choice run 1: 5 of 5 shift workers skipped work and went unpaid).
+    try:
+      import economy as _eco
+      low = g.lower()
+      if low.startswith("working a shift at"):
+        return (f"{g} (your job: the wage is paid at 10 PM only if you are on "
+                f"site {int(_eco.MIN_SHIFT_PRESENCE_MIN)}+ minutes; skipping "
+                f"the shift means no pay today)")
+      for t in _eco.CIVIC_TASKS.values():
+        if low.startswith(t["name"].lower()):
+          return (f"{g} (community work: ${t['rate']:.0f}/hour paid at 10 PM "
+                  f"if you are there {int(_eco.CIVIC_PRESENCE_MIN)}+ minutes)")
+    except Exception:
+      pass
+    return g
   for k, g in enumerate(pulls, 1):
-    opts.append(f"{k}. {g}")
+    opts.append(f"{k}. {_pull_note(g)}")
   prompt = (
     "\n".join(p for p in parts if p) + "\n\n"
     f"It is {now.strftime('%A %H:%M')}. {first} is at {' / '.join(where) or 'home'}.\n"
@@ -4350,13 +4400,18 @@ def run_gpt_prompt_choose_activity(persona, sched_item, sched_next, pulls):
     f"suggestion, but {first} is free to do something else if it fits "
     f"{s.get_str_firstname()}'s state, money, mood or an opportunity better.\n\n"
     "Options for the next while:\n" + "\n".join(opts) + "\n"
-    f"X. Something else of {first}'s own choosing (a short action)\n\n"
-    "Prefer option 0 unless there is a real reason to change. Answer in this "
-    "exact format:\n"
+    f"X. Something else of {first}'s own choosing\n\n"
+    "Default to option 0: the plan is what the day is built around, and "
+    "other people and jobs depend on it. Choose a numbered pull when it "
+    "applies. Choose X ONLY for a concrete reason: a need that is low, an "
+    "opportunity, a promise, or a specific person or task that matters more "
+    "right now. A mood, restlessness, wanting a break, or a generic walk, "
+    "coffee or 'review' is NOT a reason. Answer in this exact format:\n"
     "choice: <0, a number, or X>\n"
-    "activity: <only if X: a short action, e.g. 'reading in the park'>\n"
+    "activity: <only if X: a specific action with its purpose, e.g. "
+    "'asking Maria about the mural deadline'>\n"
     "minutes: <15 to 120>\n"
-    "why: <one short sentence>")
+    "why: <one short sentence naming the concrete reason>")
   gpt_param = {"engine": "text-davinci-002", "max_tokens": 120,
                "temperature": 0.3, "top_p": 1, "stream": False,
                "frequency_penalty": 0, "presence_penalty": 0, "stop": None}
@@ -4383,6 +4438,36 @@ def run_gpt_prompt_choose_activity(persona, sched_item, sched_next, pulls):
     return {"choice": choice, "activity": act, "minutes": mins,
             "why": w.group(1).strip() if w else ""}
 
+  # GA_CHOICE_LAYA=1: laya decides comply / pull / own (the rebellion dial is
+  # GA_CHOICE_LAYA_THR); the LLM only writes the activity text when laya says
+  # "own", and is the fallback whenever laya is unavailable.
+  if os.environ.get("GA_CHOICE_LAYA", "0") == "1":
+    try:
+      from persona.prompt_template.laya_choose import decide as _lc_decide
+      lc = _lc_decide(prompt, name)
+      if lc is not None:
+        if lc["choice"] == 0:
+          return {"choice": 0, "activity": "", "minutes": 30,
+                  "why": f"laya: follow the plan (p_dev {lc['p_dev']:.2f})"}
+        if lc["choice"] != "own":
+          return {"choice": lc["choice"], "activity": "", "minutes": 30,
+                  "why": f"laya: pull {lc['choice']} (p_dev {lc['p_dev']:.2f})"}
+        forced = prompt.split("Default to option 0")[0] + (
+          f"{first} has decided to do something of {first}'s own. Answer in this "
+          "exact format:\nchoice: X\nactivity: <a specific action with its "
+          "purpose>\nminutes: <15 to 120>\nwhy: <one short sentence>")
+        o2 = safe_generate_response(
+          forced, gpt_param, 2, None,
+          lambda r, prompt="": _parse(r) is not None,
+          lambda r, prompt="": _parse(r),
+          free_form=True, cache=False)
+        if isinstance(o2, dict) and o2.get("choice") == "own":
+          o2["why"] = f"laya: own (p_dev {lc['p_dev']:.2f}) — {o2.get('why', '')}"
+          return o2
+        return {"choice": 0, "activity": "", "minutes": 30,
+                "why": "laya said own but no activity came back; following the plan"}
+    except Exception:
+      pass
   out = safe_generate_response(
     prompt, gpt_param, 2, None,
     lambda r, prompt="": _parse(r) is not None,

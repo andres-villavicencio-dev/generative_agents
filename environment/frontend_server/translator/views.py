@@ -21,6 +21,19 @@ from .models import *
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
+def _map_json(sim_code, folder="storage"):
+  """Static path of the Tiled JSON for a sim's map (meta.json maze_name)."""
+  try:
+    with open(f"{folder}/{sim_code}/reverie/meta.json" if folder == "storage"
+              else f"{folder}/{sim_code}/meta.json") as f:
+      name = json.load(f).get("maze_name", "the_ville")
+  except Exception:
+    name = "the_ville"
+  if name == "the_ville":
+    return "assets/the_ville/visuals/the_ville_jan7.json"
+  return f"assets/{name}/visuals/{name}.json"
+
+
 def landing(request): 
   context = {}
   template = "landing/landing.html"
@@ -88,7 +101,8 @@ def demo(request, sim_code, step, play_speed="2"):
   for int_key in range(step+1, len(raw_all_movement.keys())): 
     all_movement[int_key] = raw_all_movement[str(int_key)]
 
-  context = {"sim_code": sim_code,
+  context = {"map_json": _map_json(sim_code, "compressed_storage"),
+             "sim_code": sim_code,
              "step": step,
              "persona_names": persona_names,
              "persona_init_pos": json.dumps(persona_init_pos), 
@@ -170,6 +184,7 @@ def home(request):
              "step": step,
              "persona_names": persona_names,
              "persona_init_pos": persona_init_pos,
+             "map_json": _map_json(sim_code),
              "mode": mode}
   template = "home/home.html"
   return render(request, template, context)

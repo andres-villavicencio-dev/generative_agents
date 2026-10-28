@@ -109,3 +109,4 @@ environment/static_root/
 # OpenClaw session files
 .omc/
 reverie/backend_server/.omc/
+pipelines/persona_pool/pool.jsonl

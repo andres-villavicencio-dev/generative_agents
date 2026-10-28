@@ -100,3 +100,21 @@ def test_civic_location_forced_and_wide_open():
     from persona.cognitive_modules import plan
     src = inspect.getsource(plan.resolve_action_location)
     assert "CIVIC_TASKS" in src and "forcing" in src
+
+
+def test_choice_prompt_tightened_and_pulls_priced():
+    import inspect
+    from persona.prompt_template import run_gpt_prompt as r
+    src = inspect.getsource(r.run_gpt_prompt_choose_activity)
+    assert "Default to option 0" in src and "NOT a reason" in src
+    assert "means no pay today" in src and "CIVIC_TASKS" in src
+
+
+def test_laya_choose_state_and_target():
+    from persona.prompt_template.laya_choose import parse_prompt, vote_target
+    p = ("Ctx line\n\nOptions for the next while:\n0. Follow the plan: eat\n"
+         "1. working a shift at X\nX. Something else\n\nDefault to option 0 ...")
+    state, qs, keys = parse_prompt(p, "Ann")
+    assert keys == ["plan", "pull1", "own"] and state["who"] == "Ann"
+    t = vote_target([0, "own"], keys)
+    assert abs(sum(t) - 1) < 1e-9 and t[0] == t[2]

@@ -1,0 +1,23 @@
+{
+ "round": 1,
+ "cutoff": 1793159470.486635,
+ "ckpt": "/home/andus/Projects/laya-test/laya-ga-finetuned-v6",
+ "data": "/home/andus/Projects/laya-test/v6r1_data",
+ "history": [
+  {
+   "round": 1,
+   "incumbent": {
+    "area": 0.9460526315789474,
+    "obj": 0.733201581027668,
+    "room": 0.9417077175697866
+   },
+   "candidate": {
+    "area": 0.9421052631578948,
+    "obj": 0.7391304347826086,
+    "room": 0.9211822660098522
+   },
+   "promote": false,
+   "t": 1793159470.4864047
+  }
+ ]
+}

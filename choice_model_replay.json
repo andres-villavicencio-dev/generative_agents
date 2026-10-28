@@ -1,0 +1,121 @@
+{
+ "results": [
+  {
+   "model": "recorded 2B (baseline)",
+   "n": 80,
+   "plan": "31%",
+   "own": "61%",
+   "pull": "1%",
+   "unparsed": "6%",
+   "own_filler": "25/49",
+   "lat_p50": null
+  },
+  {
+   "model": "phi4-mini:latest",
+   "n": 80,
+   "plan": "100%",
+   "own_filler": "0/0",
+   "lat_p50": 0.7
+  },
+  {
+   "model": "nemotron-3-nano:4b",
+   "n": 80,
+   "plan": "100%",
+   "own_filler": "0/0",
+   "lat_p50": 0.8
+  },
+  {
+   "model": "lfm2.5:8b",
+   "n": 80,
+   "unparsed": "1%",
+   "plan": "95%",
+   "pull": "1%",
+   "own": "2%",
+   "own_filler": "0/2",
+   "lat_p50": 20.4
+  },
+  {
+   "model": "qwen3.5:9b",
+   "n": 80,
+   "plan": "96%",
+   "pull": "4%",
+   "own_filler": "0/0",
+   "lat_p50": 7.0
+  },
+  {
+   "model": "glm-5.3-flash:cloud",
+   "n": 80,
+   "plan": "86%",
+   "own": "8%",
+   "pull": "4%",
+   "unparsed": "2%",
+   "own_filler": "0/6",
+   "lat_p50": 1.5
+  }
+ ],
+ "own_samples": {
+  "phi4-mini:latest": [],
+  "nemotron-3-nano:4b": [],
+  "lfm2.5:8b": [
+   [
+    "John Lin",
+    [
+     "own",
+     "go to the bathroom to relieve bladder (need)",
+     "John needs to use the bathroom due to a low bladder level"
+    ]
+   ],
+   [
+    "Yuriko Yamamoto",
+    [
+     "own",
+     "... (if X)",
+     "..."
+    ]
+   ]
+  ],
+  "qwen3.5:9b": [],
+  "glm-5.3-flash:cloud": [
+   [
+    "John Lin",
+    [
+     "own",
+     "using the bathroom at home before driving Eddy to school",
+     "John's bladder is at 21 and he urgently needs the bathroom before the drive.</think>choice: X"
+    ]
+   ],
+   [
+    "Francisco Lopez",
+    [
+     "own",
+     "using the bathroom to relieve his bladder before starting breakfast",
+     "His bladder is at 20, an urgent physical need that should be handled before breakfast.choice: X"
+    ]
+   ],
+   [
+    "Francisco Lopez",
+    [
+     "own",
+     "using the bathroom to relieve his urgent bladder before starting breakfast",
+     "His bladder is quite low (20), so he needs the bathroom before eating.</think>choice: X"
+    ]
+   ],
+   [
+    "John Lin",
+    [
+     "own",
+     "using the toilet to relieve his bladder before heading out to drive Eddy",
+     "His bladder is at 20 and he is already at the bathroom, so he should relieve himself before driving Eddy to school.</think>choice: X"
+    ]
+   ],
+   [
+    "John Lin",
+    [
+     "own",
+     "using the bathroom at home before the drive, minutes: 15, why: bladder is low at 20 so he needs the bathroom before driving Eddy to school.",
+     "bladder is low at 20 so he needs the bathroom before driving Eddy to school."
+    ]
+   ]
+  ]
+ }
+}

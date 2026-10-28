@@ -703,7 +703,7 @@ def resolve_action_location(act_desp, persona, maze):
     _low = (act_desp or "").lower()
     _tree = persona.s_mem.tree.get(act_world, {})
     for _t in _eco.CIVIC_TASKS.values():
-      if _t["name"].lower() in _low or all(k in _low for k in _t["keys"]):
+      if _low.lstrip().startswith(_t["name"].lower()):   # the civic goal text itself, not any mention of the place
         _sec = next((x for x in _tree if x.lower() == _t["keys"][0]), None)
         if _sec:
           _ar = next((a for a in _tree[_sec] if a.lower() == _t["keys"][-1]), None)
@@ -1566,7 +1566,8 @@ def _determine_action(persona, maze):
     _cn = persona.scratch.curr_time
     if (_eco.community_enabled() and _cn is not None
         and not isinstance(getattr(persona.scratch, "job", None), dict)
-        and (getattr(persona.scratch, "wallet", 0) or 0) < _eco.CIVIC_ELIGIBLE_WALLET
+        and ((getattr(persona.scratch, "wallet", 0) or 0) < _eco.CIVIC_ELIGIBLE_WALLET
+             or persona.name in _eco.PUBLIC_JOBS)
         and _eco.CIVIC_START <= _cn.hour < _eco.CIVIC_END - 1
         and getattr(persona.scratch, "_civic_goal_day", None) != _cn.date()
         and hasattr(persona.scratch, "resource_goals")

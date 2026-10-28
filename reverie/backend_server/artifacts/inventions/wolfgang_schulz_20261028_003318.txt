@@ -1,0 +1,5 @@
+Wolfgang Schulz invented a portable, solar-powered water filtration system called the Soleil Filter. It is designed for students and campers who need clean drinking water in remote areas without access to clean water sources. The system filters water through a fine membrane and UV-C light, removing bacteria, viruses, and other contaminants, while a built-in solar panel charges the device overnight.
+
+It uses three main components: a lightweight plastic and metal frame, a UV-C LED module for disinfection, and a cellulose-based membrane made from recycled paper pulp. The membrane is pressed into a compact cartridge that can be removed for cleaning, and the entire filter is sealed in a durable, waterproof bag.
+
+Wolfgang created it because he noticed that students and athletes often relied on unsafe water sources during outdoor activities. He wanted a simple, reliable, and affordable way to ensure safe drinking water without requiring electricity or professional equipment. Testing showed that the system effectively treated contaminated water within a few minutes, making it ideal for backpacking, hiking, and emergency situations.

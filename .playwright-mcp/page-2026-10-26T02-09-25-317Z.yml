@@ -1,0 +1,540 @@
+- generic [ref=e5]:
+  - heading "Current Time:" [level=3] [ref=e6]
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - heading [level=2]
+    - heading [level=2] [ref=e10]:
+      - button " Play" [ref=e11] [cursor=pointer]:
+        - strong [ref=e12]:
+          - generic [ref=e13]: 
+          - text: Play
+      - button " Pause" [ref=e14] [cursor=pointer]:
+        - strong [ref=e15]:
+          - generic [ref=e16]: 
+          - text: Pause
+  - separator [ref=e17]
+  - generic [ref=e18]:
+    - 'heading " Run Stats ga-communityexp: active engine: laya v3" [level=3] [ref=e20]':
+      - generic [ref=e21]: 
+      - text: "Run Stats ga-communityexp: active engine: laya v3"
+    - generic [ref=e22]:
+      - generic [ref=e23]:
+        - strong [ref=e24]: "Sim clock:"
+        - text: February 15, 2023, 13:21:40
+      - generic [ref=e25]:
+        - strong [ref=e26]: "Step:"
+        - text: 19596 (ckpt 19440)
+      - generic [ref=e27]:
+        - strong [ref=e28]: "Rate:"
+        - text: 15.8 steps/min
+      - generic [ref=e29]:
+        - strong [ref=e30]: "GPU:"
+        - text: 0% · 3295/8192 MB
+    - generic [ref=e32]:
+      - strong [ref=e33]: "Activity:"
+      - text: "step 19596 in progress 3s · 4 LLM calls this step · last: memo_on_convo (Carlos Gomez) 2s ago"
+    - generic [ref=e35]:
+      - strong [ref=e36]: "Community fund:"
+      - text: $150.47 (collected $150.47 · paid out $0.00)
+    - generic [ref=e37]:
+      - generic [ref=e38]:
+        - strong [ref=e39]: Sales today by venue
+        - text: (yesterday as tick)
+        - generic [ref=e40]:
+          - generic [ref=e41]:
+            - generic [ref=e42]: Hobbs Cafe
+            - generic [ref=e45]: $0.00
+          - generic [ref=e46]:
+            - generic [ref=e47]: The Rose and Crown Pub
+            - generic [ref=e50]: $0.00
+          - generic [ref=e51]:
+            - generic [ref=e52]: Harvey Oak Supply Store
+            - generic [ref=e56]: $115.90
+          - generic [ref=e57]:
+            - generic [ref=e58]: The Willows Market and Pharmacy
+            - generic [ref=e62]: $20.00
+      - generic [ref=e63]:
+        - strong [ref=e64]: Recent sales
+        - text: · 0.5% to the fund
+        - table [ref=e65]:
+          - rowgroup [ref=e66]:
+            - row [ref=e67]:
+              - cell
+              - cell "Maria Lopez" [ref=e68]
+              - cell "10x bread" [ref=e69]
+              - cell "Willows" [ref=e70]
+              - cell "$15.00" [ref=e71]
+            - row [ref=e72]:
+              - cell
+              - cell "Maria Lopez" [ref=e73]
+              - cell "10x eggs" [ref=e74]
+              - cell "Willows" [ref=e75]
+              - cell "$5.00" [ref=e76]
+            - row [ref=e77]:
+              - cell
+              - cell "Klaus Mueller" [ref=e78]
+              - cell "2x milk" [ref=e79]
+              - cell "Harvey" [ref=e80]
+              - cell "$2.40" [ref=e81]
+            - row [ref=e82]:
+              - cell
+              - cell "Klaus Mueller" [ref=e83]
+              - cell "5x eggs" [ref=e84]
+              - cell "Harvey" [ref=e85]
+              - cell "$2.50" [ref=e86]
+            - row [ref=e87]:
+              - cell
+              - cell "Jane Moreno" [ref=e88]
+              - cell "2x milk" [ref=e89]
+              - cell "Harvey" [ref=e90]
+              - cell "$2.40" [ref=e91]
+            - row [ref=e92]:
+              - cell
+              - cell "Jane Moreno" [ref=e93]
+              - cell "3x bread" [ref=e94]
+              - cell "Harvey" [ref=e95]
+              - cell "$4.50" [ref=e96]
+            - row [ref=e97]:
+              - cell
+              - cell "Jane Moreno" [ref=e98]
+              - cell "5x eggs" [ref=e99]
+              - cell "Harvey" [ref=e100]
+              - cell "$2.50" [ref=e101]
+            - row [ref=e102]:
+              - cell
+              - cell "Jane Moreno" [ref=e103]
+              - cell "2x milk" [ref=e104]
+              - cell "Harvey" [ref=e105]
+              - cell "$2.40" [ref=e106]
+            - row [ref=e107]:
+              - cell
+              - cell "Jane Moreno" [ref=e108]
+              - cell "3x bread" [ref=e109]
+              - cell "Harvey" [ref=e110]
+              - cell "$4.50" [ref=e111]
+            - row [ref=e112]:
+              - cell
+              - cell "Jane Moreno" [ref=e113]
+              - cell "5x eggs" [ref=e114]
+              - cell "Harvey" [ref=e115]
+              - cell "$2.50" [ref=e116]
+            - row [ref=e117]:
+              - cell
+              - cell "Jane Moreno" [ref=e118]
+              - cell "2x milk" [ref=e119]
+              - cell "Harvey" [ref=e120]
+              - cell "$2.40" [ref=e121]
+            - row [ref=e122]:
+              - cell
+              - cell "Jane Moreno" [ref=e123]
+              - cell "3x bread" [ref=e124]
+              - cell "Harvey" [ref=e125]
+              - cell "$4.50" [ref=e126]
+    - generic [ref=e127]:
+      - generic [ref=e128]: "Engine: laya ON · chat: qwen2b-ga-chat-v2:latest · artifact: qwen2b-ga-chat-v2:latest"
+      - generic [ref=e129]: "Services: laya ✓ · rizzo ✗ · ollama ✓"
+      - generic [ref=e130]: "Laya fallbacks: 1 in recent log"
+  - link " View Artifacts Gallery" [ref=e132] [cursor=pointer]:
+    - /url: /artifacts/communityexp/
+    - generic [ref=e133]: 
+    - text: View Artifacts Gallery
+  - generic [ref=e134]:
+    - link [ref=e136] [cursor=pointer]:
+      - /url: "#"
+      - img "Yuriko Yamamoto" [ref=e137]
+    - generic [ref=e138]:
+      - heading [level=2] [ref=e140]:
+        - text: Yuriko Yamamoto
+        - link "State Details" [ref=e141] [cursor=pointer]:
+          - /url: /replay_persona_state/communityexp/19597/Yuriko_Yamamoto/
+      - generic [ref=e142]:
+        - paragraph [ref=e143]:
+          - strong [ref=e144]: "Current Action:"
+        - paragraph [ref=e145]:
+          - strong [ref=e146]: "Location:"
+        - paragraph [ref=e147]:
+          - strong [ref=e148]: "Current Conversation:"
+  - generic [ref=e149]:
+    - link [ref=e151] [cursor=pointer]:
+      - /url: "#"
+      - img "Maria Lopez" [ref=e152]
+    - generic [ref=e153]:
+      - heading [level=2] [ref=e155]:
+        - text: Maria Lopez
+        - link "State Details" [ref=e156] [cursor=pointer]:
+          - /url: /replay_persona_state/communityexp/19597/Maria_Lopez/
+      - generic [ref=e157]:
+        - paragraph [ref=e158]:
+          - strong [ref=e159]: "Current Action:"
+        - paragraph [ref=e160]:
+          - strong [ref=e161]: "Location:"
+        - paragraph [ref=e162]:
+          - strong [ref=e163]: "Current Conversation:"
+  - generic [ref=e164]:
+    - link [ref=e166] [cursor=pointer]:
+      - /url: "#"
+      - img "Giorgio Rossi" [ref=e167]
+    - generic [ref=e168]:
+      - heading [level=2] [ref=e170]:
+        - text: Giorgio Rossi
+        - link "State Details" [ref=e171] [cursor=pointer]:
+          - /url: /replay_persona_state/communityexp/19597/Giorgio_Rossi/
+      - generic [ref=e172]:
+        - paragraph [ref=e173]:
+          - strong [ref=e174]: "Current Action:"
+        - paragraph [ref=e175]:
+          - strong [ref=e176]: "Location:"
+        - paragraph [ref=e177]:
+          - strong [ref=e178]: "Current Conversation:"
+  - generic [ref=e179]:
+    - link [ref=e181] [cursor=pointer]:
+      - /url: "#"
+      - img "Mei Lin" [ref=e182]
+    - generic [ref=e183]:
+      - heading [level=2] [ref=e185]:
+        - text: Mei Lin
+        - link "State Details" [ref=e186] [cursor=pointer]:
+          - /url: /replay_persona_state/communityexp/19597/Mei_Lin/
+      - generic [ref=e187]:
+        - paragraph [ref=e188]:
+          - strong [ref=e189]: "Current Action:"
+        - paragraph [ref=e190]:
+          - strong [ref=e191]: "Location:"
+        - paragraph [ref=e192]:
+          - strong [ref=e193]: "Current Conversation:"
+  - generic [ref=e194]:
+    - link [ref=e196] [cursor=pointer]:
+      - /url: "#"
+      - img "Tamara Taylor" [ref=e197]
+    - generic [ref=e198]:
+      - heading [level=2] [ref=e200]:
+        - text: Tamara Taylor
+        - link "State Details" [ref=e201] [cursor=pointer]:
+          - /url: /replay_persona_state/communityexp/19597/Tamara_Taylor/
+      - generic [ref=e202]:
+        - paragraph [ref=e203]:
+          - strong [ref=e204]: "Current Action:"
+        - paragraph [ref=e205]:
+          - strong [ref=e206]: "Location:"
+        - paragraph [ref=e207]:
+          - strong [ref=e208]: "Current Conversation:"
+  - generic [ref=e209]:
+    - link [ref=e211] [cursor=pointer]:
+      - /url: "#"
+      - img "Latoya Williams" [ref=e212]
+    - generic [ref=e213]:
+      - heading [level=2] [ref=e215]:
+        - text: Latoya Williams
+        - link "State Details" [ref=e216] [cursor=pointer]:
+          - /url: /replay_persona_state/communityexp/19597/Latoya_Williams/
+      - generic [ref=e217]:
+        - paragraph [ref=e218]:
+          - strong [ref=e219]: "Current Action:"
+        - paragraph [ref=e220]:
+          - strong [ref=e221]: "Location:"
+        - paragraph [ref=e222]:
+          - strong [ref=e223]: "Current Conversation:"
+  - generic [ref=e224]:
+    - link [ref=e226] [cursor=pointer]:
+      - /url: "#"
+      - img "Carlos Gomez" [ref=e227]
+    - generic [ref=e228]:
+      - heading [level=2] [ref=e230]:
+        - text: Carlos Gomez
+        - link "State Details" [ref=e231] [cursor=pointer]:
+          - /url: /replay_persona_state/communityexp/19597/Carlos_Gomez/
+      - generic [ref=e232]:
+        - paragraph [ref=e233]:
+          - strong [ref=e234]: "Current Action:"
+        - paragraph [ref=e235]:
+          - strong [ref=e236]: "Location:"
+        - paragraph [ref=e237]:
+          - strong [ref=e238]: "Current Conversation:"
+  - generic [ref=e239]:
+    - link [ref=e241] [cursor=pointer]:
+      - /url: "#"
+      - img "John Lin" [ref=e242]
+    - generic [ref=e243]:
+      - heading [level=2] [ref=e245]:
+        - text: John Lin
+        - link "State Details" [ref=e246] [cursor=pointer]:
+          - /url: /replay_persona_state/communityexp/19597/John_Lin/
+      - generic [ref=e247]:
+        - paragraph [ref=e248]:
+          - strong [ref=e249]: "Current Action:"
+        - paragraph [ref=e250]:
+          - strong [ref=e251]: "Location:"
+        - paragraph [ref=e252]:
+          - strong [ref=e253]: "Current Conversation:"
+  - generic [ref=e254]:
+    - link [ref=e256] [cursor=pointer]:
+      - /url: "#"
+      - img "Ryan Park" [ref=e257]
+    - generic [ref=e258]:
+      - heading [level=2] [ref=e260]:
+        - text: Ryan Park
+        - link "State Details" [ref=e261] [cursor=pointer]:
+          - /url: /replay_persona_state/communityexp/19597/Ryan_Park/
+      - generic [ref=e262]:
+        - paragraph [ref=e263]:
+          - strong [ref=e264]: "Current Action:"
+        - paragraph [ref=e265]:
+          - strong [ref=e266]: "Location:"
+        - paragraph [ref=e267]:
+          - strong [ref=e268]: "Current Conversation:"
+  - generic [ref=e269]:
+    - link [ref=e271] [cursor=pointer]:
+      - /url: "#"
+      - img "Jane Moreno" [ref=e272]
+    - generic [ref=e273]:
+      - heading [level=2] [ref=e275]:
+        - text: Jane Moreno
+        - link "State Details" [ref=e276] [cursor=pointer]:
+          - /url: /replay_persona_state/communityexp/19597/Jane_Moreno/
+      - generic [ref=e277]:
+        - paragraph [ref=e278]:
+          - strong [ref=e279]: "Current Action:"
+        - paragraph [ref=e280]:
+          - strong [ref=e281]: "Location:"
+        - paragraph [ref=e282]:
+          - strong [ref=e283]: "Current Conversation:"
+  - generic [ref=e284]:
+    - link [ref=e286] [cursor=pointer]:
+      - /url: "#"
+      - img "Jennifer Moore" [ref=e287]
+    - generic [ref=e288]:
+      - heading [level=2] [ref=e290]:
+        - text: Jennifer Moore
+        - link "State Details" [ref=e291] [cursor=pointer]:
+          - /url: /replay_persona_state/communityexp/19597/Jennifer_Moore/
+      - generic [ref=e292]:
+        - paragraph [ref=e293]:
+          - strong [ref=e294]: "Current Action:"
+        - paragraph [ref=e295]:
+          - strong [ref=e296]: "Location:"
+        - paragraph [ref=e297]:
+          - strong [ref=e298]: "Current Conversation:"
+  - generic [ref=e299]:
+    - link [ref=e301] [cursor=pointer]:
+      - /url: "#"
+      - img "Abigail Chen" [ref=e302]
+    - generic [ref=e303]:
+      - heading [level=2] [ref=e305]:
+        - text: Abigail Chen
+        - link "State Details" [ref=e306] [cursor=pointer]:
+          - /url: /replay_persona_state/communityexp/19597/Abigail_Chen/
+      - generic [ref=e307]:
+        - paragraph [ref=e308]:
+          - strong [ref=e309]: "Current Action:"
+        - paragraph [ref=e310]:
+          - strong [ref=e311]: "Location:"
+        - paragraph [ref=e312]:
+          - strong [ref=e313]: "Current Conversation:"
+  - generic [ref=e314]:
+    - link [ref=e316] [cursor=pointer]:
+      - /url: "#"
+      - img "Sam Moore" [ref=e317]
+    - generic [ref=e318]:
+      - heading [level=2] [ref=e320]:
+        - text: Sam Moore
+        - link "State Details" [ref=e321] [cursor=pointer]:
+          - /url: /replay_persona_state/communityexp/19597/Sam_Moore/
+      - generic [ref=e322]:
+        - paragraph [ref=e323]:
+          - strong [ref=e324]: "Current Action:"
+        - paragraph [ref=e325]:
+          - strong [ref=e326]: "Location:"
+        - paragraph [ref=e327]:
+          - strong [ref=e328]: "Current Conversation:"
+  - generic [ref=e329]:
+    - link [ref=e331] [cursor=pointer]:
+      - /url: "#"
+      - img "Adam Smith" [ref=e332]
+    - generic [ref=e333]:
+      - heading [level=2] [ref=e335]:
+        - text: Adam Smith
+        - link "State Details" [ref=e336] [cursor=pointer]:
+          - /url: /replay_persona_state/communityexp/19597/Adam_Smith/
+      - generic [ref=e337]:
+        - paragraph [ref=e338]:
+          - strong [ref=e339]: "Current Action:"
+        - paragraph [ref=e340]:
+          - strong [ref=e341]: "Location:"
+        - paragraph [ref=e342]:
+          - strong [ref=e343]: "Current Conversation:"
+  - generic [ref=e344]:
+    - link [ref=e346] [cursor=pointer]:
+      - /url: "#"
+      - img "Rajiv Patel" [ref=e347]
+    - generic [ref=e348]:
+      - heading [level=2] [ref=e350]:
+        - text: Rajiv Patel
+        - link "State Details" [ref=e351] [cursor=pointer]:
+          - /url: /replay_persona_state/communityexp/19597/Rajiv_Patel/
+      - generic [ref=e352]:
+        - paragraph [ref=e353]:
+          - strong [ref=e354]: "Current Action:"
+        - paragraph [ref=e355]:
+          - strong [ref=e356]: "Location:"
+        - paragraph [ref=e357]:
+          - strong [ref=e358]: "Current Conversation:"
+  - generic [ref=e359]:
+    - link [ref=e361] [cursor=pointer]:
+      - /url: "#"
+      - img "Isabella Rodriguez" [ref=e362]
+    - generic [ref=e363]:
+      - heading [level=2] [ref=e365]:
+        - text: Isabella Rodriguez
+        - link "State Details" [ref=e366] [cursor=pointer]:
+          - /url: /replay_persona_state/communityexp/19597/Isabella_Rodriguez/
+      - generic [ref=e367]:
+        - paragraph [ref=e368]:
+          - strong [ref=e369]: "Current Action:"
+        - paragraph [ref=e370]:
+          - strong [ref=e371]: "Location:"
+        - paragraph [ref=e372]:
+          - strong [ref=e373]: "Current Conversation:"
+  - generic [ref=e374]:
+    - link [ref=e376] [cursor=pointer]:
+      - /url: "#"
+      - img "Hailey Johnson" [ref=e377]
+    - generic [ref=e378]:
+      - heading [level=2] [ref=e380]:
+        - text: Hailey Johnson
+        - link "State Details" [ref=e381] [cursor=pointer]:
+          - /url: /replay_persona_state/communityexp/19597/Hailey_Johnson/
+      - generic [ref=e382]:
+        - paragraph [ref=e383]:
+          - strong [ref=e384]: "Current Action:"
+        - paragraph [ref=e385]:
+          - strong [ref=e386]: "Location:"
+        - paragraph [ref=e387]:
+          - strong [ref=e388]: "Current Conversation:"
+  - generic [ref=e389]:
+    - link [ref=e391] [cursor=pointer]:
+      - /url: "#"
+      - img "Arthur Burton" [ref=e392]
+    - generic [ref=e393]:
+      - heading [level=2] [ref=e395]:
+        - text: Arthur Burton
+        - link "State Details" [ref=e396] [cursor=pointer]:
+          - /url: /replay_persona_state/communityexp/19597/Arthur_Burton/
+      - generic [ref=e397]:
+        - paragraph [ref=e398]:
+          - strong [ref=e399]: "Current Action:"
+        - paragraph [ref=e400]:
+          - strong [ref=e401]: "Location:"
+        - paragraph [ref=e402]:
+          - strong [ref=e403]: "Current Conversation:"
+  - generic [ref=e404]:
+    - link [ref=e406] [cursor=pointer]:
+      - /url: "#"
+      - img "Eddy Lin" [ref=e407]
+    - generic [ref=e408]:
+      - heading [level=2] [ref=e410]:
+        - text: Eddy Lin
+        - link "State Details" [ref=e411] [cursor=pointer]:
+          - /url: /replay_persona_state/communityexp/19597/Eddy_Lin/
+      - generic [ref=e412]:
+        - paragraph [ref=e413]:
+          - strong [ref=e414]: "Current Action:"
+        - paragraph [ref=e415]:
+          - strong [ref=e416]: "Location:"
+        - paragraph [ref=e417]:
+          - strong [ref=e418]: "Current Conversation:"
+  - generic [ref=e419]:
+    - link [ref=e421] [cursor=pointer]:
+      - /url: "#"
+      - img "Ayesha Khan" [ref=e422]
+    - generic [ref=e423]:
+      - heading [level=2] [ref=e425]:
+        - text: Ayesha Khan
+        - link "State Details" [ref=e426] [cursor=pointer]:
+          - /url: /replay_persona_state/communityexp/19597/Ayesha_Khan/
+      - generic [ref=e427]:
+        - paragraph [ref=e428]:
+          - strong [ref=e429]: "Current Action:"
+        - paragraph [ref=e430]:
+          - strong [ref=e431]: "Location:"
+        - paragraph [ref=e432]:
+          - strong [ref=e433]: "Current Conversation:"
+  - generic [ref=e434]:
+    - link [ref=e436] [cursor=pointer]:
+      - /url: "#"
+      - img "Francisco Lopez" [ref=e437]
+    - generic [ref=e438]:
+      - heading [level=2] [ref=e440]:
+        - text: Francisco Lopez
+        - link "State Details" [ref=e441] [cursor=pointer]:
+          - /url: /replay_persona_state/communityexp/19597/Francisco_Lopez/
+      - generic [ref=e442]:
+        - paragraph [ref=e443]:
+          - strong [ref=e444]: "Current Action:"
+        - paragraph [ref=e445]:
+          - strong [ref=e446]: "Location:"
+        - paragraph [ref=e447]:
+          - strong [ref=e448]: "Current Conversation:"
+  - generic [ref=e449]:
+    - link [ref=e451] [cursor=pointer]:
+      - /url: "#"
+      - img "Tom Moreno" [ref=e452]
+    - generic [ref=e453]:
+      - heading [level=2] [ref=e455]:
+        - text: Tom Moreno
+        - link "State Details" [ref=e456] [cursor=pointer]:
+          - /url: /replay_persona_state/communityexp/19597/Tom_Moreno/
+      - generic [ref=e457]:
+        - paragraph [ref=e458]:
+          - strong [ref=e459]: "Current Action:"
+        - paragraph [ref=e460]:
+          - strong [ref=e461]: "Location:"
+        - paragraph [ref=e462]:
+          - strong [ref=e463]: "Current Conversation:"
+  - generic [ref=e464]:
+    - link [ref=e466] [cursor=pointer]:
+      - /url: "#"
+      - img "Carmen Ortiz" [ref=e467]
+    - generic [ref=e468]:
+      - heading [level=2] [ref=e470]:
+        - text: Carmen Ortiz
+        - link "State Details" [ref=e471] [cursor=pointer]:
+          - /url: /replay_persona_state/communityexp/19597/Carmen_Ortiz/
+      - generic [ref=e472]:
+        - paragraph [ref=e473]:
+          - strong [ref=e474]: "Current Action:"
+        - paragraph [ref=e475]:
+          - strong [ref=e476]: "Location:"
+        - paragraph [ref=e477]:
+          - strong [ref=e478]: "Current Conversation:"
+  - generic [ref=e479]:
+    - link [ref=e481] [cursor=pointer]:
+      - /url: "#"
+      - img "Klaus Mueller" [ref=e482]
+    - generic [ref=e483]:
+      - heading [level=2] [ref=e485]:
+        - text: Klaus Mueller
+        - link "State Details" [ref=e486] [cursor=pointer]:
+          - /url: /replay_persona_state/communityexp/19597/Klaus_Mueller/
+      - generic [ref=e487]:
+        - paragraph [ref=e488]:
+          - strong [ref=e489]: "Current Action:"
+        - paragraph [ref=e490]:
+          - strong [ref=e491]: "Location:"
+        - paragraph [ref=e492]:
+          - strong [ref=e493]: "Current Conversation:"
+  - generic [ref=e494]:
+    - link [ref=e496] [cursor=pointer]:
+      - /url: "#"
+      - img "Wolfgang Schulz" [ref=e497]
+    - generic [ref=e498]:
+      - heading [level=2] [ref=e500]:
+        - text: Wolfgang Schulz
+        - link "State Details" [ref=e501] [cursor=pointer]:
+          - /url: /replay_persona_state/communityexp/19597/Wolfgang_Schulz/
+      - generic [ref=e502]:
+        - paragraph [ref=e503]:
+          - strong [ref=e504]: "Current Action:"
+        - paragraph [ref=e505]:
+          - strong [ref=e506]: "Location:"
+        - paragraph [ref=e507]:
+          - strong [ref=e508]: "Current Conversation:"

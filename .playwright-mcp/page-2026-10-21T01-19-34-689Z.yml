@@ -1,0 +1,432 @@
+- generic [ref=e5]:
+  - heading "Current Time:" [level=3] [ref=e6]
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - heading [level=2]
+    - generic [ref=e9]:  
+  - separator [ref=e10]
+  - generic [ref=e11]:
+    - 'heading " Run Stats ga-n68: active engine: laya v3" [level=3] [ref=e13]':
+      - generic [ref=e14]: 
+      - text: "Run Stats ga-n68: active engine: laya v3"
+    - generic [ref=e15]:
+      - generic [ref=e16]:
+        - strong [ref=e17]: "Sim clock:"
+        - text: February 23, 2023, 11:00:00
+      - generic [ref=e18]:
+        - strong [ref=e19]: "Step:"
+        - text: 90377 (ckpt 90360)
+      - generic [ref=e20]:
+        - strong [ref=e21]: "Rate:"
+        - text: 2.6 steps/min
+      - generic [ref=e22]:
+        - strong [ref=e23]: "GPU:"
+        - text: 0% · 1036/8192 MB
+    - generic [ref=e24]:
+      - generic [ref=e25]: "Engine: laya ON · chat: minimax-m3.1-flash:cloud · artifact: minimax-m3.1-flash:cloud"
+      - generic [ref=e26]: "Services: laya ✓ · rizzo ✗ · ollama ✓"
+      - generic [ref=e27]: "Laya fallbacks: 3 in recent log"
+  - link " View Artifacts Gallery" [ref=e29] [cursor=pointer]:
+    - /url: /artifacts/live3d_n68/
+    - generic [ref=e30]: 
+    - text: View Artifacts Gallery
+  - generic [ref=e31]:
+    - link [ref=e33] [cursor=pointer]:
+      - /url: "#"
+      - img "Yuriko Yamamoto" [ref=e34]
+    - generic [ref=e35]:
+      - heading [level=2] [ref=e37]:
+        - text: Yuriko Yamamoto
+        - link "State Details" [ref=e38] [cursor=pointer]:
+          - /url: /replay_persona_state/live3d_n68/90378/Yuriko_Yamamoto/
+      - generic [ref=e39]:
+        - paragraph [ref=e40]:
+          - strong [ref=e41]: "Current Action:"
+        - paragraph [ref=e42]:
+          - strong [ref=e43]: "Location:"
+        - paragraph [ref=e44]:
+          - strong [ref=e45]: "Current Conversation:"
+  - generic [ref=e46]:
+    - link [ref=e48] [cursor=pointer]:
+      - /url: "#"
+      - img "Maria Lopez" [ref=e49]
+    - generic [ref=e50]:
+      - heading [level=2] [ref=e52]:
+        - text: Maria Lopez
+        - link "State Details" [ref=e53] [cursor=pointer]:
+          - /url: /replay_persona_state/live3d_n68/90378/Maria_Lopez/
+      - generic [ref=e54]:
+        - paragraph [ref=e55]:
+          - strong [ref=e56]: "Current Action:"
+        - paragraph [ref=e57]:
+          - strong [ref=e58]: "Location:"
+        - paragraph [ref=e59]:
+          - strong [ref=e60]: "Current Conversation:"
+  - generic [ref=e61]:
+    - link [ref=e63] [cursor=pointer]:
+      - /url: "#"
+      - img "Giorgio Rossi" [ref=e64]
+    - generic [ref=e65]:
+      - heading [level=2] [ref=e67]:
+        - text: Giorgio Rossi
+        - link "State Details" [ref=e68] [cursor=pointer]:
+          - /url: /replay_persona_state/live3d_n68/90378/Giorgio_Rossi/
+      - generic [ref=e69]:
+        - paragraph [ref=e70]:
+          - strong [ref=e71]: "Current Action:"
+        - paragraph [ref=e72]:
+          - strong [ref=e73]: "Location:"
+        - paragraph [ref=e74]:
+          - strong [ref=e75]: "Current Conversation:"
+  - generic [ref=e76]:
+    - link [ref=e78] [cursor=pointer]:
+      - /url: "#"
+      - img "Mei Lin" [ref=e79]
+    - generic [ref=e80]:
+      - heading [level=2] [ref=e82]:
+        - text: Mei Lin
+        - link "State Details" [ref=e83] [cursor=pointer]:
+          - /url: /replay_persona_state/live3d_n68/90378/Mei_Lin/
+      - generic [ref=e84]:
+        - paragraph [ref=e85]:
+          - strong [ref=e86]: "Current Action:"
+        - paragraph [ref=e87]:
+          - strong [ref=e88]: "Location:"
+        - paragraph [ref=e89]:
+          - strong [ref=e90]: "Current Conversation:"
+  - generic [ref=e91]:
+    - link [ref=e93] [cursor=pointer]:
+      - /url: "#"
+      - img "Tamara Taylor" [ref=e94]
+    - generic [ref=e95]:
+      - heading [level=2] [ref=e97]:
+        - text: Tamara Taylor
+        - link "State Details" [ref=e98] [cursor=pointer]:
+          - /url: /replay_persona_state/live3d_n68/90378/Tamara_Taylor/
+      - generic [ref=e99]:
+        - paragraph [ref=e100]:
+          - strong [ref=e101]: "Current Action:"
+        - paragraph [ref=e102]:
+          - strong [ref=e103]: "Location:"
+        - paragraph [ref=e104]:
+          - strong [ref=e105]: "Current Conversation:"
+  - generic [ref=e106]:
+    - link [ref=e108] [cursor=pointer]:
+      - /url: "#"
+      - img "Latoya Williams" [ref=e109]
+    - generic [ref=e110]:
+      - heading [level=2] [ref=e112]:
+        - text: Latoya Williams
+        - link "State Details" [ref=e113] [cursor=pointer]:
+          - /url: /replay_persona_state/live3d_n68/90378/Latoya_Williams/
+      - generic [ref=e114]:
+        - paragraph [ref=e115]:
+          - strong [ref=e116]: "Current Action:"
+        - paragraph [ref=e117]:
+          - strong [ref=e118]: "Location:"
+        - paragraph [ref=e119]:
+          - strong [ref=e120]: "Current Conversation:"
+  - generic [ref=e121]:
+    - link [ref=e123] [cursor=pointer]:
+      - /url: "#"
+      - img "Carlos Gomez" [ref=e124]
+    - generic [ref=e125]:
+      - heading [level=2] [ref=e127]:
+        - text: Carlos Gomez
+        - link "State Details" [ref=e128] [cursor=pointer]:
+          - /url: /replay_persona_state/live3d_n68/90378/Carlos_Gomez/
+      - generic [ref=e129]:
+        - paragraph [ref=e130]:
+          - strong [ref=e131]: "Current Action:"
+        - paragraph [ref=e132]:
+          - strong [ref=e133]: "Location:"
+        - paragraph [ref=e134]:
+          - strong [ref=e135]: "Current Conversation:"
+  - generic [ref=e136]:
+    - link [ref=e138] [cursor=pointer]:
+      - /url: "#"
+      - img "John Lin" [ref=e139]
+    - generic [ref=e140]:
+      - heading [level=2] [ref=e142]:
+        - text: John Lin
+        - link "State Details" [ref=e143] [cursor=pointer]:
+          - /url: /replay_persona_state/live3d_n68/90378/John_Lin/
+      - generic [ref=e144]:
+        - paragraph [ref=e145]:
+          - strong [ref=e146]: "Current Action:"
+        - paragraph [ref=e147]:
+          - strong [ref=e148]: "Location:"
+        - paragraph [ref=e149]:
+          - strong [ref=e150]: "Current Conversation:"
+  - generic [ref=e151]:
+    - link [ref=e153] [cursor=pointer]:
+      - /url: "#"
+      - img "Ryan Park" [ref=e154]
+    - generic [ref=e155]:
+      - heading [level=2] [ref=e157]:
+        - text: Ryan Park
+        - link "State Details" [ref=e158] [cursor=pointer]:
+          - /url: /replay_persona_state/live3d_n68/90378/Ryan_Park/
+      - generic [ref=e159]:
+        - paragraph [ref=e160]:
+          - strong [ref=e161]: "Current Action:"
+        - paragraph [ref=e162]:
+          - strong [ref=e163]: "Location:"
+        - paragraph [ref=e164]:
+          - strong [ref=e165]: "Current Conversation:"
+  - generic [ref=e166]:
+    - link [ref=e168] [cursor=pointer]:
+      - /url: "#"
+      - img "Jane Moreno" [ref=e169]
+    - generic [ref=e170]:
+      - heading [level=2] [ref=e172]:
+        - text: Jane Moreno
+        - link "State Details" [ref=e173] [cursor=pointer]:
+          - /url: /replay_persona_state/live3d_n68/90378/Jane_Moreno/
+      - generic [ref=e174]:
+        - paragraph [ref=e175]:
+          - strong [ref=e176]: "Current Action:"
+        - paragraph [ref=e177]:
+          - strong [ref=e178]: "Location:"
+        - paragraph [ref=e179]:
+          - strong [ref=e180]: "Current Conversation:"
+  - generic [ref=e181]:
+    - link [ref=e183] [cursor=pointer]:
+      - /url: "#"
+      - img "Jennifer Moore" [ref=e184]
+    - generic [ref=e185]:
+      - heading [level=2] [ref=e187]:
+        - text: Jennifer Moore
+        - link "State Details" [ref=e188] [cursor=pointer]:
+          - /url: /replay_persona_state/live3d_n68/90378/Jennifer_Moore/
+      - generic [ref=e189]:
+        - paragraph [ref=e190]:
+          - strong [ref=e191]: "Current Action:"
+        - paragraph [ref=e192]:
+          - strong [ref=e193]: "Location:"
+        - paragraph [ref=e194]:
+          - strong [ref=e195]: "Current Conversation:"
+  - generic [ref=e196]:
+    - link [ref=e198] [cursor=pointer]:
+      - /url: "#"
+      - img "Abigail Chen" [ref=e199]
+    - generic [ref=e200]:
+      - heading [level=2] [ref=e202]:
+        - text: Abigail Chen
+        - link "State Details" [ref=e203] [cursor=pointer]:
+          - /url: /replay_persona_state/live3d_n68/90378/Abigail_Chen/
+      - generic [ref=e204]:
+        - paragraph [ref=e205]:
+          - strong [ref=e206]: "Current Action:"
+        - paragraph [ref=e207]:
+          - strong [ref=e208]: "Location:"
+        - paragraph [ref=e209]:
+          - strong [ref=e210]: "Current Conversation:"
+  - generic [ref=e211]:
+    - link [ref=e213] [cursor=pointer]:
+      - /url: "#"
+      - img "Sam Moore" [ref=e214]
+    - generic [ref=e215]:
+      - heading [level=2] [ref=e217]:
+        - text: Sam Moore
+        - link "State Details" [ref=e218] [cursor=pointer]:
+          - /url: /replay_persona_state/live3d_n68/90378/Sam_Moore/
+      - generic [ref=e219]:
+        - paragraph [ref=e220]:
+          - strong [ref=e221]: "Current Action:"
+        - paragraph [ref=e222]:
+          - strong [ref=e223]: "Location:"
+        - paragraph [ref=e224]:
+          - strong [ref=e225]: "Current Conversation:"
+  - generic [ref=e226]:
+    - link [ref=e228] [cursor=pointer]:
+      - /url: "#"
+      - img "Adam Smith" [ref=e229]
+    - generic [ref=e230]:
+      - heading [level=2] [ref=e232]:
+        - text: Adam Smith
+        - link "State Details" [ref=e233] [cursor=pointer]:
+          - /url: /replay_persona_state/live3d_n68/90378/Adam_Smith/
+      - generic [ref=e234]:
+        - paragraph [ref=e235]:
+          - strong [ref=e236]: "Current Action:"
+        - paragraph [ref=e237]:
+          - strong [ref=e238]: "Location:"
+        - paragraph [ref=e239]:
+          - strong [ref=e240]: "Current Conversation:"
+  - generic [ref=e241]:
+    - link [ref=e243] [cursor=pointer]:
+      - /url: "#"
+      - img "Rajiv Patel" [ref=e244]
+    - generic [ref=e245]:
+      - heading [level=2] [ref=e247]:
+        - text: Rajiv Patel
+        - link "State Details" [ref=e248] [cursor=pointer]:
+          - /url: /replay_persona_state/live3d_n68/90378/Rajiv_Patel/
+      - generic [ref=e249]:
+        - paragraph [ref=e250]:
+          - strong [ref=e251]: "Current Action:"
+        - paragraph [ref=e252]:
+          - strong [ref=e253]: "Location:"
+        - paragraph [ref=e254]:
+          - strong [ref=e255]: "Current Conversation:"
+  - generic [ref=e256]:
+    - link [ref=e258] [cursor=pointer]:
+      - /url: "#"
+      - img "Isabella Rodriguez" [ref=e259]
+    - generic [ref=e260]:
+      - heading [level=2] [ref=e262]:
+        - text: Isabella Rodriguez
+        - link "State Details" [ref=e263] [cursor=pointer]:
+          - /url: /replay_persona_state/live3d_n68/90378/Isabella_Rodriguez/
+      - generic [ref=e264]:
+        - paragraph [ref=e265]:
+          - strong [ref=e266]: "Current Action:"
+        - paragraph [ref=e267]:
+          - strong [ref=e268]: "Location:"
+        - paragraph [ref=e269]:
+          - strong [ref=e270]: "Current Conversation:"
+  - generic [ref=e271]:
+    - link [ref=e273] [cursor=pointer]:
+      - /url: "#"
+      - img "Hailey Johnson" [ref=e274]
+    - generic [ref=e275]:
+      - heading [level=2] [ref=e277]:
+        - text: Hailey Johnson
+        - link "State Details" [ref=e278] [cursor=pointer]:
+          - /url: /replay_persona_state/live3d_n68/90378/Hailey_Johnson/
+      - generic [ref=e279]:
+        - paragraph [ref=e280]:
+          - strong [ref=e281]: "Current Action:"
+        - paragraph [ref=e282]:
+          - strong [ref=e283]: "Location:"
+        - paragraph [ref=e284]:
+          - strong [ref=e285]: "Current Conversation:"
+  - generic [ref=e286]:
+    - link [ref=e288] [cursor=pointer]:
+      - /url: "#"
+      - img "Arthur Burton" [ref=e289]
+    - generic [ref=e290]:
+      - heading [level=2] [ref=e292]:
+        - text: Arthur Burton
+        - link "State Details" [ref=e293] [cursor=pointer]:
+          - /url: /replay_persona_state/live3d_n68/90378/Arthur_Burton/
+      - generic [ref=e294]:
+        - paragraph [ref=e295]:
+          - strong [ref=e296]: "Current Action:"
+        - paragraph [ref=e297]:
+          - strong [ref=e298]: "Location:"
+        - paragraph [ref=e299]:
+          - strong [ref=e300]: "Current Conversation:"
+  - generic [ref=e301]:
+    - link [ref=e303] [cursor=pointer]:
+      - /url: "#"
+      - img "Eddy Lin" [ref=e304]
+    - generic [ref=e305]:
+      - heading [level=2] [ref=e307]:
+        - text: Eddy Lin
+        - link "State Details" [ref=e308] [cursor=pointer]:
+          - /url: /replay_persona_state/live3d_n68/90378/Eddy_Lin/
+      - generic [ref=e309]:
+        - paragraph [ref=e310]:
+          - strong [ref=e311]: "Current Action:"
+        - paragraph [ref=e312]:
+          - strong [ref=e313]: "Location:"
+        - paragraph [ref=e314]:
+          - strong [ref=e315]: "Current Conversation:"
+  - generic [ref=e316]:
+    - link [ref=e318] [cursor=pointer]:
+      - /url: "#"
+      - img "Ayesha Khan" [ref=e319]
+    - generic [ref=e320]:
+      - heading [level=2] [ref=e322]:
+        - text: Ayesha Khan
+        - link "State Details" [ref=e323] [cursor=pointer]:
+          - /url: /replay_persona_state/live3d_n68/90378/Ayesha_Khan/
+      - generic [ref=e324]:
+        - paragraph [ref=e325]:
+          - strong [ref=e326]: "Current Action:"
+        - paragraph [ref=e327]:
+          - strong [ref=e328]: "Location:"
+        - paragraph [ref=e329]:
+          - strong [ref=e330]: "Current Conversation:"
+  - generic [ref=e331]:
+    - link [ref=e333] [cursor=pointer]:
+      - /url: "#"
+      - img "Francisco Lopez" [ref=e334]
+    - generic [ref=e335]:
+      - heading [level=2] [ref=e337]:
+        - text: Francisco Lopez
+        - link "State Details" [ref=e338] [cursor=pointer]:
+          - /url: /replay_persona_state/live3d_n68/90378/Francisco_Lopez/
+      - generic [ref=e339]:
+        - paragraph [ref=e340]:
+          - strong [ref=e341]: "Current Action:"
+        - paragraph [ref=e342]:
+          - strong [ref=e343]: "Location:"
+        - paragraph [ref=e344]:
+          - strong [ref=e345]: "Current Conversation:"
+  - generic [ref=e346]:
+    - link [ref=e348] [cursor=pointer]:
+      - /url: "#"
+      - img "Tom Moreno" [ref=e349]
+    - generic [ref=e350]:
+      - heading [level=2] [ref=e352]:
+        - text: Tom Moreno
+        - link "State Details" [ref=e353] [cursor=pointer]:
+          - /url: /replay_persona_state/live3d_n68/90378/Tom_Moreno/
+      - generic [ref=e354]:
+        - paragraph [ref=e355]:
+          - strong [ref=e356]: "Current Action:"
+        - paragraph [ref=e357]:
+          - strong [ref=e358]: "Location:"
+        - paragraph [ref=e359]:
+          - strong [ref=e360]: "Current Conversation:"
+  - generic [ref=e361]:
+    - link [ref=e363] [cursor=pointer]:
+      - /url: "#"
+      - img "Carmen Ortiz" [ref=e364]
+    - generic [ref=e365]:
+      - heading [level=2] [ref=e367]:
+        - text: Carmen Ortiz
+        - link "State Details" [ref=e368] [cursor=pointer]:
+          - /url: /replay_persona_state/live3d_n68/90378/Carmen_Ortiz/
+      - generic [ref=e369]:
+        - paragraph [ref=e370]:
+          - strong [ref=e371]: "Current Action:"
+        - paragraph [ref=e372]:
+          - strong [ref=e373]: "Location:"
+        - paragraph [ref=e374]:
+          - strong [ref=e375]: "Current Conversation:"
+  - generic [ref=e376]:
+    - link [ref=e378] [cursor=pointer]:
+      - /url: "#"
+      - img "Klaus Mueller" [ref=e379]
+    - generic [ref=e380]:
+      - heading [level=2] [ref=e382]:
+        - text: Klaus Mueller
+        - link "State Details" [ref=e383] [cursor=pointer]:
+          - /url: /replay_persona_state/live3d_n68/90378/Klaus_Mueller/
+      - generic [ref=e384]:
+        - paragraph [ref=e385]:
+          - strong [ref=e386]: "Current Action:"
+        - paragraph [ref=e387]:
+          - strong [ref=e388]: "Location:"
+        - paragraph [ref=e389]:
+          - strong [ref=e390]: "Current Conversation:"
+  - generic [ref=e391]:
+    - link [ref=e393] [cursor=pointer]:
+      - /url: "#"
+      - img "Wolfgang Schulz" [ref=e394]
+    - generic [ref=e395]:
+      - heading [level=2] [ref=e397]:
+        - text: Wolfgang Schulz
+        - link "State Details" [ref=e398] [cursor=pointer]:
+          - /url: /replay_persona_state/live3d_n68/90378/Wolfgang_Schulz/
+      - generic [ref=e399]:
+        - paragraph [ref=e400]:
+          - strong [ref=e401]: "Current Action:"
+        - paragraph [ref=e402]:
+          - strong [ref=e403]: "Location:"
+        - paragraph [ref=e404]:
+          - strong [ref=e405]: "Current Conversation:"

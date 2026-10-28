@@ -1,0 +1,443 @@
+- generic [ref=f1e5]:
+  - heading "Current Time:" [level=3] [ref=f1e6]
+  - generic [ref=f1e7]:
+    - generic [ref=f1e8]:
+      - heading [level=2]
+    - heading [level=2] [ref=f1e10]:
+      - button " Play" [ref=f1e11] [cursor=pointer]:
+        - strong [ref=f1e12]:
+          - generic [ref=f1e13]: 
+          - text: Play
+      - button " Pause" [ref=f1e14] [cursor=pointer]:
+        - strong [ref=f1e15]:
+          - generic [ref=f1e16]: 
+          - text: Pause
+  - separator [ref=f1e17]
+  - generic [ref=f1e18]:
+    - 'heading " Run Stats ga-fresh25: active engine: laya v3" [level=3] [ref=f1e20]':
+      - generic [ref=f1e21]: 
+      - text: "Run Stats ga-fresh25: active engine: laya v3"
+    - generic [ref=f1e22]:
+      - generic [ref=f1e23]:
+        - strong [ref=f1e24]: "Sim clock:"
+        - text: February 13, 2023, 01:24:00
+      - generic [ref=f1e25]:
+        - strong [ref=f1e26]: "Step:"
+        - text: 504 (ckpt 360)
+      - generic [ref=f1e27]:
+        - strong [ref=f1e28]: "Rate:"
+        - text: 119.9 steps/min
+      - generic [ref=f1e29]:
+        - strong [ref=f1e30]: "GPU:"
+        - text: 0% · 1036/8192 MB
+    - generic [ref=f1e32]:
+      - strong [ref=f1e33]: "Activity:"
+      - text: "step 504 in progress 0s · 0 LLM calls this step · last: action_location (Adam Smith) 4m13s ago"
+    - generic [ref=f1e34]:
+      - generic [ref=f1e35]: "Engine: laya ON · chat: minimax-m3.1-flash:cloud · artifact: minimax-m3.1-flash:cloud"
+      - generic [ref=f1e36]: "Services: laya ✓ · rizzo ✗ · ollama ✓"
+      - generic [ref=f1e37]: "Laya fallbacks: 0 in recent log"
+  - link " View Artifacts Gallery" [ref=f1e39] [cursor=pointer]:
+    - /url: /artifacts/fresh25_2/
+    - generic [ref=f1e40]: 
+    - text: View Artifacts Gallery
+  - generic [ref=f1e41]:
+    - link [ref=f1e43] [cursor=pointer]:
+      - /url: "#"
+      - img "Yuriko Yamamoto" [ref=f1e44]
+    - generic [ref=f1e45]:
+      - heading [level=2] [ref=f1e47]:
+        - text: Yuriko Yamamoto
+        - link "State Details" [ref=f1e48] [cursor=pointer]:
+          - /url: /replay_persona_state/fresh25_2/504/Yuriko_Yamamoto/
+      - generic [ref=f1e49]:
+        - paragraph [ref=f1e50]:
+          - strong [ref=f1e51]: "Current Action:"
+        - paragraph [ref=f1e52]:
+          - strong [ref=f1e53]: "Location:"
+        - paragraph [ref=f1e54]:
+          - strong [ref=f1e55]: "Current Conversation:"
+  - generic [ref=f1e56]:
+    - link [ref=f1e58] [cursor=pointer]:
+      - /url: "#"
+      - img "Maria Lopez" [ref=f1e59]
+    - generic [ref=f1e60]:
+      - heading [level=2] [ref=f1e62]:
+        - text: Maria Lopez
+        - link "State Details" [ref=f1e63] [cursor=pointer]:
+          - /url: /replay_persona_state/fresh25_2/504/Maria_Lopez/
+      - generic [ref=f1e64]:
+        - paragraph [ref=f1e65]:
+          - strong [ref=f1e66]: "Current Action:"
+        - paragraph [ref=f1e67]:
+          - strong [ref=f1e68]: "Location:"
+        - paragraph [ref=f1e69]:
+          - strong [ref=f1e70]: "Current Conversation:"
+  - generic [ref=f1e71]:
+    - link [ref=f1e73] [cursor=pointer]:
+      - /url: "#"
+      - img "Giorgio Rossi" [ref=f1e74]
+    - generic [ref=f1e75]:
+      - heading [level=2] [ref=f1e77]:
+        - text: Giorgio Rossi
+        - link "State Details" [ref=f1e78] [cursor=pointer]:
+          - /url: /replay_persona_state/fresh25_2/504/Giorgio_Rossi/
+      - generic [ref=f1e79]:
+        - paragraph [ref=f1e80]:
+          - strong [ref=f1e81]: "Current Action:"
+        - paragraph [ref=f1e82]:
+          - strong [ref=f1e83]: "Location:"
+        - paragraph [ref=f1e84]:
+          - strong [ref=f1e85]: "Current Conversation:"
+  - generic [ref=f1e86]:
+    - link [ref=f1e88] [cursor=pointer]:
+      - /url: "#"
+      - img "Mei Lin" [ref=f1e89]
+    - generic [ref=f1e90]:
+      - heading [level=2] [ref=f1e92]:
+        - text: Mei Lin
+        - link "State Details" [ref=f1e93] [cursor=pointer]:
+          - /url: /replay_persona_state/fresh25_2/504/Mei_Lin/
+      - generic [ref=f1e94]:
+        - paragraph [ref=f1e95]:
+          - strong [ref=f1e96]: "Current Action:"
+        - paragraph [ref=f1e97]:
+          - strong [ref=f1e98]: "Location:"
+        - paragraph [ref=f1e99]:
+          - strong [ref=f1e100]: "Current Conversation:"
+  - generic [ref=f1e101]:
+    - link [ref=f1e103] [cursor=pointer]:
+      - /url: "#"
+      - img "Tamara Taylor" [ref=f1e104]
+    - generic [ref=f1e105]:
+      - heading [level=2] [ref=f1e107]:
+        - text: Tamara Taylor
+        - link "State Details" [ref=f1e108] [cursor=pointer]:
+          - /url: /replay_persona_state/fresh25_2/504/Tamara_Taylor/
+      - generic [ref=f1e109]:
+        - paragraph [ref=f1e110]:
+          - strong [ref=f1e111]: "Current Action:"
+        - paragraph [ref=f1e112]:
+          - strong [ref=f1e113]: "Location:"
+        - paragraph [ref=f1e114]:
+          - strong [ref=f1e115]: "Current Conversation:"
+  - generic [ref=f1e116]:
+    - link [ref=f1e118] [cursor=pointer]:
+      - /url: "#"
+      - img "Latoya Williams" [ref=f1e119]
+    - generic [ref=f1e120]:
+      - heading [level=2] [ref=f1e122]:
+        - text: Latoya Williams
+        - link "State Details" [ref=f1e123] [cursor=pointer]:
+          - /url: /replay_persona_state/fresh25_2/504/Latoya_Williams/
+      - generic [ref=f1e124]:
+        - paragraph [ref=f1e125]:
+          - strong [ref=f1e126]: "Current Action:"
+        - paragraph [ref=f1e127]:
+          - strong [ref=f1e128]: "Location:"
+        - paragraph [ref=f1e129]:
+          - strong [ref=f1e130]: "Current Conversation:"
+  - generic [ref=f1e131]:
+    - link [ref=f1e133] [cursor=pointer]:
+      - /url: "#"
+      - img "Carlos Gomez" [ref=f1e134]
+    - generic [ref=f1e135]:
+      - heading [level=2] [ref=f1e137]:
+        - text: Carlos Gomez
+        - link "State Details" [ref=f1e138] [cursor=pointer]:
+          - /url: /replay_persona_state/fresh25_2/504/Carlos_Gomez/
+      - generic [ref=f1e139]:
+        - paragraph [ref=f1e140]:
+          - strong [ref=f1e141]: "Current Action:"
+        - paragraph [ref=f1e142]:
+          - strong [ref=f1e143]: "Location:"
+        - paragraph [ref=f1e144]:
+          - strong [ref=f1e145]: "Current Conversation:"
+  - generic [ref=f1e146]:
+    - link [ref=f1e148] [cursor=pointer]:
+      - /url: "#"
+      - img "John Lin" [ref=f1e149]
+    - generic [ref=f1e150]:
+      - heading [level=2] [ref=f1e152]:
+        - text: John Lin
+        - link "State Details" [ref=f1e153] [cursor=pointer]:
+          - /url: /replay_persona_state/fresh25_2/504/John_Lin/
+      - generic [ref=f1e154]:
+        - paragraph [ref=f1e155]:
+          - strong [ref=f1e156]: "Current Action:"
+        - paragraph [ref=f1e157]:
+          - strong [ref=f1e158]: "Location:"
+        - paragraph [ref=f1e159]:
+          - strong [ref=f1e160]: "Current Conversation:"
+  - generic [ref=f1e161]:
+    - link [ref=f1e163] [cursor=pointer]:
+      - /url: "#"
+      - img "Ryan Park" [ref=f1e164]
+    - generic [ref=f1e165]:
+      - heading [level=2] [ref=f1e167]:
+        - text: Ryan Park
+        - link "State Details" [ref=f1e168] [cursor=pointer]:
+          - /url: /replay_persona_state/fresh25_2/504/Ryan_Park/
+      - generic [ref=f1e169]:
+        - paragraph [ref=f1e170]:
+          - strong [ref=f1e171]: "Current Action:"
+        - paragraph [ref=f1e172]:
+          - strong [ref=f1e173]: "Location:"
+        - paragraph [ref=f1e174]:
+          - strong [ref=f1e175]: "Current Conversation:"
+  - generic [ref=f1e176]:
+    - link [ref=f1e178] [cursor=pointer]:
+      - /url: "#"
+      - img "Jane Moreno" [ref=f1e179]
+    - generic [ref=f1e180]:
+      - heading [level=2] [ref=f1e182]:
+        - text: Jane Moreno
+        - link "State Details" [ref=f1e183] [cursor=pointer]:
+          - /url: /replay_persona_state/fresh25_2/504/Jane_Moreno/
+      - generic [ref=f1e184]:
+        - paragraph [ref=f1e185]:
+          - strong [ref=f1e186]: "Current Action:"
+        - paragraph [ref=f1e187]:
+          - strong [ref=f1e188]: "Location:"
+        - paragraph [ref=f1e189]:
+          - strong [ref=f1e190]: "Current Conversation:"
+  - generic [ref=f1e191]:
+    - link [ref=f1e193] [cursor=pointer]:
+      - /url: "#"
+      - img "Jennifer Moore" [ref=f1e194]
+    - generic [ref=f1e195]:
+      - heading [level=2] [ref=f1e197]:
+        - text: Jennifer Moore
+        - link "State Details" [ref=f1e198] [cursor=pointer]:
+          - /url: /replay_persona_state/fresh25_2/504/Jennifer_Moore/
+      - generic [ref=f1e199]:
+        - paragraph [ref=f1e200]:
+          - strong [ref=f1e201]: "Current Action:"
+        - paragraph [ref=f1e202]:
+          - strong [ref=f1e203]: "Location:"
+        - paragraph [ref=f1e204]:
+          - strong [ref=f1e205]: "Current Conversation:"
+  - generic [ref=f1e206]:
+    - link [ref=f1e208] [cursor=pointer]:
+      - /url: "#"
+      - img "Abigail Chen" [ref=f1e209]
+    - generic [ref=f1e210]:
+      - heading [level=2] [ref=f1e212]:
+        - text: Abigail Chen
+        - link "State Details" [ref=f1e213] [cursor=pointer]:
+          - /url: /replay_persona_state/fresh25_2/504/Abigail_Chen/
+      - generic [ref=f1e214]:
+        - paragraph [ref=f1e215]:
+          - strong [ref=f1e216]: "Current Action:"
+        - paragraph [ref=f1e217]:
+          - strong [ref=f1e218]: "Location:"
+        - paragraph [ref=f1e219]:
+          - strong [ref=f1e220]: "Current Conversation:"
+  - generic [ref=f1e221]:
+    - link [ref=f1e223] [cursor=pointer]:
+      - /url: "#"
+      - img "Sam Moore" [ref=f1e224]
+    - generic [ref=f1e225]:
+      - heading [level=2] [ref=f1e227]:
+        - text: Sam Moore
+        - link "State Details" [ref=f1e228] [cursor=pointer]:
+          - /url: /replay_persona_state/fresh25_2/504/Sam_Moore/
+      - generic [ref=f1e229]:
+        - paragraph [ref=f1e230]:
+          - strong [ref=f1e231]: "Current Action:"
+        - paragraph [ref=f1e232]:
+          - strong [ref=f1e233]: "Location:"
+        - paragraph [ref=f1e234]:
+          - strong [ref=f1e235]: "Current Conversation:"
+  - generic [ref=f1e236]:
+    - link [ref=f1e238] [cursor=pointer]:
+      - /url: "#"
+      - img "Adam Smith" [ref=f1e239]
+    - generic [ref=f1e240]:
+      - heading [level=2] [ref=f1e242]:
+        - text: Adam Smith
+        - link "State Details" [ref=f1e243] [cursor=pointer]:
+          - /url: /replay_persona_state/fresh25_2/504/Adam_Smith/
+      - generic [ref=f1e244]:
+        - paragraph [ref=f1e245]:
+          - strong [ref=f1e246]: "Current Action:"
+        - paragraph [ref=f1e247]:
+          - strong [ref=f1e248]: "Location:"
+        - paragraph [ref=f1e249]:
+          - strong [ref=f1e250]: "Current Conversation:"
+  - generic [ref=f1e251]:
+    - link [ref=f1e253] [cursor=pointer]:
+      - /url: "#"
+      - img "Rajiv Patel" [ref=f1e254]
+    - generic [ref=f1e255]:
+      - heading [level=2] [ref=f1e257]:
+        - text: Rajiv Patel
+        - link "State Details" [ref=f1e258] [cursor=pointer]:
+          - /url: /replay_persona_state/fresh25_2/504/Rajiv_Patel/
+      - generic [ref=f1e259]:
+        - paragraph [ref=f1e260]:
+          - strong [ref=f1e261]: "Current Action:"
+        - paragraph [ref=f1e262]:
+          - strong [ref=f1e263]: "Location:"
+        - paragraph [ref=f1e264]:
+          - strong [ref=f1e265]: "Current Conversation:"
+  - generic [ref=f1e266]:
+    - link [ref=f1e268] [cursor=pointer]:
+      - /url: "#"
+      - img "Isabella Rodriguez" [ref=f1e269]
+    - generic [ref=f1e270]:
+      - heading [level=2] [ref=f1e272]:
+        - text: Isabella Rodriguez
+        - link "State Details" [ref=f1e273] [cursor=pointer]:
+          - /url: /replay_persona_state/fresh25_2/504/Isabella_Rodriguez/
+      - generic [ref=f1e274]:
+        - paragraph [ref=f1e275]:
+          - strong [ref=f1e276]: "Current Action:"
+        - paragraph [ref=f1e277]:
+          - strong [ref=f1e278]: "Location:"
+        - paragraph [ref=f1e279]:
+          - strong [ref=f1e280]: "Current Conversation:"
+  - generic [ref=f1e281]:
+    - link [ref=f1e283] [cursor=pointer]:
+      - /url: "#"
+      - img "Hailey Johnson" [ref=f1e284]
+    - generic [ref=f1e285]:
+      - heading [level=2] [ref=f1e287]:
+        - text: Hailey Johnson
+        - link "State Details" [ref=f1e288] [cursor=pointer]:
+          - /url: /replay_persona_state/fresh25_2/504/Hailey_Johnson/
+      - generic [ref=f1e289]:
+        - paragraph [ref=f1e290]:
+          - strong [ref=f1e291]: "Current Action:"
+        - paragraph [ref=f1e292]:
+          - strong [ref=f1e293]: "Location:"
+        - paragraph [ref=f1e294]:
+          - strong [ref=f1e295]: "Current Conversation:"
+  - generic [ref=f1e296]:
+    - link [ref=f1e298] [cursor=pointer]:
+      - /url: "#"
+      - img "Arthur Burton" [ref=f1e299]
+    - generic [ref=f1e300]:
+      - heading [level=2] [ref=f1e302]:
+        - text: Arthur Burton
+        - link "State Details" [ref=f1e303] [cursor=pointer]:
+          - /url: /replay_persona_state/fresh25_2/504/Arthur_Burton/
+      - generic [ref=f1e304]:
+        - paragraph [ref=f1e305]:
+          - strong [ref=f1e306]: "Current Action:"
+        - paragraph [ref=f1e307]:
+          - strong [ref=f1e308]: "Location:"
+        - paragraph [ref=f1e309]:
+          - strong [ref=f1e310]: "Current Conversation:"
+  - generic [ref=f1e311]:
+    - link [ref=f1e313] [cursor=pointer]:
+      - /url: "#"
+      - img "Eddy Lin" [ref=f1e314]
+    - generic [ref=f1e315]:
+      - heading [level=2] [ref=f1e317]:
+        - text: Eddy Lin
+        - link "State Details" [ref=f1e318] [cursor=pointer]:
+          - /url: /replay_persona_state/fresh25_2/504/Eddy_Lin/
+      - generic [ref=f1e319]:
+        - paragraph [ref=f1e320]:
+          - strong [ref=f1e321]: "Current Action:"
+        - paragraph [ref=f1e322]:
+          - strong [ref=f1e323]: "Location:"
+        - paragraph [ref=f1e324]:
+          - strong [ref=f1e325]: "Current Conversation:"
+  - generic [ref=f1e326]:
+    - link [ref=f1e328] [cursor=pointer]:
+      - /url: "#"
+      - img "Ayesha Khan" [ref=f1e329]
+    - generic [ref=f1e330]:
+      - heading [level=2] [ref=f1e332]:
+        - text: Ayesha Khan
+        - link "State Details" [ref=f1e333] [cursor=pointer]:
+          - /url: /replay_persona_state/fresh25_2/504/Ayesha_Khan/
+      - generic [ref=f1e334]:
+        - paragraph [ref=f1e335]:
+          - strong [ref=f1e336]: "Current Action:"
+        - paragraph [ref=f1e337]:
+          - strong [ref=f1e338]: "Location:"
+        - paragraph [ref=f1e339]:
+          - strong [ref=f1e340]: "Current Conversation:"
+  - generic [ref=f1e341]:
+    - link [ref=f1e343] [cursor=pointer]:
+      - /url: "#"
+      - img "Francisco Lopez" [ref=f1e344]
+    - generic [ref=f1e345]:
+      - heading [level=2] [ref=f1e347]:
+        - text: Francisco Lopez
+        - link "State Details" [ref=f1e348] [cursor=pointer]:
+          - /url: /replay_persona_state/fresh25_2/504/Francisco_Lopez/
+      - generic [ref=f1e349]:
+        - paragraph [ref=f1e350]:
+          - strong [ref=f1e351]: "Current Action:"
+        - paragraph [ref=f1e352]:
+          - strong [ref=f1e353]: "Location:"
+        - paragraph [ref=f1e354]:
+          - strong [ref=f1e355]: "Current Conversation:"
+  - generic [ref=f1e356]:
+    - link [ref=f1e358] [cursor=pointer]:
+      - /url: "#"
+      - img "Tom Moreno" [ref=f1e359]
+    - generic [ref=f1e360]:
+      - heading [level=2] [ref=f1e362]:
+        - text: Tom Moreno
+        - link "State Details" [ref=f1e363] [cursor=pointer]:
+          - /url: /replay_persona_state/fresh25_2/504/Tom_Moreno/
+      - generic [ref=f1e364]:
+        - paragraph [ref=f1e365]:
+          - strong [ref=f1e366]: "Current Action:"
+        - paragraph [ref=f1e367]:
+          - strong [ref=f1e368]: "Location:"
+        - paragraph [ref=f1e369]:
+          - strong [ref=f1e370]: "Current Conversation:"
+  - generic [ref=f1e371]:
+    - link [ref=f1e373] [cursor=pointer]:
+      - /url: "#"
+      - img "Carmen Ortiz" [ref=f1e374]
+    - generic [ref=f1e375]:
+      - heading [level=2] [ref=f1e377]:
+        - text: Carmen Ortiz
+        - link "State Details" [ref=f1e378] [cursor=pointer]:
+          - /url: /replay_persona_state/fresh25_2/504/Carmen_Ortiz/
+      - generic [ref=f1e379]:
+        - paragraph [ref=f1e380]:
+          - strong [ref=f1e381]: "Current Action:"
+        - paragraph [ref=f1e382]:
+          - strong [ref=f1e383]: "Location:"
+        - paragraph [ref=f1e384]:
+          - strong [ref=f1e385]: "Current Conversation:"
+  - generic [ref=f1e386]:
+    - link [ref=f1e388] [cursor=pointer]:
+      - /url: "#"
+      - img "Klaus Mueller" [ref=f1e389]
+    - generic [ref=f1e390]:
+      - heading [level=2] [ref=f1e392]:
+        - text: Klaus Mueller
+        - link "State Details" [ref=f1e393] [cursor=pointer]:
+          - /url: /replay_persona_state/fresh25_2/504/Klaus_Mueller/
+      - generic [ref=f1e394]:
+        - paragraph [ref=f1e395]:
+          - strong [ref=f1e396]: "Current Action:"
+        - paragraph [ref=f1e397]:
+          - strong [ref=f1e398]: "Location:"
+        - paragraph [ref=f1e399]:
+          - strong [ref=f1e400]: "Current Conversation:"
+  - generic [ref=f1e401]:
+    - link [ref=f1e403] [cursor=pointer]:
+      - /url: "#"
+      - img "Wolfgang Schulz" [ref=f1e404]
+    - generic [ref=f1e405]:
+      - heading [level=2] [ref=f1e407]:
+        - text: Wolfgang Schulz
+        - link "State Details" [ref=f1e408] [cursor=pointer]:
+          - /url: /replay_persona_state/fresh25_2/504/Wolfgang_Schulz/
+      - generic [ref=f1e409]:
+        - paragraph [ref=f1e410]:
+          - strong [ref=f1e411]: "Current Action:"
+        - paragraph [ref=f1e412]:
+          - strong [ref=f1e413]: "Location:"
+        - paragraph [ref=f1e414]:
+          - strong [ref=f1e415]: "Current Conversation:"

@@ -715,6 +715,23 @@ def resolve_action_location(act_desp, persona, maze):
         break
   except Exception:
     pass
+  # Job board (GA_JOBBOARD): "check the community bulletin board" means standing at the
+  # board in Johnson Park; the model otherwise resolved it to a home object (a sleeper
+  # "read" the board from bed).
+  try:
+    import economy as _eco2, re as _re2
+    _low2 = (act_desp or "").lower()
+    if (_eco2.jobboard_enabled() and "bulletin board" in _low2
+        and _re2.search(r"\b(check|read|reading|visit|look|stop by|go to|head to|browse|review|consult)", _low2)):
+      _tree2 = persona.s_mem.tree.get(act_world, {})
+      _sec2 = next((x for x in _tree2 if x.lower() == "johnson park"), None)
+      if _sec2:
+        _ar2 = next((a for a in _tree2[_sec2] if a.lower() == "park"), None)
+        if _ar2:
+          _ob2 = next((o for o in _tree2[_sec2][_ar2] if "bulletin" in o.lower()), None)
+          sector, arena, obj = _sec2, _ar2, _ob2
+  except Exception:
+    pass
   _forced = None if (sector and arena) else _venue_in_activity(act_desp, persona, act_world)
   if _forced and sector and _forced.lower() != str(sector).lower():
     print(f"[Location] {persona.name}: '{act_desp[:50]}' resolved to "
@@ -1340,6 +1357,7 @@ def _long_term_planning(persona, new_day, maze=None):
                                                               wake_up_hour)
   persona.scratch.f_daily_schedule_hourly_org = (persona.scratch
                                                    .f_daily_schedule[:])
+  _commit_post_block(persona)
 
 
   # Added March 4 -- adding plan to the memory.
@@ -1362,6 +1380,66 @@ def _long_term_planning(persona, new_day, maze=None):
   # print("Done sleeping!")
 
 
+
+
+POST_BLOCK_START_MIN = 10 * 60      # a town-service post is worked 10:00-12:00
+POST_BLOCK_MIN = 120
+
+
+def _insert_block(sched, start, dur, text):
+  """Overwrite minutes [start, start+dur) of a [[task, minutes], ...] day schedule with
+  `text`, keeping the surrounding items (trimmed) and the 1440-minute total."""
+  end = start + dur
+  out, t = [], 0
+  for task, mins in sched:
+    a, b = t, t + mins
+    t = b
+    if b <= start or a >= end:
+      out.append([task, mins])
+      continue
+    if a < start:
+      out.append([task, start - a])
+    if b > end:
+      out.append(["\0", 0])            # marker: tail kept after the block
+      out.append([task, b - end])
+  res, placed = [], False
+  for task, mins in out:
+    if task == "\0":
+      continue
+    res.append([task, mins])
+  # place the block at the right offset
+  acc, final, done = 0, [], False
+  for task, mins in res:
+    if not done and acc >= start:
+      final.append([text, dur]); done = True
+    final.append([task, mins]); acc += mins
+  if not done:
+    final.append([text, dur])
+  return final
+
+
+def _commit_post_block(persona):
+  """GA_JOBBOARD: a town-service post is a commitment: the work block goes INTO the
+  schedule (an agent that merely 'could' go never did), and the plan notes it."""
+  try:
+    import economy as _eco
+    e = _ECON_REF.get("e")
+    if not (_eco.jobboard_enabled() and e is not None):
+      return
+    tid = e.public_post(persona.name)
+    if not tid:
+      return
+    text = _eco.CIVIC_TASKS[tid]["name"]
+    sched = persona.scratch.f_daily_schedule
+    if sum(m for _, m in sched) != 1440 or any(t.startswith(text) for t, _ in sched):
+      return
+    new = _insert_block(sched, POST_BLOCK_START_MIN, POST_BLOCK_MIN, text)
+    if sum(m for _, m in new) == 1440:
+      persona.scratch.f_daily_schedule = new
+      persona.scratch.f_daily_schedule_hourly_org = new[:]
+      print(f"[JobBoard] {persona.name}: scheduled '{text}' 10:00-12:00")
+  except Exception as err:
+    print(f"[JobBoard] post block failed for {persona.name}: {err!r}")
 
 FREE_CHOICE_SAFETY = 10     # a need below this is handled by rule, not choice
 
@@ -1567,7 +1645,7 @@ def _determine_action(persona, maze):
     if (_eco.community_enabled() and _cn is not None
         and not isinstance(getattr(persona.scratch, "job", None), dict)
         and ((getattr(persona.scratch, "wallet", 0) or 0) < _eco.CIVIC_ELIGIBLE_WALLET
-             or persona.name in _eco.PUBLIC_JOBS)
+             or (_ECON_REF.get("e") is not None and _ECON_REF["e"].public_post(persona.name)))
         and _eco.CIVIC_START <= _cn.hour < _eco.CIVIC_END - 1
         and getattr(persona.scratch, "_civic_goal_day", None) != _cn.date()
         and hasattr(persona.scratch, "resource_goals")

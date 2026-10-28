@@ -39,6 +39,22 @@ def alive(proc):
     return proc is not None and proc.poll() is None
 
 
+def finish_backend(rev, say, timeout=1800):
+    """Ask the backend to save and exit ("fin") and WAIT for it. Terminating it at the
+    target step killed it mid-save and truncated a persona's embeddings.json."""
+    try:
+        rev.stdin.write("fin\n")
+        rev.stdin.flush()
+    except Exception:
+        pass
+    try:
+        rev.wait(timeout=timeout)
+        say(f"backend saved and exited (code {rev.returncode})")
+    except Exception:
+        say("WARN: backend did not exit after 'fin'; terminating")
+        rev.terminate()
+
+
 def main():
     sim = sys.argv[1]
     total_steps = int(sys.argv[2])
@@ -149,9 +165,8 @@ def main():
             driver = start_driver()
 
         if cur >= total_steps - 1:
-            say("target step reached — wrapping up")
-            rev.terminate()
-            time.sleep(2)
+            say("target step reached — saving and wrapping up")
+            finish_backend(rev, say)
             driver.terminate()
             break
 

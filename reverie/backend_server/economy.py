@@ -156,6 +156,16 @@ PUBLIC_JOBS = {"Chad Kibler": "clinic", "Hua Lai": "police", "Lesbia Martinez": 
                "Tony Stewart": "clinic", "Cledith Hardin": "lecture"}
 
 
+# Job board (GA_JOBBOARD): the town-service posts start OPEN; residents find them (and
+# private openings) on the community bulletin board at Johnson Park and apply there.
+PUBLIC_SLOTS = {"clinic": 2, "police": 1, "gazette": 1, "townhall": 1, "lecture": 1, "records": 1}
+
+
+def jobboard_enabled():
+    import os
+    return os.environ.get("GA_JOBBOARD", "0") == "1"
+
+
 def community_enabled():
     import os
     return os.environ.get("GA_COMMUNITY", "1") == "1"
@@ -205,6 +215,8 @@ class EconomyManager:
             "civic_day": -1,
             "civic_paid_day": -1,
             "last_dividend_day": -1,
+            "posts": {},               # town-service task id -> [holders] (GA_JOBBOARD)
+            "board_read": {},          # persona -> day of the last board visit
         }
         self._load()
         self._apply_init = False
@@ -459,7 +471,7 @@ class EconomyManager:
         if self.state["civic_day"] != day:
             self.state["civic_day"] = day
             self.state["civic"] = {}
-        pj = PUBLIC_JOBS.get(name)
+        pj = self.public_post(name)
         if pj:                                   # a town-service post, every day
             if name in self.state["civic"]:
                 return None
@@ -661,6 +673,162 @@ class EconomyManager:
                 print(f"[Economy] {owner} drew ${draw:.2f} daily profit from "
                       f"{cfg['name']} (wallet ${s.wallet:.0f})")
 
+
+    # -- community job board (GA_JOBBOARD) ----------------------------------
+    def public_post(self, name):
+        """The town-service task `name` holds, or None."""
+        if not jobboard_enabled():
+            return PUBLIC_JOBS.get(name)
+        for tid, holders in self.state.get("posts", {}).items():
+            if name in holders:
+                return tid
+        return None
+
+    def _has_private_job(self, name):
+        return any(name in e for e in self.state["employees"].values())
+
+    def wants_change(self, scratch):
+        """Unhappy with the current work: money trouble or a status craving."""
+        stress = getattr(scratch, "financial_stress", 0.0) or 0.0
+        wallet = getattr(scratch, "wallet", 100.0) or 0.0
+        status = (getattr(scratch, "needs", None) or {}).get("status", 100)
+        return stress >= STRESS_APPLY_THRESHOLD or wallet < BROKE_APPLY_WALLET or status < 30
+
+    def board_options(self, name):
+        """[(kind, id, text)] of what is pinned on the board that `name` could take."""
+        opts = []
+        mine = self.public_post(name)
+        for vid, cfg in VENUES.items():
+            if vid not in self.state["postings"] or cfg["owner"] == name:
+                continue
+            if name in self.state["employees"][vid]:
+                continue
+            if len(self.state["employees"][vid]) >= cfg["max_employees"]:
+                continue
+            opts.append(("venue", vid, f"{cfg['name']}: help wanted, daily paid shift "
+                         f"(owner {cfg['owner']} decides)"))
+        for tid, n in PUBLIC_SLOTS.items():
+            holders = self.state.get("posts", {}).get(tid, [])
+            if len(holders) >= n or tid == mine:
+                continue
+            c = CIVIC_TASKS[tid]
+            opts.append(("post", tid, f"Town service, {c['name']}: ${c['rate']:.0f} an hour "
+                         f"from the community fund, paid at 10 PM for time on site "
+                         f"(about 2 hours a day between 10 AM and 4 PM)"))
+        return opts
+
+    def _leave_current(self, name):
+        for e in self.state["employees"].values():
+            if name in e:
+                e.remove(name)
+        for holders in self.state.get("posts", {}).values():
+            if name in holders:
+                holders.remove(name)
+        self.state["civic"].pop(name, None)
+        p = (self._personas or {}).get(name)
+        if p is not None and isinstance(getattr(p.scratch, "job", None), dict):
+            p.scratch.job = None
+
+    def read_board(self, name, sim_time):
+        """`name` is at the bulletin board: read the openings, maybe apply.
+        Returns a first-person memory sentence (or None when already read today)."""
+        try:
+            day = sim_time.toordinal()
+            if self.state["board_read"].get(name) == day or not self._personas:
+                return None
+            self.state["board_read"][name] = day
+            p = self._personas.get(name)
+            if p is None:
+                return None
+            if any(c["owner"] == name for c in VENUES.values()):
+                return f"{name} read the community bulletin board and saw nothing they needed."
+            opts = self.board_options(name)
+            cur = self.public_post(name)
+            have = (f"town-service post ({CIVIC_TASKS[cur]['name']})" if cur else
+                    next((f"job at {VENUES[v]['name']}" for v, e in
+                          self.state["employees"].items() if name in e), None))
+            if not opts:
+                return (f"{name} read the community bulletin board; no openings are "
+                        f"posted right now.")
+            if not self._llm:
+                return None
+            menu = "\n".join(f"{i + 1}. {o[2]}" for i, o in enumerate(opts))
+            prompt = (
+                f"You are {name}. {(getattr(p.scratch, 'learned', '') or '')[:250]} "
+                f"You have ${getattr(p.scratch, 'wallet', 0):.0f}. "
+                + (f"You currently have a {have}; taking a new one means leaving it. "
+                   if have else "You currently have no job. ")
+                + f"You are reading the community bulletin board at Johnson Park. "
+                  f"It lists:\n{menu}\nWhich one, if any, do you apply for? "
+                  f"Answer with just its number, or 0 for none.")
+            ans = str(self._llm(prompt) or "")
+            m = re.search(r"\d+", ans)
+            k = int(m.group()) if m else 0
+            if not (1 <= k <= len(opts)):
+                return f"{name} read the community bulletin board and decided not to apply for anything."
+            kind, oid, _ = opts[k - 1]
+            if kind == "post":
+                self._leave_current(name)
+                self.state.setdefault("posts", {}).setdefault(oid, []).append(name)
+                self.state["civic"][name] = oid
+                if self._bulletin:
+                    self._bulletin(f"{name} has taken the town-service post: {CIVIC_TASKS[oid]['name']}.")
+                print(f"[JobBoard] {name} took the town post {oid}")
+                self.save()
+                return (f"{name} applied at the community bulletin board and took the "
+                        f"town-service post of {CIVIC_TASKS[oid]['name']} "
+                        f"at ${CIVIC_TASKS[oid]['rate']:.0f} an hour. They will work there "
+                        f"between 10 AM and 4 PM.")
+            cfg = VENUES[oid]
+            if self._decide_hire(oid, name):
+                self._leave_current(name)
+                self.state["employees"][oid].append(name)
+                p.scratch.job = {"venue": oid, "employer": cfg["owner"],
+                                 "wage_share": EMPLOYEE_WAGE_SHARE}
+                self._record_hire(oid, name, True)
+                if len(self.state["employees"][oid]) >= cfg["max_employees"]:
+                    self.state["postings"].pop(oid, None)
+                if self._bulletin:
+                    self._bulletin(f"{name} has been hired at {cfg['name']}. Welcome them to the team!")
+                print(f"[JobBoard] {name} hired at {cfg['name']} via the board")
+                self.save()
+                return (f"{name} applied at the community bulletin board for a job at "
+                        f"{cfg['name']} and {cfg['owner']} hired them.")
+            self._record_hire(oid, name, False)
+            self.save()
+            return (f"{name} applied at the community bulletin board for a job at "
+                    f"{cfg['name']} but {cfg['owner']} turned them down.")
+        except Exception as e:
+            print(f"[JobBoard] read_board failed for {name}: {e}")
+            return None
+
+    def board_priming(self, name):
+        """Daily-plan lines about work and the bulletin board for `name`."""
+        if not jobboard_enabled() or not self._personas or name not in self._personas:
+            return ""
+        s = self._personas[name].scratch
+        board = ("The community bulletin board at Johnson Park lists open jobs "
+                 "(shifts at the cafe, shops and pub, and town-service posts at the "
+                 "clinic, police station, gazette, town hall and college).")
+        if any(c["owner"] == name for c in VENUES.values()):
+            return ""
+        cur = self.public_post(name)
+        if cur:
+            c = CIVIC_TASKS[cur]
+            line = (f"You hold a town-service post: {c['name']}, ${c['rate']:.0f} an hour "
+                    f"from the community fund. Plan about two hours there between 10 AM "
+                    f"and 4 PM; you are only paid for time on site.")
+        elif self._has_private_job(name):
+            line = ""
+        else:
+            line = (f"You have no job. {board} Plan to stop by the bulletin board early "
+                    f"in your day (for example \"check the community bulletin board at "
+                    f"Johnson Park\") and apply for an opening that suits you.")
+        if (cur or self._has_private_job(name)) and self.wants_change(s):
+            line += (" You are not happy with your work or money right now: " + board +
+                     " You could check it for something better.")
+        return line.strip()
+
     # -- hiring market ------------------------------------------------------
     def consider_hiring(self, sim_time):
         """DAILY 7 AM: each understaffed owner's LLM decides whether to
@@ -735,6 +903,8 @@ class EconomyManager:
             wallet = getattr(s, "wallet", 100.0) or 0.0
             has_job = bool(getattr(s, "job", None))
             if has_job:
+                continue
+            if jobboard_enabled() and self.public_post(name):
                 continue
             is_owner = any(cfg["owner"] == name for cfg in VENUES.values())
             if is_owner:
@@ -880,7 +1050,7 @@ class EconomyManager:
         except Exception:
             return "<EconomyManager>"
 
-def town_brief(econ=None):
+def town_brief(econ=None, name=None):
     """Short Smallville primer for the daily-plan prompt: how money, the
     community fund and civic work work here. Live numbers when `econ` is set."""
     if not community_enabled():
@@ -904,4 +1074,11 @@ def town_brief(econ=None):
         "pays every resident a small dividend once a week. Community tasks are "
         "posted on the community bulletin board at Johnson Park.",
     ]
+    try:
+        if econ is not None and name:
+            extra = econ.board_priming(name)
+            if extra:
+                lines.append(extra)
+    except Exception:
+        pass
     return " ".join(lines)

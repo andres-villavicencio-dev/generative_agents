@@ -44,6 +44,22 @@ def movement_files(sim):
         return []
 
 
+def finish_backend(rev, say, timeout=1800):
+    """Ask the backend to save and exit ("fin") and WAIT for it. Terminating it at the
+    target step killed it mid-save and truncated a persona's embeddings.json."""
+    try:
+        rev.stdin.write("fin\n")
+        rev.stdin.flush()
+    except Exception:
+        pass
+    try:
+        rev.wait(timeout=timeout)
+        say(f"backend saved and exited (code {rev.returncode})")
+    except Exception:
+        say("WARN: backend did not exit after 'fin'; terminating")
+        rev.terminate()
+
+
 def main():
     old_sim, new_sim = sys.argv[1], sys.argv[2]
     start_step, total_target = int(sys.argv[3]), int(sys.argv[4])
@@ -167,9 +183,8 @@ def main():
             stall_reported = True
 
         if cur >= total_target - 2:
-            say("target reached — wrapping up")
-            rev.terminate()
-            time.sleep(2)
+            say("target reached — saving and wrapping up")
+            finish_backend(rev, say)
             driver.terminate()
             break
 

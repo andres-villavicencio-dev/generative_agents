@@ -983,6 +983,34 @@ class ReverieServer:
     s.resource_goals.append("buying groceries at the Harvey Oak Supply Store")
     s.last_grocery_attempt = now
 
+  def _read_board_hook(self, persona, act_description):
+    """GA_JOBBOARD: an agent that has arrived at the community bulletin board reads the
+    openings and may apply; the outcome becomes a memory."""
+    try:
+      if self.economy is None or "bulletin board" not in (act_description or "").lower():
+        return
+      import economy as _eco
+      if not _eco.jobboard_enabled():
+        return
+      tile = self.maze.access_tile(persona.scratch.curr_tile)
+      if (tile.get("sector") or "").lower() != "johnson park":
+        return                                    # only a visit to the park counts as reading it
+      desc = self.economy.read_board(persona.name, self.curr_time)
+      if not desc:
+        return
+      from persona.prompt_template.gpt_structure import get_embedding
+      try:
+        emb = get_embedding(desc)
+      except Exception:
+        emb = [0.0] * 768
+      persona.a_mem.add_event(
+        self.curr_time, None, persona.name, "read", "community bulletin board", desc,
+        {persona.name, "community bulletin board", "job", "work"},
+        9 if ("took the town-service post" in desc or "hired them" in desc) else 5,
+        (desc, emb), [])
+    except Exception as e:
+      print(f"[JobBoard] hook failed: {e}")
+
   def _arrived(self, persona):
     """True when the persona stands in the sector its current action is addressed to.
     Purchases and consumption used to fire the moment an action began, i.e. while the
@@ -1991,6 +2019,7 @@ class ReverieServer:
                 try:
                   self.consume_resources_for_action(persona, _pend)
                   self._process_shopping(persona, _pend)
+                  self._read_board_hook(persona, _pend)
                 except Exception as e:
                   print(f"[Reverie] Warning: deferred consumption failed: {e}")
 
@@ -2012,6 +2041,7 @@ class ReverieServer:
                   self._process_shopping(persona, curr_act_description)
                 except Exception as e:
                   print(f"[Reverie] Warning: shopping processing failed: {e}")
+                self._read_board_hook(persona, curr_act_description)
               else:
                 persona.scratch._pending_act = curr_act_description
               # Artifact creation and interaction (Phase 6)

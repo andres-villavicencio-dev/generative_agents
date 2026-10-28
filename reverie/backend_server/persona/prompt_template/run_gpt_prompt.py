@@ -543,7 +543,7 @@ def run_gpt_prompt_daily_plan(persona,
     try:
       from economy import town_brief
       from persona.cognitive_modules import plan as _plan_mod
-      _tb = town_brief(_plan_mod._ECON_REF.get("e"))
+      _tb = town_brief(_plan_mod._ECON_REF.get("e"), persona.name)
       if _tb:
         iss += f"\n{_tb}"
     except Exception:

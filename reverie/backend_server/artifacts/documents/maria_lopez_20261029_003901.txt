@@ -1,0 +1,21 @@
+My Physics Homework — February 14
+
+Final Answer:  
+The momentum conservation equation is  
+p₁ = p₂ + p₃,  
+where p₁ is the initial momentum, p₂ is the final momentum of the first object, and p₃ is the final momentum of the second object.
+
+Steps Used:  
+1. Identify the objects and write the initial and final conditions.  
+2. Assign a mass to each object.  
+3. Express the momentum of each object as mass times velocity.  
+4. Set the total initial momentum equal to the total final momentum.  
+5. Substitute the known values and solve for the unknown.  
+
+I used the conservation of momentum because the two objects collide and the external forces are negligible. The equation remains the same regardless of the final directions of the objects.
+
+The answer is  
+p₁ = 0.5m₁v₁ + 0.5m₂v₂ + p₃
+
+Conclusion:  
+Momentum is conserved in the collision, so the sum of the final momenta equals the initial momentum. I did not need a numerical coefficient because the masses and initial velocities were not ex...

@@ -106,26 +106,29 @@
 	let sim_code = "{{sim_code}}";
  	let step_size = {{sec_per_step}} * 1000; // 10 seconds = 10000
 
-	// Phaser 3.0 global settings. 
-	// Configuration meant to be passed to the main Phaser game instance. 
-	// renderer=canvas query param forces Canvas-2D (faster than software WebGL
-	// on GPU-less/mobile devices); default is AUTO (WebGL when available).
-	const config = {
-	  type: (new URLSearchParams(location.search).get('renderer') === 'canvas')
-	        ? Phaser.CANVAS : Phaser.AUTO,
-	  width: 1500,
-	  height: 800,
-	  parent: "game-container",
-	  pixelArt: true,
-	  physics: {
-	    default: "arcade",
-	    arcade: {
-	      gravity: { y: 0 } } },
-	  scene: {
-	    preload: preload,
-	    create: create,
-	    update: update },
-	  scale: {zoom: 0.8} };
+		// Phaser 3.0 global settings.
+		// Configuration meant to be passed to the main Phaser game instance.
+		// renderer=canvas query param forces Canvas-2D (faster than software WebGL
+		// on GPU-less/mobile devices); default is AUTO (WebGL when available).
+		// Touch/mobile: FIT scaling (canvas adapts to parent/screen), and input
+		// wiring in create() handles drag-pan / pinch-zoom / double-tap recenter.
+		const config = {
+		  type: (new URLSearchParams(location.search).get('renderer') === 'canvas')
+		        ? Phaser.CANVAS : Phaser.AUTO,
+		  width: 1500,
+		  height: 800,
+		  parent: "game-container",
+		  pixelArt: true,
+		  input: { activePointers: 3 },
+		  physics: {
+		    default: "arcade",
+		    arcade: {
+		      gravity: { y: 0 } } },
+		  scene: {
+		    preload: preload,
+		    create: create,
+		    update: update },
+		  scale: {mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH} };
 
 	// const config = {
 	//   type: Phaser.AUTO,
@@ -372,6 +375,51 @@
 	  camera.startFollow(player);
 	  camera.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
 	  cursors = this.input.keyboard.createCursorKeys();
+
+  // *** TOUCH CONTROLS (drag-pan, pinch-zoom, double-tap re-center) ***
+  // Camera starts following the invisible player sprite; the first drag
+  // stops the follow so the user owns the camera. Double-tap re-centers.
+  const __tcam = this.cameras.main;
+  const __tdist = () => Phaser.Math.Distance.Between(
+    this.input.pointer1.x, this.input.pointer1.y,
+    this.input.pointer2.x, this.input.pointer2.y);
+  window.__touch = {drag: null, pinch: null, moved: false, lastTap: 0};
+  this.input.on('pointerdown', (p) => {
+    if (this.input.pointer1.isDown && this.input.pointer2.isDown) {
+      window.__touch.pinch = {d: __tdist(), z: __tcam.zoom};
+    } else {
+      window.__touch.drag = {x: p.x, y: p.y};
+    }
+  });
+  this.input.on('pointermove', (p) => {
+    const twoDown = this.input.pointer1.isDown && this.input.pointer2.isDown;
+    if (window.__touch.pinch && twoDown) {
+      const nd = __tdist();
+      if (window.__touch.pinch.d > 0) {
+        __tcam.setZoom(Phaser.Math.Clamp(
+          window.__touch.pinch.z * (nd / window.__touch.pinch.d), 0.2, 4));
+      }
+    } else if (window.__touch.drag && p.isDown && !twoDown) {
+      __tcam.stopFollow();
+      __tcam.scrollX -= (p.x - window.__touch.drag.x) / __tcam.zoom;
+      __tcam.scrollY -= (p.y - window.__touch.drag.y) / __tcam.zoom;
+      window.__touch.drag = {x: p.x, y: p.y};
+      window.__touch.moved = true;
+    }
+  });
+  const __endTouch = (p) => {
+    if (!window.__touch.moved) {
+      const now = this.time.now;
+      if (now - window.__touch.lastTap < 300) {
+        __tcam.startFollow(player);  // double-tap: re-center on the town
+        window.__touch.lastTap = 0;
+      } else { window.__touch.lastTap = now; }
+    }
+    window.__touch.drag = null; window.__touch.pinch = null;
+    window.__touch.moved = false;
+  };
+  this.input.on('pointerup', __endTouch);
+  this.input.on('pointerupoutside', __endTouch);
 
 	  // *** SET UP PERSONAS *** 
 	  // We start by creating the game sprite objects. 

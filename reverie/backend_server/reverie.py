@@ -898,6 +898,8 @@ class ReverieServer:
         s.needs["status"] = min(100, s.needs.get("status", 50) + 70)
       s.last_luxury_purchase = self.curr_time
       price = LUXURY_GOODS[item]
+      from resource_manager import item_emoji
+      persona.scratch.act_pronunciatio = item_emoji(item)
       desc = (f"{persona.name} bought a {item} at The Willows Market for "
               f"${price:.0f} — a reward for saving up, and a sign of how far "
               f"{persona.name.split()[0]} has come.")
@@ -909,7 +911,7 @@ class ReverieServer:
       persona.a_mem.add_event(
         self.curr_time, None, persona.name, "bought", item, desc,
         {persona.name, item, "luxury", "status"}, 7, (desc, emb), [])
-      print(f"[Status] {persona.name} bought a {item} (${price:.0f}); "
+      print(f"[Status] {item_emoji(item)} {persona.name} bought a {item} (${price:.0f}); "
             f"status -> {s.needs.get('status', 0):.0f}")
     except Exception as e:
       print(f"[Status] luxury purchase hook failed: {e}")
@@ -1120,6 +1122,8 @@ class ReverieServer:
                             if "grocer" not in g.lower()]
 
       # Memory event so the purchase is part of the agent's lived experience
+      from resource_manager import item_emoji
+      persona.scratch.act_pronunciatio = "".join(dict.fromkeys(item_emoji(i) for i, _ in bought))[:6]
       summary = ", ".join(f"{qty} {item}" for item, qty in bought)
       cost = sum(ITEM_PRICES.get(item, 1.0) * qty for item, qty in bought)
       desc = f"{persona.name} bought {summary} at the supply store for ${cost:.2f} and restocked the refrigerator at home."
@@ -1134,7 +1138,7 @@ class ReverieServer:
         persona.name, "bought", "groceries",
         desc, keywords, 6, (desc, emb), [])
 
-      print(f"[Shopping] {persona.name} bought {summary} (${cost:.2f}) -> {home_fridge}")
+      print(f"[Shopping] {''.join(item_emoji(i) for i, _ in bought)} {persona.name} bought {summary} (${cost:.2f}) -> {home_fridge}")
     except Exception as e:
       print(f"[Shopping] Error processing shopping action: {e}")
 

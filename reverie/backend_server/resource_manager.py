@@ -35,6 +35,18 @@ ITEM_PRICES = {
     "diamond necklace": 650.00,
 }
 
+ITEM_EMOJI = {
+    "eggs": "🥚", "bread": "🍞", "milk": "🥛", "coffee_beans": "☕",
+    "sandwiches": "🥪", "pastries": "🥐", "beer": "🍺", "wine": "🍷",
+    "juice": "🧃", "medicine": "💊", "silk scarf": "🧣", "gold watch": "⌚",
+    "designer handbag": "👜", "diamond necklace": "💎",
+}
+
+
+def item_emoji(item):
+    """Emoji for a purchasable item (🛒 when unknown)."""
+    return ITEM_EMOJI.get(item, ITEM_EMOJI.get(str(item).replace(" ", "_"), "🛒"))
+
 
 class WorldResourceManager:
     """
@@ -395,7 +407,12 @@ class WorldResourceManager:
 
         # Bug 6: Log the buyer-side transaction
         buyer_name = getattr(buyer_scratch, 'name', 'Unknown')
-        print(f"[Purchase] {buyer_name} spent ${price:.2f} on {amount}x {item} at {address} (wallet: ${buyer_scratch.wallet:.0f})")
+        # The agent's floating emoji shows what was just bought
+        try:
+            buyer_scratch.act_pronunciatio = item_emoji(item)
+        except Exception:
+            pass
+        print(f"[Purchase] {item_emoji(item)} {buyer_name} spent ${price:.2f} on {amount}x {item} at {address} (wallet: ${buyer_scratch.wallet:.0f})")
 
         return True
 

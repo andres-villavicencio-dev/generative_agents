@@ -856,8 +856,16 @@ def get_run_stats(request, sim_code):
             venues[label] = {"today": eco.get("daily_intake", {}).get(vid, 0.0),
                              "yesterday": eco.get("yesterday_intake", {}).get(vid, 0.0),
                              "till": eco.get("tills", {}).get(vid, 0.0)}
+        emo = {"eggs": "🥚", "bread": "🍞", "milk": "🥛", "coffee": "☕",
+               "sandwich": "🥪", "pastr": "🥐", "beer": "🍺", "wine": "🍷",
+               "juice": "🧃", "medicine": "💊", "scarf": "🧣", "watch": "⌚",
+               "handbag": "👜", "necklace": "💎"}
+
+        def _emoji(note):
+            n = (note or "").lower()
+            return next((e for k, e in emo.items() if k in n), "🛒")
         stats["sales"] = {
-            "recent": [{"buyer": x.get("who"), "venue": x.get("venue"),
+            "recent": [{"emoji": _emoji(x.get("note")), "buyer": x.get("who"), "venue": x.get("venue"),
                         "item": x.get("note"), "price": x.get("amount"),
                         "t": x.get("t")} for x in reversed(recent)],
             "venues": venues,

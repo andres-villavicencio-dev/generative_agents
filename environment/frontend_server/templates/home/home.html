@@ -124,7 +124,7 @@
 						}).join("");
 						document.getElementById("rs-taxsum").textContent = "· "+((s.fund&&s.fund.rate)?(100*s.fund.rate).toFixed(1)+"% ":"")+"sales tax goes to the fund";
 						tEl.innerHTML = sl.recent.length ? sl.recent.map(function(r) {
-							return '<tr><td style="color:#777">' + (r.t || "") + '</td><td>' + r.buyer + '</td><td>' + (r.item || "") +
+							return '<tr><td style="color:#777">' + (r.t || "") + '</td><td>' + r.buyer + '</td><td>' + (r.emoji || "🛒") + ' ' + (r.item || "") +
 								'</td><td>' + (r.venue || "").replace("The ", "").split(" ")[0] + '</td><td style="text-align:right">$' + r.price.toFixed(2) + '</td></tr>';
 						}).join("") : '<tr><td>no sales yet</td></tr>';
 					} else { vEl.textContent = "—"; tEl.innerHTML = ""; }

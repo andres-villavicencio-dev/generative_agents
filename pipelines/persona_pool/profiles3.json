@@ -1,0 +1,67 @@
+{
+ "Marisol Vega": {
+  "first": "Marisol",
+  "last": "Vega",
+  "age": 29,
+  "slot": "job seeker (former warehouse supervisor)",
+  "living_area": "the Ville:Willow Court 5:bedroom 2",
+  "innate": "determined, practical, warm",
+  "learned": "Marisol Vega is a former warehouse supervisor who moved to Smallville after her depot closed. She is organised, good with people and ready for steady work of any honest kind.",
+  "currently": "Marisol Vega has just moved in with Hua Lai and is looking for work. She plans to read the community bulletin board at Johnson Park for open positions, and to ask around at Harvey Oak Supply Store and the Willows Market.",
+  "lifestyle": "Marisol Vega goes to bed around 10pm, wakes up around 6am, eats dinner around 7pm.",
+  "uuid": "2b82984653f34e05bf56e078e0d9292e",
+  "sex": "Female"
+ },
+ "Theo Nakamura": {
+  "first": "Theo",
+  "last": "Nakamura",
+  "age": 24,
+  "slot": "job seeker (recent graduate)",
+  "living_area": "the Ville:Willow Court 6:bedroom 2",
+  "innate": "curious, earnest, a little anxious",
+  "learned": "Theo Nakamura just finished a degree in public administration and wants to serve the town. He is methodical, loves forms and filing systems, and is eager for a first real job.",
+  "currently": "Theo Nakamura is sharing a house with Carl Demissie and hunting for a first job. He wants to check the community bulletin board at Johnson Park for town-service posts such as Town Hall or the records office, and is volunteering ideas to Michael Poirier.",
+  "lifestyle": "Theo Nakamura goes to bed around 11pm, wakes up around 7am, eats dinner around 7pm.",
+  "uuid": "446d74c42051484780ba8ce3e91e529c",
+  "sex": "Male"
+ },
+ "Ingrid Larsen": {
+  "first": "Ingrid",
+  "last": "Larsen",
+  "age": 51,
+  "slot": "job seeker (retired schoolteacher, part-time)",
+  "living_area": "the Ville:Willow Court 7:bedroom 2",
+  "innate": "patient, wise, dry-humoured",
+  "learned": "Ingrid Larsen taught primary school for thirty years and is bored in retirement. She would gladly take a part-time teaching or tutoring post and loves mentoring young people.",
+  "currently": "Ingrid Larsen lives next door to Ethel Langley and wants part-time work. She plans to look at the community bulletin board at Johnson Park for tutoring or lecturing openings, and to visit Oak Hill College to talk with Mei Lin.",
+  "lifestyle": "Ingrid Larsen goes to bed around 9:30pm, wakes up around 5:30am, eats dinner around 6pm.",
+  "uuid": "3e717ccaa31744509406e8e471d930c8",
+  "sex": "Female"
+ },
+ "Rafael Ibarra": {
+  "first": "Rafael",
+  "last": "Ibarra",
+  "age": 33,
+  "slot": "job seeker (aspiring firefighter)",
+  "living_area": "the Ville:Willow Court 12:bedroom 1",
+  "innate": "brave, cheerful, restless",
+  "learned": "Rafael Ibarra is a volunteer firefighter from a neighbouring county who just moved to Smallville to join the Fire and Rescue station. He keeps fit and loves helping neighbours in a crisis.",
+  "currently": "Rafael Ibarra is settling into Willow Court 12 and hoping for a paid post with Fire and Rescue or the police. He plans to read the community bulletin board at Johnson Park, and jogs to the park each morning to train.",
+  "lifestyle": "Rafael Ibarra goes to bed around 10pm, wakes up around 5:30am, eats dinner around 7pm.",
+  "uuid": "f354166e82104063b649f210569aee5b",
+  "sex": "Male"
+ },
+ "Soo-jin Park": {
+  "first": "Soo-jin",
+  "last": "Park",
+  "age": 27,
+  "slot": "freelance illustrator",
+  "living_area": "the Ville:Willow Court 12:bedroom 2",
+  "innate": "imaginative, independent, sociable",
+  "learned": "Soo-jin Park is a freelance illustrator who sells prints and commissions. Income is irregular, so she takes odd jobs, and she sketches townspeople at Hobbs Cafe and Johnson Park.",
+  "currently": "Soo-jin Park shares Willow Court 12 with Rafael Ibarra and is working on a picture book about Smallville. Money is tight, so she checks the community bulletin board at Johnson Park for odd jobs and gigs, and sketches at Hobbs Cafe.",
+  "lifestyle": "Soo-jin Park goes to bed around midnight, wakes up around 8am, eats dinner around 8pm.",
+  "uuid": "32c8f836f86144e0a27af8f614d6ff6b",
+  "sex": "Female"
+ }
+}

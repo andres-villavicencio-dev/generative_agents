@@ -14,9 +14,13 @@ BASE2 = {"Tony Stewart": ("Ryan_Park", 240), "Cledith Hardin": ("Adam_Smith", 10
          "Job Amely": ("Arthur_Burton", 160), "Jeanne Love": ("Jane_Moreno", 120), "Eugene Middlebrooks": ("Rajiv_Patel", 20),
          "Jason O'Brien": ("Sam_Moore", 200), "Jenny Rivera": ("Maria_Lopez", 150), "Nair Viggiani": ("Francisco_Lopez", 270),
          "Victor Rosales": ("Sam_Moore", 320), "Amber Williamson": ("Jennifer_Moore", 250), "Diane Bosse": ("Hailey_Johnson", 90)}
+BASE3 = {"Marisol Vega": ("Carmen_Ortiz", 40), "Theo Nakamura": ("Eddy_Lin", 200), "Ingrid Larsen": ("Mei_Lin", 120),
+         "Rafael Ibarra": ("Carlos_Gomez", 300), "Soo-jin Park": ("Hailey_Johnson", 330)}
 import sys as _sys
 if "--group2" in _sys.argv:
     BASE = BASE2
+elif "--group3" in _sys.argv:
+    BASE = BASE3
 
 def recolor(im, deg):
     px = im.load()

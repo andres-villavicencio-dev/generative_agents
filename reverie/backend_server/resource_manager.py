@@ -160,6 +160,12 @@ class WorldResourceManager:
             "the Ville:Hobbs Cafe:cafe:counter",
             {"sandwiches": 20, "pastries": 20},
             {"sandwiches": 2.25, "pastries": 1.50}),
+        # The cafe's coffee machine ran dry after ~3 sim days (80 beans, ~14
+        # used per day, never refilled); the 6 AM delivery now tops it up.
+        "cafe_machine": (
+            "the Ville:Hobbs Cafe:cafe:coffee machine",
+            {"coffee_beans": 100},
+            {"coffee_beans": 1.00}),
         "market": (
             "the Ville:The Willows Market and Pharmacy:store:grocery store shelf",
             {"eggs": 60, "bread": 30, "milk": 25},

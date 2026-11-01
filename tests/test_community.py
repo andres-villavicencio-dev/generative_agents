@@ -139,10 +139,11 @@ def test_tax_on_tiny_sales_is_not_rounded_away(monkeypatch):
     monkeypatch.setenv("GA_COMMUNITY", "1")
     e, _ = _econ()
     till = e.state["tills"]["cafe"]
-    for _ in range(200):                      # 200 x $0.10 sales = $20; 5% = half a cent each
+    for _ in range(200):                      # 200 x $0.10 sales = $20; 1% = a fifth of a cent each
         e.credit_sale("cafe", "coffee", 1, "Klaus Mueller", 0.10)
-    assert e.state["fund"]["balance"] == 1.0  # 5% of $20, carried across sales
-    assert abs(e.state["tills"]["cafe"] - (till + 19.0)) < 0.011
+    tax = 20.0 * economy.FUND_SALES_TAX
+    assert abs(e.state["fund"]["balance"] - tax) < 0.011
+    assert abs(e.state["tills"]["cafe"] - (till + 20.0 - tax)) < 0.011
 
 
 def test_dynamic_tax_rises_with_civic_bill(monkeypatch):
@@ -162,3 +163,17 @@ def test_dynamic_tax_rises_with_civic_bill(monkeypatch):
         e.credit_sale("cafe", "coffee", 1, "Klaus Mueller", 10.0)
     assert e.state["fund"]["today_in"] > 0
     assert e.sales_tax_rate() <= 0.30
+
+
+def test_draw_tax_is_dynamic(monkeypatch):
+    monkeypatch.setenv("GA_COMMUNITY", "1")
+    e, _ = _econ()
+    f = e.state["fund"]
+    f["balance"], f["need"] = 500.0, 100.0           # fund healthy -> floor
+    assert e.draw_tax_rate(200.0) == economy.FUND_DRAW_TAX
+    f["balance"], f["need"] = 0.0, 100.0             # 100 short of 200 drawn -> 50%
+    assert e.draw_tax_rate(200.0) == 0.5
+    f["balance"] = 0.0
+    assert e.draw_tax_rate(100.0) == economy.FUND_DRAW_TAX_MAX   # capped
+    f["balance"], f["need"] = 70.0, 100.0            # 30 short of 200 -> 15%
+    assert abs(e.draw_tax_rate(200.0) - 0.15) < 1e-9

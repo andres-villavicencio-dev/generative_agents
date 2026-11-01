@@ -121,9 +121,10 @@ def jobs_enabled():
 
 # Community fund (GA_COMMUNITY): tax accumulates, community work and the
 # Monday dividend are paid out of it — nothing is created from nothing.
-FUND_SALES_TAX = 0.05         # 5% of every venue sale, taken at the register (buyer pays the same price)
-FUND_DRAW_TAX = 0.20          # of every owner draw
-FUND_SALES_TAX_MAX = 0.30     # ceiling of the dynamic sales tax
+FUND_SALES_TAX = 0.01         # floor of the dynamic sales tax, taken at the register (buyer pays the same price)
+FUND_SALES_TAX_MAX = 0.50     # ceiling of the dynamic sales tax
+FUND_DRAW_TAX = 0.10          # floor of the dynamic owner-draw tax
+FUND_DRAW_TAX_MAX = 0.50      # ceiling of the dynamic owner-draw tax
 CIVIC_EXPECTED_HOURS = 1.0    # paid hours assumed per signed-up civic worker (two 30-min goals)
 FUND_SEED = 150.0             # starting balance of a new fund (a town treasury)
 FUND_DIVIDEND_SHARE = 0.5     # of the fund shared out each Monday
@@ -403,7 +404,7 @@ class EconomyManager:
         """Dynamic sales tax: today's civic wage bill (signed-up workers x rate
         x expected hours), minus what the fund already collected today, spread
         over the sales still expected today (yesterday's total as the
-        forecast). Never below FUND_SALES_TAX nor above FUND_SALES_TAX_MAX."""
+        forecast). Between FUND_SALES_TAX and FUND_SALES_TAX_MAX."""
         try:
             if not community_enabled():
                 return FUND_SALES_TAX
@@ -653,6 +654,7 @@ class EconomyManager:
         if self.state["last_draw_day"] == day or not self._personas:
             return
         self.state["last_draw_day"] = day
+        draws = []
         for vid, cfg in VENUES.items():
             owner = cfg["owner"]
             if owner not in self._personas:
@@ -663,16 +665,34 @@ class EconomyManager:
             reserve = RESTOCK_WAGE_SHARE * self.state["daily_intake"].get(vid, 0.0)
             draw = round(max(0.0, till - cfg["float"] - reserve), 2)
             if draw > 0:
-                self.state["tills"][vid] = round(till - draw, 2)
-                draw = round(draw - self._tax_to_fund(
-                    draw, FUND_DRAW_TAX, vid, "draw tax"), 2)
-                s = self._personas[owner].scratch
-                s.wallet = round(getattr(s, "wallet", 0.0) + draw, 2)
-                self._relax_stress(s)
-                self._log_pay("owner_draw", owner, draw, vid)
-                print(f"[Economy] {owner} drew ${draw:.2f} daily profit from "
-                      f"{cfg['name']} (wallet ${s.wallet:.0f})")
+                draws.append((vid, cfg, owner, draw))
+        rate = self.draw_tax_rate(sum(d[3] for d in draws))
+        for vid, cfg, owner, draw in draws:
+            self.state["tills"][vid] = round(self.state["tills"][vid] - draw, 2)
+            draw = round(draw - self._tax_to_fund(draw, rate, vid, "draw tax"), 2)
+            s = self._personas[owner].scratch
+            s.wallet = round(getattr(s, "wallet", 0.0) + draw, 2)
+            self._relax_stress(s)
+            self._log_pay("owner_draw", owner, draw, vid)
+            print(f"[Economy] {owner} drew ${draw:.2f} daily profit from "
+                  f"{cfg['name']} at {rate:.0%} draw tax (wallet ${s.wallet:.0f})")
 
+    def draw_tax_rate(self, total_draws):
+        """Dynamic owner-draw tax, set once per night over all of today's
+        draws: the shortfall between what the fund should hold for tomorrow
+        (today's civic wage bill, f['need']) and its balance, as a share of
+        the draws about to be taxed. Between FUND_DRAW_TAX and
+        FUND_DRAW_TAX_MAX."""
+        try:
+            if not community_enabled() or total_draws <= 0:
+                return FUND_DRAW_TAX
+            f = self.state["fund"]
+            short = max(0.0, f.get("need", 0.0) - f.get("balance", 0.0))
+            rate = min(max(short / total_draws, FUND_DRAW_TAX), FUND_DRAW_TAX_MAX)
+            f["draw_rate"] = round(rate, 4)
+            return rate
+        except Exception:
+            return FUND_DRAW_TAX
 
     # -- community job board (GA_JOBBOARD) ----------------------------------
     def public_post(self, name):

@@ -404,13 +404,20 @@ class EconomyManager:
         """Dynamic sales tax: today's civic wage bill (signed-up workers x rate
         x expected hours), minus what the fund already collected today, spread
         over the sales still expected today (yesterday's total as the
-        forecast). Between FUND_SALES_TAX and FUND_SALES_TAX_MAX."""
+        forecast). Between FUND_SALES_TAX and FUND_SALES_TAX_MAX.
+
+        Re-set once per sim hour (not per sale): the rate is fixed for the
+        hour, then recomputed from the then-current shortfall and the sales
+        still expected, so it tracks the day without jittering sale to sale."""
         try:
             if not community_enabled():
                 return FUND_SALES_TAX
             f = self.state["fund"]
             now = getattr(self, "_presence_t", None)
             day = now.toordinal() if now is not None else None
+            slot = (day, now.hour) if now is not None else None
+            if slot is not None and f.get("rate_slot") == list(slot) and "rate" in f:
+                return f["rate"]
             civic = self.state["civic"] if self.state.get("civic_day") == day else {}
             need = sum(CIVIC_TASKS[t]["rate"] * CIVIC_EXPECTED_HOURS
                        for t in civic.values())
@@ -421,7 +428,9 @@ class EconomyManager:
             rate = (need - got) / left if (need > got and left > 0) else 0.0
             rate = min(max(rate, FUND_SALES_TAX), FUND_SALES_TAX_MAX)
             f["rate"], f["need"] = round(rate, 4), round(need, 2)
-            return rate
+            if slot is not None:
+                f["rate_slot"] = list(slot)
+            return f["rate"]
         except Exception:
             return FUND_SALES_TAX
 

@@ -157,12 +157,14 @@ def test_dynamic_tax_rises_with_civic_bill(monkeypatch):
     e.state["yesterday_intake"] = {"cafe": 100.0, "pub": 100.0, "grocery": 100.0, "market": 100.0}
     assert e.sales_tax_rate() == FUND_SALES_TAX                 # nobody on civic duty
     e.state["civic"] = {n: "tutor" for n in ("A", "B", "C", "D", "E", "F")}
+    e._presence_t = datetime.datetime(2023, 2, 15, 12, 0)       # rate re-sets on the hour
     need = 6 * CIVIC_TASKS["tutor"]["rate"] * CIVIC_EXPECTED_HOURS
     assert abs(e.sales_tax_rate() - need / 400.0) < 1e-3        # exactly the bill / forecast sales
     for _ in range(40):
         e.credit_sale("cafe", "coffee", 1, "Klaus Mueller", 10.0)
     assert e.state["fund"]["today_in"] > 0
-    assert e.sales_tax_rate() <= 0.30
+    e._presence_t = datetime.datetime(2023, 2, 15, 13, 0)
+    assert e.sales_tax_rate() <= 0.50
 
 
 def test_draw_tax_is_dynamic(monkeypatch):
@@ -177,3 +179,19 @@ def test_draw_tax_is_dynamic(monkeypatch):
     assert e.draw_tax_rate(100.0) == economy.FUND_DRAW_TAX_MAX   # capped
     f["balance"], f["need"] = 70.0, 100.0            # 30 short of 200 -> 15%
     assert abs(e.draw_tax_rate(200.0) - 0.15) < 1e-9
+
+
+def test_sales_tax_rate_is_fixed_within_the_hour(monkeypatch):
+    import datetime
+    monkeypatch.setenv("GA_COMMUNITY", "1")
+    e, _ = _econ()
+    e.state["yesterday_intake"] = {"cafe": 100.0}
+    e.state["civic_day"] = datetime.datetime(2023, 2, 14).toordinal()
+    e.state["civic"] = {"A": "park"}
+    e._presence_t = datetime.datetime(2023, 2, 14, 10, 0)
+    r1 = e.sales_tax_rate()
+    e.state["daily_intake"]["cafe"] = 50.0          # sales move mid-hour
+    e._presence_t = datetime.datetime(2023, 2, 14, 10, 40)
+    assert e.sales_tax_rate() == r1                  # same hour -> unchanged
+    e._presence_t = datetime.datetime(2023, 2, 14, 11, 0)
+    assert e.sales_tax_rate() != r1                  # next hour -> re-set

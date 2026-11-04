@@ -30,7 +30,7 @@ GROUP_SIZE = 4
 LR_ENCODER = 2.0e-5
 LR_HEAD = 1.0e-4
 SIGMA_START, SIGMA_END = 0.4, 0.1
-OVERSAMPLE = {"poignancy": 1, "talk": 2, "react": 2, "choose": 2, "loc": 1, "need": 3}
+OVERSAMPLE = {"poignancy": 1, "talk": 2, "react": 2, "choose": 2, "loc": 1, "need": 3, "replan": 3}
 device = torch.device("cuda")
 
 

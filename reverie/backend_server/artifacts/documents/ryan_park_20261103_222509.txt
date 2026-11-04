@@ -1,0 +1,16 @@
+Mobile App API Contracts and Data Model Specification
+
+Date: Monday, February 13  
+Project: Mobile App Development  
+Version: 1.0  
+Status: Draft
+
+I’m working on the new mobile app, and the API contracts and data models are the foundation of the entire project. The goal is to make the app’s behavior predictable, maintainable, and easy to extend.
+
+The data models should reflect the app’s core features without over-engineering unnecessary fields. Each model should have a clear purpose, a stable schema, and documented relationships. I’ll use a consistent naming convention and avoid changing the schema without a clear business reason.
+
+For the API contracts, I’ll define endpoints, request/response structures, authentication, error codes, and response formats. I’ll also include performance expectations and expected latency, since mobile users expect fast, reliable responses.
+
+I’m focusing on the following features:
+User onboarding: A simple, secure registration and login flow.
+Profile ma...

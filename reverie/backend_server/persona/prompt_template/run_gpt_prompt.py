@@ -110,6 +110,19 @@ def run_gpt_prompt_wake_up_hour(persona, test_input=None, verbose=False):
   prompt = generate_prompt(prompt_input, prompt_template)
   fail_safe = get_fail_safe()
 
+  # Rule fast path (GA_WAKE_RULE, default on): the lifestyle line states the wake hour
+  # ("awakes up around 9am"); on 856 recorded calls this regex equals the LLM answer 99.6%
+  # (persona-mode agreement is also 99.6%), so the LLM call is skipped. =0 restores the LLM.
+  if os.environ.get("GA_WAKE_RULE", "1") != "0":
+    _m = re.search(r"(?:awakes?|wakes?)(?: up)?(?: at| around| by)?\s*(?:around\s*)?(\d{1,2})(?::\d\d)?\s*(am|pm)?",
+                   " ".join(str(x) for x in prompt_input), re.I)
+    if _m:
+      _h = int(_m.group(1))
+      if (_m.group(2) or "").lower() == "pm" and _h < 12:
+        _h += 12
+      if 0 <= _h <= 23:
+        return _h, [_h, prompt, gpt_param, prompt_input, fail_safe]
+
   output = safe_generate_response(prompt, gpt_param, 5, fail_safe,
                                    __func_validate, __func_clean_up,
                                    model_hint="planning")

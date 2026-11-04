@@ -42,7 +42,7 @@ import chat_time as _chat_time
 # LLM concurrency: 3-4 decode slots fit the 8GB 3070 with the 4b lane model
 # (q8_0 KV cache). Threads beyond this just queue at the daemon.
 GA_MOVE_WORKERS = int(os.environ.get("GA_MOVE_WORKERS", "6"))
-EATING_KEYWORDS = ("eating", "breakfast", "lunch", "dinner", "meal")
+EATING_KEYWORDS = ("eating", "breakfast", "lunch", "dinner", "meal", "snack", "brunch", "supper")
 MEAL_COOLDOWN_MIN = int(os.environ.get("GA_MEAL_COOLDOWN_MIN", "90"))
 
 # from selenium import webdriver  # not needed for local run
@@ -52,6 +52,7 @@ from utils import *
 from maze import *
 from persona.persona import *
 from persona.prompt_template.gpt_structure import set_persona_call_context
+import needs_env
 from resource_manager import WorldResourceManager, ACTION_RESOURCE_MAPPINGS, PRODUCTION_MAPPINGS, get_persona_decay_multiplier, match_production
 from artifact_manager import (ArtifactManager, ARTIFACT_EMOJI, ARTIFACT_TYPES,
                               CREATION_ACTION_PATTERNS)
@@ -878,6 +879,9 @@ class ReverieServer:
           if not is_sleeping:
             current_val -= rate
 
+        if needs_env.ENABLED:   # v2: rebalanced rates, social gained in real conversations
+          current_val = needs_env.tick_value(need, s.needs[need], is_sleeping, is_chatting, multiplier)
+
         # Night dilation: a step may span dt_scale ticks of sim time.
         if dt_scale != 1.0:
           current_val = s.needs[need] + (current_val - s.needs[need]) * dt_scale
@@ -1314,6 +1318,7 @@ class ReverieServer:
               success = self.resource_manager.purchase(address, item, amount, persona.scratch)
               if success:
                 consumed = True
+                needs_env.note_consumed(persona, item)
                 # Economy v2 (Oct 2026): venue-routed sale credit — every
                 # commercial purchase feeds the OWNING venue's till (weekly
                 # owner draw replaces direct per-sale wallet credits).
@@ -1361,6 +1366,7 @@ class ReverieServer:
               success = self.resource_manager.consume(address, item, amount)
               if success:
                 consumed = True
+                needs_env.note_consumed(persona, item)
                 break
               else:
                 # Resource depleted - inject event
@@ -1373,6 +1379,8 @@ class ReverieServer:
         if not consumed:
           for address in self.resource_manager.world_state:
             if resource_pattern.lower() in address.lower():
+              if item == "water":      # bottled water is only ever bought where it is sold
+                continue
               # never draw another household's fridge
               if "refrigerator" in address.lower() and (
                   address != self.resource_manager.home_fridge_of.get(persona_name)
@@ -1381,6 +1389,7 @@ class ReverieServer:
               success = self.resource_manager.consume(address, item, amount)
               if success:
                 consumed = True
+                needs_env.note_consumed(persona, item)
                 break
 
     # Handle production (restock cafe counters) — fires on regex match,
@@ -2024,6 +2033,8 @@ class ReverieServer:
                   self.consume_resources_for_action(persona, _pend)
                   self._process_shopping(persona, _pend)
                   self._read_board_hook(persona, _pend)
+                  if needs_env.ENABLED:
+                    needs_env.apply_relief(persona, self.maze, _pend, self.curr_time)
                 except Exception as e:
                   print(f"[Reverie] Warning: deferred consumption failed: {e}")
 
@@ -2032,7 +2043,8 @@ class ReverieServer:
             if persona_name in _frozen_now:
               curr_act_description = prev_act_description
             if curr_act_description != prev_act_description:
-              self.satisfy_needs_for_action(persona, curr_act_description)
+              if not needs_env.ENABLED:       # v2: the environment decides, after consumption (below)
+                self.satisfy_needs_for_action(persona, curr_act_description)
               # Consume world resources / shop only once the agent is THERE; until
               # then the action is pending (see the arrival check below).
               if self._arrived(persona):
@@ -2046,6 +2058,8 @@ class ReverieServer:
                 except Exception as e:
                   print(f"[Reverie] Warning: shopping processing failed: {e}")
                 self._read_board_hook(persona, curr_act_description)
+                if needs_env.ENABLED:
+                  needs_env.apply_relief(persona, self.maze, curr_act_description, self.curr_time)
               else:
                 persona.scratch._pending_act = curr_act_description
               # Artifact creation and interaction (Phase 6)
@@ -2151,6 +2165,26 @@ class ReverieServer:
 
           # Tick agent needs each step
           self.tick_needs(_step_s / float(self.sec_per_step))
+          try:   # hourly needs time series for calibration (GA_NEEDS_LOG, default on)
+            _hk = (self.curr_time.date(), self.curr_time.hour)
+            if getattr(self, "_needs_log_hour", None) != _hk:
+              self._needs_log_hour = _hk
+              needs_env.log_snapshot(self.personas, self.curr_time)
+          except Exception:
+            pass
+          # Need-zero crises (GA_NEEDS_V2 + GA_NEEDS_CRISIS): poignant bad memory, partial restore, clinic for medical ones
+          if needs_env.ENABLED:
+            for _cn, _cp in self.personas.items():
+              try:
+                needs_env.recheck(_cp, self.maze, self.curr_time)
+              except Exception:
+                pass
+            for _cn, _cp in self.personas.items():
+              try:
+                for _ev in needs_env.check_crises(_cp, self.maze, self.economy, self.curr_time):
+                  chronicle_milestone(_cp, "crisis", _ev["memo"], sim_folder, _ev["poignancy"])
+              except Exception as _ce:
+                print(f"[NeedsCrisis] check failed for {_cn}: {_ce}")
           # Status need: lingering thoughts, never an emergency replan
           self._status_thoughts()
 

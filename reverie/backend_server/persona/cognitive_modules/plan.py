@@ -2132,9 +2132,27 @@ def _create_react(persona, inserted_act, inserted_act_dur,
     count += 1
 
   _fix = chat_replan_fix_enabled()
-  ret = generate_new_decomp_schedule(
-      p, inserted_act, inserted_act_dur, start_hour, end_hour,
-      convo_note=(inserted_act if (_fix and chatting_with) else None))
+  # Laya gate (GA_REPLAN_LAYA=live): an ordinary chat that committed the agent to nothing keeps the
+  # plan as it is, so the slow schedule-rewriting LLM call is skipped.
+  _skip_replan = False
+  try:
+    import replan_gate
+    _plan_acts = []
+    for _a, _d in p.scratch.f_daily_schedule[start_index:end_index]:
+      _b = re.sub(r"\s*\(.*$", "", str(_a)).strip()
+      if _b and _b not in _plan_acts:
+        _plan_acts.append(_b)
+    _skip_replan = replan_gate.should_skip(p.name, f"{start_hour}:00 to {end_hour}:00", inserted_act_dur,
+                                           _plan_acts, inserted_act)
+  except Exception as _ge:
+    print(f"[ReplanGate] {p.name}: {_ge.__class__.__name__}: {_ge}")
+  if _skip_replan:
+    print(f"[ReplanGate] {p.name}: keep plan (no commitment in chat) - re-plan LLM call skipped", flush=True)
+    ret = list(p.scratch.f_daily_schedule[start_index:end_index])
+  else:
+    ret = generate_new_decomp_schedule(
+        p, inserted_act, inserted_act_dur, start_hour, end_hour,
+        convo_note=(inserted_act if (_fix and chatting_with) else None))
   if _fix:
     # FIX A (duration sanity), corrected: cap absurd subtasks, but keep the
     # spliced window the SAME LENGTH as the slice it replaces. The old

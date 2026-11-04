@@ -51,3 +51,34 @@ See the sections appended by each phase below.
 - Round 1 (~250 new shadow-run calls): candidate area 94.2 / room 92.1 / obj 73.9 vs incumbent 94.6 / 94.2 / 73.3
   -> not promoted (guard worked). Incumbent stays v6. Next rounds need more new LLM-labelled calls
   (e.g. a gated run with a threshold > 0 so declined decisions fall back to the LLM and become labels).
+
+## Phase 5 — v7 retrain on the 3070 (Nov 2 2026)
+- Data: v6 used ~6k of 31.6k valid labelled action_location calls. v7 uses 21k calls (cap 8 per persona+activity) =
+  49k train items, 14k persona-disjoint test items. Second teacher `glm-5.3-flash:cloud` (`glm_loc_label.py`, blind,
+  12k prompts, 9.9k valid; it answers prose + `</think>output:` so parse the LAST `output:` match, num_predict 2048).
+  `loc_build.py` consensus targets: GLM agrees -> 0.93, disagrees -> 0.55/0.30 split, no GLM label -> 0.85.
+- v6 baseline on the v7 test set: area 94.5 / room 93.9 / obj 74.0. v7a (qwen labels + first 1.5k GLM): 94.3 / 94.2 / 73.7
+  -> NOT promoted (mean not improved). Sliced by label quality (`loc_eval_consensus.py`): where qwen==GLM, room is 96.6 (v6)
+  vs 97.0 (v7a); the errors live in the qwen!=GLM slice (room 73%), i.e. genuinely ambiguous items. Room accuracy is at the
+  label-noise ceiling; more data of the same kind does not move it.
+- Census of recent traces (43.6k calls): remaining closed-answer callers are wake_up_hour (2.5% of time), action_game_object /
+  action_arena / commitments (<1% each); choose_activity (9.5%) is already laya. Everything else is free text.
+- wake_up_hour needs no model: the answer is stated in the persona's lifestyle line. Persona-mode agreement 99.6%; a regex on
+  "awakes up around Nam" equals the LLM answer on 853/856 calls. Implemented as a rule fast path in
+  `run_gpt_prompt_wake_up_hour` (`GA_WAKE_RULE`, default on, =0 restores the LLM).
+- v7b (v6 init, 2 epochs, 49k items, GLM-consensus targets from 9.9k valid GLM labels), same 14k test set: all-items
+  94.5 / 93.7 / 75.2 vs v6 94.5 / 93.9 / 74.0; qwen==GLM slice room 96.9 = 96.9, obj 91.4 vs 88.6; vs-GLM room 87.9 vs 87.0,
+  obj 72.5 vs 68.9. Guard passed (no level -0.5, mean up) -> `ga-laya-v6.service` now serves `laya-ga-finetuned-v7b`
+  (rollback: set LAYA_CKPT back to `laya-ga-finetuned-v6`). Gain is in OBJECT choice; room stays at its label-noise ceiling.
+- Error analysis of v7b room misses: 228/256 are in the artist's co-living space (own room vs common room vs kitchen vs bathroom);
+  there qwen and GLM agree on the room only 77.7% (88.8% elsewhere) -> label noise, not a model gap.
+- v7c (v7b init, 1 epoch, teacher-disagreement items DROPPED, co-living room/object items x3; `LOC_DROP_DISAGREE=1 LOC_COLIVING_DUP=3`):
+  room on qwen==GLM items 97.8 (v6/v7b 96.9), co-living clean 96.1 (94.7), room vs GLM labels 90.0 (87.0 v6), obj all 75.1;
+  but room vs raw qwen labels 93.0 (93.9 v6) -> fails the "no level -0.5 vs qwen" guard, so NOT deployed. Checkpoint:
+  /home/andus/Projects/laya-test/laya-ga-finetuned-v7c. Deploy it if consensus labels are the preferred yardstick.
+
+## Phase 6 — 3-teacher vote labels (v7e), 2026-11-03
+- Teachers: glm-5.3, minimax-m3.1-flash, nemotron-3-ultra (qwen discarded as faulty; judge on cloud labels only). Pairwise room agreement 90-93% among the cloud models vs ~85% with qwen. 4198 prompts with all 3 valid votes.
+- v7e = v6 init, 3 epochs, `LOC_VOTES=1 LOC_COLIVING_DUP=3 LOC_CAP=8 loc_build.py 40000` (v7e_data: 5707 loc train items, persona-disjoint 6-persona test).
+- Vote-label test (area/obj/room): v6 90.9/79.6/84.0, v7b 91.1/80.9/86.3, v7d 90.5/79.3/87.8, **v7e 95.3/89.6/97.1**. Promoted to ga-laya-v6.service (rollback v7b/v6).
+- Fill note: cloud labelling shares ga-ollama's queue with the sim (NUM_PARALLEL=5); it crawled while n55 ran.

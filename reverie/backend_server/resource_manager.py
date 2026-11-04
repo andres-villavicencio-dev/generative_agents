@@ -27,6 +27,7 @@ ITEM_PRICES = {
     "beer": 3.50,
     "wine": 4.50,
     "juice": 2.50,
+    "water": 1.00,          # bottled water
     "medicine": 8.00,
     # Luxury goods (keep in sync with economy.LUXURY_GOODS)
     "silk scarf": 180.00,
@@ -38,7 +39,7 @@ ITEM_PRICES = {
 ITEM_EMOJI = {
     "eggs": "🥚", "bread": "🍞", "milk": "🥛", "coffee_beans": "☕",
     "sandwiches": "🥪", "pastries": "🥐", "beer": "🍺", "wine": "🍷",
-    "juice": "🧃", "medicine": "💊", "silk scarf": "🧣", "gold watch": "⌚",
+    "juice": "🧃", "water": "💧", "medicine": "💊", "silk scarf": "🧣", "gold watch": "⌚",
     "designer handbag": "👜", "diamond necklace": "💎",
 }
 
@@ -77,7 +78,7 @@ class WorldResourceManager:
             "coffee_beans": 80.0, "max": 100
         },
         "Hobbs Cafe:front counter:prepared_food": {
-            "sandwiches": 0, "pastries": 0, "max": 20
+            "sandwiches": 0, "pastries": 0, "water": 0, "max": 20
         },
         "the Ville:Hobbs Cafe:cafe:coffee machine": {
             "coffee_beans": 80.0, "max": 100
@@ -90,17 +91,17 @@ class WorldResourceManager:
             "last_delivery": "February 13, 2023, 06:00:00"
         },
         "the Ville:Harvey Oak Supply Store:supply store:shelves": {
-            "eggs": 100, "bread": 50, "milk": 40, "coffee_beans": 30,
+            "eggs": 100, "bread": 50, "milk": 40, "coffee_beans": 30, "water": 60,
             "last_delivery": "February 13, 2023, 06:00:00"
         },
         # Economy v2 (Oct 2026): the pub's bar stock
         "the Ville:The Rose and Crown Pub:pub:shelf": {
-            "beer": 40, "wine": 15, "juice": 20,
+            "beer": 40, "wine": 15, "juice": 20, "water": 30,
             "last_delivery": "February 13, 2023, 06:00:00"
         },
         # Economy v2 (Oct 2026): the market's grocery + pharmacy stock
         "the Ville:The Willows Market and Pharmacy:store:grocery store shelf": {
-            "eggs": 60, "bread": 30, "milk": 25,
+            "eggs": 60, "bread": 30, "milk": 25, "water": 40,
             "last_delivery": "February 13, 2023, 06:00:00"
         },
         "the Ville:The Willows Market and Pharmacy:store:pharmacy store shelf": {
@@ -150,16 +151,16 @@ class WorldResourceManager:
     VENUE_STOCK = {
         "grocery": (
             "the Ville:Harvey Oak Supply Store:supply store:shelves",
-            {"eggs": 100, "bread": 50, "milk": 40, "coffee_beans": 30},
-            {"eggs": 0.25, "bread": 0.75, "milk": 0.60, "coffee_beans": 1.00}),
+            {"eggs": 100, "bread": 50, "milk": 40, "coffee_beans": 30, "water": 60},
+            {"eggs": 0.25, "bread": 0.75, "milk": 0.60, "coffee_beans": 1.00, "water": 0.30}),
         "pub": (
             "the Ville:The Rose and Crown Pub:pub:shelf",
-            {"beer": 40, "wine": 15, "juice": 20},
-            {"beer": 1.75, "wine": 2.25, "juice": 1.00}),
+            {"beer": 40, "wine": 15, "juice": 20, "water": 30},
+            {"beer": 1.75, "wine": 2.25, "juice": 1.00, "water": 0.30}),
         "cafe": (
             "the Ville:Hobbs Cafe:cafe:counter",
-            {"sandwiches": 20, "pastries": 20},
-            {"sandwiches": 2.25, "pastries": 1.50}),
+            {"sandwiches": 20, "pastries": 20, "water": 20},
+            {"sandwiches": 2.25, "pastries": 1.50, "water": 0.30}),
         # The cafe's coffee machine ran dry after ~3 sim days (80 beans, ~14
         # used per day, never refilled); the 6 AM delivery now tops it up.
         "cafe_machine": (
@@ -168,8 +169,8 @@ class WorldResourceManager:
             {"coffee_beans": 1.00}),
         "market": (
             "the Ville:The Willows Market and Pharmacy:store:grocery store shelf",
-            {"eggs": 60, "bread": 30, "milk": 25},
-            {"eggs": 0.25, "bread": 0.75, "milk": 0.60}),
+            {"eggs": 60, "bread": 30, "milk": 25, "water": 40},
+            {"eggs": 0.25, "bread": 0.75, "milk": 0.60, "water": 0.30}),
         # Extra shelves of a venue: "<venue_id>_<shelf>" keys bill the
         # venue's till. The pharmacy shelf was never restocked before.
         "market_pharmacy": (
@@ -903,6 +904,14 @@ ACTION_RESOURCE_MAPPINGS = {
     "having a beer": [("shelf", "beer", 1)],
     "having a drink": [("shelf", "beer", 1), ("shelf", "wine", 0.5)],
     "drinking wine": [("shelf", "wine", 1)],
+    # Bottled water (stores, cafe, pub): explicit purchase phrases only; plain "drinking water" is tap water
+    "bottled water": [("shelf", "water", 1), ("shelves", "water", 1), ("counter", "water", 1)],
+    "bottle of water": [("shelf", "water", 1), ("shelves", "water", 1), ("counter", "water", 1)],
+    "buy water": [("shelf", "water", 1), ("shelves", "water", 1), ("counter", "water", 1)],
+    "buying water": [("shelf", "water", 1), ("shelves", "water", 1), ("counter", "water", 1)],
+    "snack": [("refrigerator", "bread", 1)],
+    "brunch": [("refrigerator", "eggs", 2), ("refrigerator", "bread", 1)],
+    "supper": [("refrigerator", "eggs", 2), ("refrigerator", "bread", 1)],
     "drink wine": [("shelf", "wine", 1)],
     "ordering a drink": [("shelf", "beer", 1)],
     "buying medicine": [("pharmacy store shelf", "medicine", 1)],

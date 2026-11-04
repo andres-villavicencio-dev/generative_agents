@@ -50,8 +50,8 @@ VENUES = {
         "address_key": "hobbs cafe",
         "float": 60.0,   # wages and owner draws come only from the till above this; 200 left the cafe unable to pay anyone
         "max_employees": 2,
-        "restock": {"coffee_beans": 30, "sandwiches": 20, "pastries": 20},
-        "wholesale": {"coffee_beans": 1.0, "sandwiches": 2.25, "pastries": 1.50},
+        "restock": {"coffee_beans": 30, "sandwiches": 20, "pastries": 20, "water": 20},
+        "wholesale": {"coffee_beans": 1.0, "sandwiches": 2.25, "pastries": 1.50, "water": 0.30},
     },
     "pub": {
         "name": "The Rose and Crown Pub",
@@ -59,8 +59,8 @@ VENUES = {
         "address_key": "rose and crown pub",
         "float": 200.0,
         "max_employees": 2,
-        "restock": {"beer": 40, "wine": 15, "juice": 20},
-        "wholesale": {"beer": 1.75, "wine": 2.25, "juice": 1.00},
+        "restock": {"beer": 40, "wine": 15, "juice": 20, "water": 30},
+        "wholesale": {"beer": 1.75, "wine": 2.25, "juice": 1.00, "water": 0.30},
     },
     "grocery": {
         "name": "Harvey Oak Supply Store",
@@ -68,9 +68,9 @@ VENUES = {
         "address_key": "harvey oak supply store",
         "float": 200.0,
         "max_employees": 2,
-        "restock": {"eggs": 100, "bread": 50, "milk": 40, "coffee_beans": 30},
+        "restock": {"eggs": 100, "bread": 50, "milk": 40, "coffee_beans": 30, "water": 60},
         "wholesale": {"eggs": 0.25, "bread": 0.75, "milk": 0.60,
-                      "coffee_beans": 1.00},
+                      "coffee_beans": 1.00, "water": 0.30},
     },
     "market": {
         "name": "The Willows Market and Pharmacy",
@@ -78,16 +78,16 @@ VENUES = {
         "address_key": "willows market and pharmacy",
         "float": 200.0,
         "max_employees": 2,
-        "restock": {"eggs": 60, "bread": 30, "milk": 25, "medicine": 15},
+        "restock": {"eggs": 60, "bread": 30, "milk": 25, "medicine": 15, "water": 40},
         "wholesale": {"eggs": 0.25, "bread": 0.75, "milk": 0.60,
-                      "medicine": 4.00},
+                      "medicine": 4.00, "water": 0.30},
     },
 }
 
 # Retail prices for items the economy charges for (extends
 # resource_manager.ITEM_PRICES; pub + pharmacy additions).
 ECONOMY_ITEM_PRICES = {
-    "beer": 3.50, "wine": 4.50, "juice": 2.50, "medicine": 8.00,
+    "beer": 3.50, "wine": 4.50, "juice": 2.50, "water": 1.00, "medicine": 8.00,
 }
 
 # Luxury goods (Oct 22 2026): sold only at The Willows Market's luxury

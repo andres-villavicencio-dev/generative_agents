@@ -14,6 +14,6 @@ for d in ("movement","environment"):
 P
 systemd-run --user --unit ga-${SIM}r --working-directory=$PWD $ENVS \
   --setenv=GA_TRACE_DIR=$PWD/ga_traces_$SIM --setenv=GA_DECOMP_CACHE_FILE=$PWD/ga_traces_$SIM/decomp_cache.json \
-  --setenv=GA_NEEDS_V2=1 --setenv=GA_NEEDS_LAYA=1 --setenv=GA_NEEDS_CRISIS=1 --setenv=GA_NEEDS_LAYA_URL=http://127.0.0.1:8020 \
+  --setenv=GA_NEEDS_V2=1 --setenv=GA_NEEDS_LAYA=1 --setenv=GA_NEEDS_CRISIS=1 --setenv=GA_NEEDS_LAYA_URL=http://127.0.0.1:8020 --setenv=GA_REPLAN_LAYA=live --setenv=GA_REPLAN_KEEP_CONF=0.9 \
   --setenv=GA_FORK_SKIP_COPY=1 venv/bin/python run_live3d_resume.py $SIM $SIM $CK $TARGET
 echo "resumed $SIM from checkpoint $CK"

@@ -262,7 +262,10 @@ def recheck(persona, maze, now):
     key = _act_key(s)
     if getattr(s, "_relief_key", None) == key:
         return {}
-    intent, src = get_intent(persona, desc, getattr(s, "act_address", "") or "")
+    # Classify on the description alone: the address changes along the way (the destination, then the tile the
+    # agent actually stands on) and a "kitchen" address once classified a bathroom visit as eating, which latched
+    # the action as done and left agents on the toilet with no relief (106 accidents in n70).
+    intent, src = get_intent(persona, desc, "")
     if intent not in LOCATION_BOUND:
         s._relief_key = key
         return {}

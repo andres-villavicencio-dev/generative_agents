@@ -1,0 +1,7 @@
+Project Requirements and Technology Review
+
+I opened the project requirements document this morning and immediately identified the app’s primary goals: to streamline the grocery experience through a mobile interface, reduce shopping time, and provide clear product information. The app should connect users to trusted local retailers, help them compare prices and quantities, and make it easy to track purchases and manage household budgets.
+
+To support these goals, I reviewed the current technology stack and considered how modern mobile development can improve performance, security, and scalability. I’m particularly interested in frameworks that handle real-time data, user authentication, and offline functionality. The team also emphasized the importance of accessibility, responsive design, and a clean, intuitive user flow.
+
+I’m considering the flexible shift at The Rose and Crown Pub as a practical way to contribute to mobile development and system improvements. The opportunity to wor...

@@ -1044,6 +1044,13 @@ class EconomyManager:
             if note:
                 entry["note"] = note
             self.state["pay_log"].append(entry)
+            try:   # full append-only ledger (pay_log is trimmed) for A/B analysis
+                _d = os.environ.get("GA_TRACE_DIR")
+                if _d:
+                    with open(os.path.join(_d, "econ_ledger.jsonl"), "a") as _f:
+                        _f.write(json.dumps(entry) + "\n")
+            except Exception:
+                pass
             # keep the log bounded
             if len(self.state["pay_log"]) > 400:
                 self.state["pay_log"] = self.state["pay_log"][-200:]

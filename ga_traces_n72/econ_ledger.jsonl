@@ -1,0 +1,863 @@
+{"kind": "wholesale", "who": "Harvey Oak Supply Store", "amount": -134.5, "t": "Feb 13 05:59", "venue": "Harvey Oak Supply Store"}
+{"kind": "wholesale", "who": "The Rose and Crown Pub", "amount": -132.75, "t": "Feb 13 05:59", "venue": "The Rose and Crown Pub"}
+{"kind": "wholesale", "who": "Hobbs Cafe", "amount": -162.0, "t": "Feb 13 05:59", "venue": "Hobbs Cafe"}
+{"kind": "wholesale", "who": "Hobbs Cafe", "amount": -20.0, "t": "Feb 13 05:59", "venue": "Hobbs Cafe"}
+{"kind": "wholesale", "who": "The Willows Market and Pharmacy", "amount": -64.5, "t": "Feb 13 05:59", "venue": "The Willows Market and Pharmacy"}
+{"kind": "stipend", "who": "Klaus Mueller", "amount": 60.0, "t": "Feb 13 05:59"}
+{"kind": "stipend", "who": "Eddy Lin", "amount": 60.0, "t": "Feb 13 05:59"}
+{"kind": "stipend", "who": "Maria Lopez", "amount": 60.0, "t": "Feb 13 05:59"}
+{"kind": "stipend", "who": "Wolfgang Schulz", "amount": 60.0, "t": "Feb 13 05:59"}
+{"kind": "stipend", "who": "Ayesha Khan", "amount": 60.0, "t": "Feb 13 05:59"}
+{"kind": "seed", "who": "town treasury", "amount": 150.0, "t": "Feb 13 07:06"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 13 07:06", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Carmen Ortiz", "amount": 5.0, "t": "Feb 13 07:06", "venue": "Harvey Oak Supply Store", "note": "10x eggs"}
+{"kind": "tax", "who": "sales tax", "amount": 0.15, "t": "Feb 13 07:06", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Carmen Ortiz", "amount": 15.0, "t": "Feb 13 07:06", "venue": "Harvey Oak Supply Store", "note": "10x bread"}
+{"kind": "tax", "who": "sales tax", "amount": 0.12, "t": "Feb 13 07:06", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Carmen Ortiz", "amount": 12.0, "t": "Feb 13 07:06", "venue": "Harvey Oak Supply Store", "note": "10x milk"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 13 07:06", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Carmen Ortiz", "amount": 2.0, "t": "Feb 13 07:06", "venue": "Harvey Oak Supply Store", "note": "1x coffee_beans"}
+{"kind": "sale", "who": "Victor Rosales", "amount": 0.2, "t": "Feb 13 07:33", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "sale", "who": "Victor Rosales", "amount": 0.2, "t": "Feb 13 07:46", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "sale", "who": "Victor Rosales", "amount": 0.2, "t": "Feb 13 07:51", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "sale", "who": "Victor Rosales", "amount": 0.2, "t": "Feb 13 07:56", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "t": "Feb 13 08:01", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Victor Rosales", "amount": 0.2, "t": "Feb 13 08:01", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "sale", "who": "Victor Rosales", "amount": 0.2, "t": "Feb 13 08:06", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "sale", "who": "Victor Rosales", "amount": 0.2, "t": "Feb 13 08:11", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 13 08:17", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Tom Moreno", "amount": 5.0, "t": "Feb 13 08:17", "venue": "The Willows Market and Pharmacy", "note": "10x eggs"}
+{"kind": "tax", "who": "sales tax", "amount": 0.15, "t": "Feb 13 08:17", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Tom Moreno", "amount": 15.0, "t": "Feb 13 08:17", "venue": "The Willows Market and Pharmacy", "note": "10x bread"}
+{"kind": "tax", "who": "sales tax", "amount": 0.12, "t": "Feb 13 08:17", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Tom Moreno", "amount": 12.0, "t": "Feb 13 08:17", "venue": "The Willows Market and Pharmacy", "note": "10x milk"}
+{"kind": "duty", "who": "Carmen Ortiz", "amount": 0.6, "t": "Feb 13 08:24", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Isabella Rodriguez", "amount": 0.8, "t": "Feb 13 08:56", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "sale", "who": "Tamara Taylor", "amount": 0.2, "t": "Feb 13 08:58", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "duty", "who": "Isabella Rodriguez", "amount": 0.8, "t": "Feb 13 09:01", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 13 09:08", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Tamara Taylor", "amount": 3.0, "t": "Feb 13 09:08", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "sale", "who": "Tamara Taylor", "amount": 0.2, "t": "Feb 13 09:08", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "t": "Feb 13 09:08", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Tamara Taylor", "amount": 0.2, "t": "Feb 13 09:08", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "sale", "who": "Tamara Taylor", "amount": 0.2, "t": "Feb 13 09:28", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "sale", "who": "Tamara Taylor", "amount": 0.2, "t": "Feb 13 09:38", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 13 10:13", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Maria Lopez", "amount": 5.0, "t": "Feb 13 10:13", "venue": "Harvey Oak Supply Store", "note": "10x eggs"}
+{"kind": "tax", "who": "sales tax", "amount": 0.15, "t": "Feb 13 10:13", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Maria Lopez", "amount": 15.0, "t": "Feb 13 10:13", "venue": "Harvey Oak Supply Store", "note": "10x bread"}
+{"kind": "tax", "who": "sales tax", "amount": 0.12, "t": "Feb 13 10:13", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Maria Lopez", "amount": 12.0, "t": "Feb 13 10:13", "venue": "Harvey Oak Supply Store", "note": "10x milk"}
+{"kind": "tax", "who": "sales tax", "amount": 0.16, "t": "Feb 13 10:13", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Maria Lopez", "amount": 16.0, "t": "Feb 13 10:13", "venue": "Harvey Oak Supply Store", "note": "8x coffee_beans"}
+{"kind": "sale", "who": "Latoya Williams", "amount": 0.2, "t": "Feb 13 10:19", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 13 10:20", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Hua Lai", "amount": 4.5, "t": "Feb 13 10:20", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 13 10:24", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Victor Rosales", "amount": 4.5, "t": "Feb 13 10:24", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 13 10:52", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Tamara Taylor", "amount": 3.0, "t": "Feb 13 10:52", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "sale", "who": "Tamara Taylor", "amount": 0.2, "t": "Feb 13 10:52", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "t": "Feb 13 10:57", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Latoya Williams", "amount": 0.2, "t": "Feb 13 10:57", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 13 11:07", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Latoya Williams", "amount": 3.0, "t": "Feb 13 11:07", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "sale", "who": "Latoya Williams", "amount": 0.2, "t": "Feb 13 11:07", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "sale", "who": "Latoya Williams", "amount": 0.2, "t": "Feb 13 11:07", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 13 11:08", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Theo Nakamura", "amount": 4.5, "t": "Feb 13 11:08", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "t": "Feb 13 11:12", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Francisco Lopez", "amount": 0.2, "t": "Feb 13 11:12", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 13 11:12", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Abigail Chen", "amount": 4.5, "t": "Feb 13 11:12", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "sale", "who": "Latoya Williams", "amount": 0.2, "t": "Feb 13 11:27", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "t": "Feb 13 11:37", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Latoya Williams", "amount": 0.2, "t": "Feb 13 11:37", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 13 11:37", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Maria Lopez", "amount": 4.5, "t": "Feb 13 11:37", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 13 11:37", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Tom Moreno", "amount": 4.5, "t": "Feb 13 11:37", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "sale", "who": "Tamara Taylor", "amount": 0.2, "t": "Feb 13 11:39", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 13 12:02", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Francisco Lopez", "amount": 4.5, "t": "Feb 13 12:02", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 13 12:03", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Sam Moore", "amount": 4.5, "t": "Feb 13 12:03", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 13 12:03", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Marisol Vega", "amount": 4.5, "t": "Feb 13 12:03", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 13 12:13", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Victor Rosales", "amount": 3.0, "t": "Feb 13 12:13", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "sale", "who": "Francisco Lopez", "amount": 0.2, "t": "Feb 13 12:16", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 13 12:19", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Eddy Lin", "amount": 3.0, "t": "Feb 13 12:19", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 13 12:25", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Tamara Taylor", "amount": 3.0, "t": "Feb 13 12:25", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 13 12:28", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 3.0, "t": "Feb 13 12:28", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "t": "Feb 13 12:31", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Adam Smith", "amount": 0.2, "t": "Feb 13 12:31", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "sale", "who": "Latoya Williams", "amount": 0.2, "t": "Feb 13 12:40", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 13 12:41", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Theo Nakamura", "amount": 3.0, "t": "Feb 13 12:41", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "duty", "who": "Isabella Rodriguez", "amount": 0.8, "t": "Feb 13 12:42", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 13 12:44", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Carmen Ortiz", "amount": 3.0, "t": "Feb 13 12:44", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "duty", "who": "Isabella Rodriguez", "amount": 0.8, "t": "Feb 13 12:47", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 13 12:47", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Carl Demissie", "amount": 3.0, "t": "Feb 13 12:47", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 13 12:51", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Latoya Williams", "amount": 3.0, "t": "Feb 13 12:51", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "sale", "who": "Latoya Williams", "amount": 0.2, "t": "Feb 13 12:51", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 13 12:54", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Michael Poirier", "amount": 4.5, "t": "Feb 13 12:54", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.15, "t": "Feb 13 13:00", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Isabella Rodriguez", "amount": 15.0, "t": "Feb 13 13:00", "venue": "Harvey Oak Supply Store", "note": "10x bread"}
+{"kind": "tax", "who": "sales tax", "amount": 0.12, "t": "Feb 13 13:00", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Isabella Rodriguez", "amount": 12.0, "t": "Feb 13 13:00", "venue": "Harvey Oak Supply Store", "note": "10x milk"}
+{"kind": "tax", "who": "sales tax", "amount": 0.2, "t": "Feb 13 13:00", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Isabella Rodriguez", "amount": 20.0, "t": "Feb 13 13:00", "venue": "Harvey Oak Supply Store", "note": "10x coffee_beans"}
+{"kind": "sale", "who": "Marisol Vega", "amount": 0.2, "t": "Feb 13 13:04", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "sale", "who": "Latoya Williams", "amount": 0.2, "t": "Feb 13 13:11", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "sale", "who": "Adam Smith", "amount": 0.2, "t": "Feb 13 13:11", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 13 13:14", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Tom Moreno", "amount": 3.0, "t": "Feb 13 13:14", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 13 13:20", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Hua Lai", "amount": 5.0, "t": "Feb 13 13:20", "venue": "Harvey Oak Supply Store", "note": "10x eggs"}
+{"kind": "tax", "who": "sales tax", "amount": 0.15, "t": "Feb 13 13:20", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Hua Lai", "amount": 15.0, "t": "Feb 13 13:20", "venue": "Harvey Oak Supply Store", "note": "10x bread"}
+{"kind": "tax", "who": "sales tax", "amount": 0.12, "t": "Feb 13 13:20", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Hua Lai", "amount": 12.0, "t": "Feb 13 13:20", "venue": "Harvey Oak Supply Store", "note": "10x milk"}
+{"kind": "tax", "who": "sales tax", "amount": 0.2, "t": "Feb 13 13:25", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Hua Lai", "amount": 20.0, "t": "Feb 13 13:25", "venue": "Harvey Oak Supply Store", "note": "10x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 13 13:36", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Adam Smith", "amount": 3.0, "t": "Feb 13 13:36", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 13 13:46", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Victor Rosales", "amount": 3.0, "t": "Feb 13 13:46", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 0.15, "t": "Feb 13 14:04", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Carl Demissie", "amount": 15.0, "t": "Feb 13 14:04", "venue": "The Willows Market and Pharmacy", "note": "10x bread"}
+{"kind": "tax", "who": "sales tax", "amount": 0.12, "t": "Feb 13 14:04", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Carl Demissie", "amount": 12.0, "t": "Feb 13 14:04", "venue": "The Willows Market and Pharmacy", "note": "10x milk"}
+{"kind": "fee", "who": "Eugene Middlebrooks", "amount": 8.0, "t": "Feb 13 14:08", "note": "clinic fee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 13 14:17", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "John Lin", "amount": 5.0, "t": "Feb 13 14:17", "venue": "The Willows Market and Pharmacy", "note": "10x eggs"}
+{"kind": "tax", "who": "sales tax", "amount": 0.15, "t": "Feb 13 14:17", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "John Lin", "amount": 15.0, "t": "Feb 13 14:17", "venue": "The Willows Market and Pharmacy", "note": "10x bread"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 13 14:17", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Abigail Chen", "amount": 5.0, "t": "Feb 13 14:17", "venue": "The Willows Market and Pharmacy", "note": "10x eggs"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 13 14:23", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Adam Smith", "amount": 5.0, "t": "Feb 13 14:23", "venue": "Harvey Oak Supply Store", "note": "10x eggs"}
+{"kind": "tax", "who": "sales tax", "amount": 0.15, "t": "Feb 13 14:23", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Adam Smith", "amount": 15.0, "t": "Feb 13 14:23", "venue": "Harvey Oak Supply Store", "note": "10x bread"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 13 14:24", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Marisol Vega", "amount": 4.5, "t": "Feb 13 14:24", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "fee", "who": "Nair Viggiani", "amount": 8.0, "t": "Feb 13 14:28", "note": "clinic fee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 13 14:51", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Wolfgang Schulz", "amount": 5.0, "t": "Feb 13 14:51", "venue": "The Willows Market and Pharmacy", "note": "10x eggs"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 13 15:01", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Carlos Gomez", "amount": 4.5, "t": "Feb 13 15:01", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 13 15:01", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Nair Viggiani", "amount": 4.5, "t": "Feb 13 15:01", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "fee", "who": "Eugene Middlebrooks", "amount": 10.0, "t": "Feb 13 15:38", "note": "clinic fee"}
+{"kind": "fee", "who": "Ana Abad", "amount": 8.0, "t": "Feb 13 16:02", "note": "clinic fee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 13 16:18", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Ayesha Khan", "amount": 4.5, "t": "Feb 13 16:18", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 13 16:26", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "David Puskar", "amount": 5.0, "t": "Feb 13 16:26", "venue": "The Willows Market and Pharmacy", "note": "10x eggs"}
+{"kind": "sale", "who": "Marisol Vega", "amount": 0.2, "t": "Feb 13 16:34", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 13 16:37", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Carlos Gomez", "amount": 5.0, "t": "Feb 13 16:37", "venue": "The Willows Market and Pharmacy", "note": "10x eggs"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "t": "Feb 13 16:41", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Marisol Vega", "amount": 0.2, "t": "Feb 13 16:41", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 13 17:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Jason O'Brien", "amount": 4.5, "t": "Feb 13 17:00", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "sale", "who": "Hailey Johnson", "amount": 0.2, "t": "Feb 13 17:09", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 13 17:25", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Sam Moore", "amount": 4.5, "t": "Feb 13 17:25", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 13 17:37", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Latoya Williams", "amount": 4.5, "t": "Feb 13 17:37", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 13 17:02", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Ayesha Khan", "amount": 4.5, "t": "Feb 13 17:02", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 13 17:16", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Michael Poirier", "amount": 4.5, "t": "Feb 13 17:16", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 13 17:25", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Sam Moore", "amount": 4.5, "t": "Feb 13 17:25", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 13 17:46", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Hailey Johnson", "amount": 5.0, "t": "Feb 13 17:46", "venue": "Harvey Oak Supply Store", "note": "10x eggs"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 13 17:46", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Hailey Johnson", "amount": 2.0, "t": "Feb 13 17:46", "venue": "Harvey Oak Supply Store", "note": "1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 13 18:10", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Victor Rosales", "amount": 4.5, "t": "Feb 13 18:10", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 13 18:15", "venue": "The Rose and Crown Pub"}
+{"kind": "sale", "who": "Carmen Ortiz", "amount": 3.5, "t": "Feb 13 18:15", "venue": "The Rose and Crown Pub", "note": "1x beer"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 13 18:45", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Lesbia Martinez", "amount": 4.5, "t": "Feb 13 18:45", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "sale", "who": "Lesbia Martinez", "amount": 0.2, "t": "Feb 13 19:00", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 13 19:10", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Mei Lin", "amount": 4.5, "t": "Feb 13 19:10", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 13 19:20", "venue": "The Rose and Crown Pub"}
+{"kind": "sale", "who": "Victor Rosales", "amount": 3.5, "t": "Feb 13 19:20", "venue": "The Rose and Crown Pub", "note": "1x beer"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 13 19:20", "venue": "The Rose and Crown Pub"}
+{"kind": "sale", "who": "Victor Rosales", "amount": 2.25, "t": "Feb 13 19:20", "venue": "The Rose and Crown Pub", "note": "0.5x wine"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 13 19:33", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Wolfgang Schulz", "amount": 4.5, "t": "Feb 13 19:33", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 13 19:46", "venue": "The Rose and Crown Pub"}
+{"kind": "sale", "who": "Carmen Ortiz", "amount": 3.5, "t": "Feb 13 19:46", "venue": "The Rose and Crown Pub", "note": "1x beer"}
+{"kind": "fee", "who": "Jane Moreno", "amount": 10.0, "t": "Feb 13 19:47", "note": "clinic fee"}
+{"kind": "duty", "who": "Arthur Burton", "amount": 1.0, "t": "Feb 13 19:51", "venue": "The Rose and Crown Pub", "note": "pub.clean_tables x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 13 19:53", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Marisol Vega", "amount": 4.5, "t": "Feb 13 19:53", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 13 20:11", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Jane Moreno", "amount": 4.5, "t": "Feb 13 20:11", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 13 20:20", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Arthur Burton", "amount": 5.0, "t": "Feb 13 20:20", "venue": "Harvey Oak Supply Store", "note": "10x eggs"}
+{"kind": "fee", "who": "Maria Lopez", "amount": 8.0, "t": "Feb 13 20:22", "note": "clinic fee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 13 20:42", "venue": "The Rose and Crown Pub"}
+{"kind": "sale", "who": "Hailey Johnson", "amount": 3.5, "t": "Feb 13 20:42", "venue": "The Rose and Crown Pub", "note": "1x beer"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 13 20:42", "venue": "The Rose and Crown Pub"}
+{"kind": "sale", "who": "Hailey Johnson", "amount": 2.25, "t": "Feb 13 20:42", "venue": "The Rose and Crown Pub", "note": "0.5x wine"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "t": "Feb 13 21:15", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Carlos Gomez", "amount": 0.2, "t": "Feb 13 21:15", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "fee", "who": "Jenny Rivera", "amount": 8.0, "t": "Feb 13 21:44", "note": "clinic fee"}
+{"kind": "tax", "who": "draw tax", "amount": 10.22, "t": "Feb 13 22:00", "venue": "Hobbs Cafe"}
+{"kind": "owner_draw", "who": "Isabella Rodriguez", "amount": 91.97, "t": "Feb 13 22:00", "venue": "Hobbs Cafe"}
+{"kind": "tax", "who": "draw tax", "amount": 5.44, "t": "Feb 13 22:00", "venue": "Harvey Oak Supply Store"}
+{"kind": "owner_draw", "who": "Carmen Ortiz", "amount": 49.03, "t": "Feb 13 22:00", "venue": "Harvey Oak Supply Store"}
+{"kind": "tax", "who": "draw tax", "amount": 2.36, "t": "Feb 13 22:00", "venue": "The Willows Market and Pharmacy"}
+{"kind": "owner_draw", "who": "John Lin", "amount": 21.25, "t": "Feb 13 22:00", "venue": "The Willows Market and Pharmacy"}
+{"kind": "fee", "who": "David Puskar", "amount": 8.0, "t": "Feb 13 22:14", "note": "clinic fee"}
+{"kind": "fee", "who": "Tony Stewart", "amount": 10.0, "t": "Feb 13 22:23", "note": "clinic fee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 13 22:50", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Maria Lopez", "amount": 4.5, "t": "Feb 13 22:50", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "fee", "who": "Wolfgang Schulz", "amount": 8.0, "t": "Feb 13 22:55", "note": "clinic fee"}
+{"kind": "fee", "who": "Lesbia Martinez", "amount": 8.0, "t": "Feb 13 23:04", "note": "clinic fee"}
+{"kind": "fee", "who": "Sharon Antle", "amount": 8.0, "t": "Feb 13 23:38", "note": "clinic fee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 13 23:40", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "David Puskar", "amount": 4.5, "t": "Feb 13 23:40", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 14 00:36", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Maria Lopez", "amount": 4.5, "t": "Feb 14 00:36", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 14 00:40", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Francisco Lopez", "amount": 4.5, "t": "Feb 14 00:40", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "fee", "who": "Hua Lai", "amount": 8.0, "t": "Feb 14 00:59", "note": "clinic fee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 14 01:10", "venue": "The Rose and Crown Pub"}
+{"kind": "sale", "who": "Tony Stewart", "amount": 3.5, "t": "Feb 14 01:10", "venue": "The Rose and Crown Pub", "note": "1x beer"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 01:10", "venue": "The Rose and Crown Pub"}
+{"kind": "sale", "who": "Tony Stewart", "amount": 2.25, "t": "Feb 14 01:10", "venue": "The Rose and Crown Pub", "note": "0.5x wine"}
+{"kind": "fee", "who": "Eugene Johnson", "amount": 8.0, "t": "Feb 14 01:18", "note": "clinic fee"}
+{"kind": "fee", "who": "Amber Williamson", "amount": 8.0, "t": "Feb 14 01:27", "note": "clinic fee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 14 01:30", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Jennifer Moore", "amount": 4.5, "t": "Feb 14 01:30", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "fee", "who": "John Lin", "amount": 8.0, "t": "Feb 14 01:39", "note": "clinic fee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 14 01:52", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "John Lin", "amount": 4.5, "t": "Feb 14 01:52", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "fee", "who": "Ana Abad", "amount": 8.0, "t": "Feb 14 02:14", "note": "clinic fee"}
+{"kind": "fee", "who": "Sam Moore", "amount": 8.0, "t": "Feb 14 02:21", "note": "clinic fee"}
+{"kind": "fee", "who": "Mei Lin", "amount": 8.0, "t": "Feb 14 02:35", "note": "clinic fee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 14 02:55", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Eugene Johnson", "amount": 4.5, "t": "Feb 14 02:55", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 14 02:55", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Amber Williamson", "amount": 4.5, "t": "Feb 14 02:55", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 14 03:46", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Mei Lin", "amount": 4.5, "t": "Feb 14 03:46", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 14 04:14", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Sam Moore", "amount": 4.5, "t": "Feb 14 04:14", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 14 04:35", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Lesbia Martinez", "amount": 4.5, "t": "Feb 14 04:35", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 14 04:37", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Ana Abad", "amount": 4.5, "t": "Feb 14 04:37", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 14 04:51", "venue": "The Rose and Crown Pub"}
+{"kind": "sale", "who": "Lesbia Martinez", "amount": 3.5, "t": "Feb 14 04:51", "venue": "The Rose and Crown Pub", "note": "1x beer"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 04:51", "venue": "The Rose and Crown Pub"}
+{"kind": "sale", "who": "Lesbia Martinez", "amount": 2.25, "t": "Feb 14 04:51", "venue": "The Rose and Crown Pub", "note": "0.5x wine"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 14 05:09", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Amber Williamson", "amount": 3.0, "t": "Feb 14 05:09", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "wholesale", "who": "Harvey Oak Supply Store", "amount": -106.5, "t": "Feb 14 05:59", "venue": "Harvey Oak Supply Store"}
+{"kind": "wholesale", "who": "The Rose and Crown Pub", "amount": -20.75, "t": "Feb 14 05:59", "venue": "The Rose and Crown Pub"}
+{"kind": "wholesale", "who": "Hobbs Cafe", "amount": -13.1, "t": "Feb 14 05:59", "venue": "Hobbs Cafe"}
+{"kind": "wholesale", "who": "The Willows Market and Pharmacy", "amount": -49.5, "t": "Feb 14 05:59", "venue": "The Willows Market and Pharmacy"}
+{"kind": "restock_wage", "who": "Tom Moreno", "amount": 56.46, "t": "Feb 14 05:59"}
+{"kind": "tax", "who": "sales tax", "amount": 0.45, "t": "Feb 14 06:19", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Wolfgang Schulz", "amount": 5.0, "t": "Feb 14 06:19", "venue": "Harvey Oak Supply Store", "note": "10x eggs"}
+{"kind": "fee", "who": "Ayesha Khan", "amount": 8.0, "t": "Feb 14 07:25", "note": "clinic fee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 07:30", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Adam Smith", "amount": 0.2, "t": "Feb 14 07:30", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 07:45", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Adam Smith", "amount": 0.2, "t": "Feb 14 07:45", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.27, "t": "Feb 14 07:45", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Latoya Williams", "amount": 3.0, "t": "Feb 14 07:45", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 07:45", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Latoya Williams", "amount": 0.2, "t": "Feb 14 07:45", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 07:51", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Latoya Williams", "amount": 0.2, "t": "Feb 14 07:51", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.41, "t": "Feb 14 07:52", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Eugene Middlebrooks", "amount": 4.5, "t": "Feb 14 07:52", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.41, "t": "Feb 14 07:52", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Andrea Lovetro", "amount": 4.5, "t": "Feb 14 07:52", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 08:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Adam Smith", "amount": 0.2, "t": "Feb 14 08:00", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.27, "t": "Feb 14 08:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Nair Viggiani", "amount": 3.0, "t": "Feb 14 08:00", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 08:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Nair Viggiani", "amount": 0.2, "t": "Feb 14 08:00", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.45, "t": "Feb 14 08:11", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Jennifer Moore", "amount": 5.0, "t": "Feb 14 08:11", "venue": "Harvey Oak Supply Store", "note": "10x eggs"}
+{"kind": "fee", "who": "Eddy Lin", "amount": 8.0, "t": "Feb 14 08:12", "note": "clinic fee"}
+{"kind": "fee", "who": "Chad Kibler", "amount": 8.0, "t": "Feb 14 08:12", "note": "clinic fee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 08:13", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Adam Smith", "amount": 0.2, "t": "Feb 14 08:13", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.8, "t": "Feb 14 08:13", "venue": "Harvey Oak Supply Store", "note": "grocery.tidy_aisle x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.8, "t": "Feb 14 08:17", "venue": "Harvey Oak Supply Store", "note": "grocery.tidy_aisle x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.8, "t": "Feb 14 08:21", "venue": "Harvey Oak Supply Store", "note": "grocery.tidy_aisle x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 08:26", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Eugene Middlebrooks", "amount": 0.2, "t": "Feb 14 08:26", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.8, "t": "Feb 14 08:26", "venue": "Harvey Oak Supply Store", "note": "grocery.tidy_aisle x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 08:28", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Adam Smith", "amount": 0.2, "t": "Feb 14 08:28", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.8, "t": "Feb 14 08:30", "venue": "Harvey Oak Supply Store", "note": "grocery.tidy_aisle x1"}
+{"kind": "fee", "who": "Theo Nakamura", "amount": 8.0, "t": "Feb 14 08:33", "note": "clinic fee"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.8, "t": "Feb 14 08:34", "venue": "Harvey Oak Supply Store", "note": "grocery.tidy_aisle x1"}
+{"kind": "fee", "who": "Rajiv Patel", "amount": 8.0, "t": "Feb 14 08:37", "note": "clinic fee"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.8, "t": "Feb 14 08:39", "venue": "Harvey Oak Supply Store", "note": "grocery.tidy_aisle x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 08:41", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 09:05", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Adam Smith", "amount": 0.2, "t": "Feb 14 09:05", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "t": "Feb 14 09:10", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Jennifer Moore", "amount": 0.2, "t": "Feb 14 09:10", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 09:20", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Adam Smith", "amount": 0.2, "t": "Feb 14 09:20", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "fee", "who": "Dalton Robinson", "amount": 8.0, "t": "Feb 14 09:24", "note": "clinic fee"}
+{"kind": "fee", "who": "Ryan Park", "amount": 8.0, "t": "Feb 14 09:30", "note": "clinic fee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 09:36", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Adam Smith", "amount": 0.2, "t": "Feb 14 09:36", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "fee", "who": "Chad Kibler", "amount": 10.0, "t": "Feb 14 09:42", "note": "clinic fee"}
+{"kind": "fee", "who": "Sharon Antle", "amount": 8.0, "t": "Feb 14 09:47", "note": "clinic fee"}
+{"kind": "duty", "who": "Arthur Burton", "amount": 1.0, "t": "Feb 14 09:50", "venue": "The Rose and Crown Pub", "note": "pub.clean_tables x1"}
+{"kind": "duty", "who": "John Lin", "amount": 0.8, "t": "Feb 14 09:58", "venue": "The Willows Market and Pharmacy", "note": "market.tidy_aisle x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.45, "t": "Feb 14 10:04", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "John Lin", "amount": 5.0, "t": "Feb 14 10:04", "venue": "Harvey Oak Supply Store", "note": "10x eggs"}
+{"kind": "tax", "who": "sales tax", "amount": 0.41, "t": "Feb 14 10:05", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Abigail Chen", "amount": 4.5, "t": "Feb 14 10:05", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 10:16", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 10:19", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Adam Smith", "amount": 0.2, "t": "Feb 14 10:19", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 10:19", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Nair Viggiani", "amount": 0.2, "t": "Feb 14 10:19", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.41, "t": "Feb 14 10:20", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Ayesha Khan", "amount": 4.5, "t": "Feb 14 10:20", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 10:22", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.27, "t": "Feb 14 10:24", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Nair Viggiani", "amount": 3.0, "t": "Feb 14 10:24", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 10:24", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Nair Viggiani", "amount": 0.2, "t": "Feb 14 10:24", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 10:24", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.46, "t": "Feb 14 10:27", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Tony Stewart", "amount": 5.0, "t": "Feb 14 10:27", "venue": "Harvey Oak Supply Store", "note": "10x eggs"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "t": "Feb 14 10:29", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Nair Viggiani", "amount": 0.2, "t": "Feb 14 10:29", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.41, "t": "Feb 14 10:30", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Soo-jin Park", "amount": 4.5, "t": "Feb 14 10:30", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 7.2, "t": "Feb 14 10:30", "venue": "Harvey Oak Supply Store", "note": "grocery.stock_shelf x220.0"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 10:33", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 10:35", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 10:35", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 10:38", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 10:39", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 10:40", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 10:42", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 10:44", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.41, "t": "Feb 14 10:45", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Tony Stewart", "amount": 4.5, "t": "Feb 14 10:45", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 10:46", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.41, "t": "Feb 14 10:48", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Hua Lai", "amount": 4.5, "t": "Feb 14 10:48", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 10:48", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 10:51", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 10:53", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "fee", "who": "Dalton Robinson", "amount": 10.0, "t": "Feb 14 10:54", "note": "clinic fee"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 10:55", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.46, "t": "Feb 14 10:55", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Ethel Langley", "amount": 5.0, "t": "Feb 14 10:55", "venue": "Harvey Oak Supply Store", "note": "10x eggs"}
+{"kind": "tax", "who": "sales tax", "amount": 1.36, "t": "Feb 14 10:55", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Ethel Langley", "amount": 15.0, "t": "Feb 14 10:55", "venue": "Harvey Oak Supply Store", "note": "10x bread"}
+{"kind": "tax", "who": "sales tax", "amount": 1.09, "t": "Feb 14 10:55", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Ethel Langley", "amount": 12.0, "t": "Feb 14 10:55", "venue": "Harvey Oak Supply Store", "note": "10x milk"}
+{"kind": "tax", "who": "sales tax", "amount": 0.19, "t": "Feb 14 10:55", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Ethel Langley", "amount": 2.0, "t": "Feb 14 10:55", "venue": "Harvey Oak Supply Store", "note": "1x coffee_beans"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 10:57", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 11:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Soo-jin Park", "amount": 0.2, "t": "Feb 14 11:00", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.8, "t": "Feb 14 11:02", "venue": "Harvey Oak Supply Store", "note": "grocery.tidy_aisle x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.4, "t": "Feb 14 11:03", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Jenny Rivera", "amount": 4.5, "t": "Feb 14 11:03", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 1.37, "t": "Feb 14 11:06", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Jennifer Moore", "amount": 15.0, "t": "Feb 14 11:06", "venue": "Harvey Oak Supply Store", "note": "10x bread"}
+{"kind": "tax", "who": "sales tax", "amount": 1.09, "t": "Feb 14 11:06", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Jennifer Moore", "amount": 12.0, "t": "Feb 14 11:06", "venue": "Harvey Oak Supply Store", "note": "10x milk"}
+{"kind": "tax", "who": "sales tax", "amount": 0.37, "t": "Feb 14 11:06", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Jennifer Moore", "amount": 4.0, "t": "Feb 14 11:06", "venue": "Harvey Oak Supply Store", "note": "2x coffee_beans"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.8, "t": "Feb 14 11:07", "venue": "Harvey Oak Supply Store", "note": "grocery.tidy_aisle x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.8, "t": "Feb 14 11:11", "venue": "Harvey Oak Supply Store", "note": "grocery.tidy_aisle x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "t": "Feb 14 11:14", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Adam Smith", "amount": 0.2, "t": "Feb 14 11:14", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 11:14", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.41, "t": "Feb 14 11:15", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Ethel Langley", "amount": 4.5, "t": "Feb 14 11:15", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 11:16", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 11:17", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 11:19", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Hua Lai", "amount": 0.8, "t": "Feb 14 11:20", "venue": "The Willows Market and Pharmacy", "note": "market.tidy_aisle x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 11:21", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 11:22", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Adam Smith", "amount": 0.2, "t": "Feb 14 11:22", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.46, "t": "Feb 14 11:22", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Carlos Gomez", "amount": 5.0, "t": "Feb 14 11:22", "venue": "Harvey Oak Supply Store", "note": "10x eggs"}
+{"kind": "tax", "who": "sales tax", "amount": 1.36, "t": "Feb 14 11:22", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Carlos Gomez", "amount": 15.0, "t": "Feb 14 11:22", "venue": "Harvey Oak Supply Store", "note": "10x bread"}
+{"kind": "tax", "who": "sales tax", "amount": 0.98, "t": "Feb 14 11:22", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Carlos Gomez", "amount": 10.8, "t": "Feb 14 11:22", "venue": "Harvey Oak Supply Store", "note": "9x milk"}
+{"kind": "tax", "who": "sales tax", "amount": 1.82, "t": "Feb 14 11:24", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Ingrid Larsen", "amount": 20.0, "t": "Feb 14 11:24", "venue": "Harvey Oak Supply Store", "note": "10x coffee_beans"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 11:24", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.46, "t": "Feb 14 11:25", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Isabella Rodriguez", "amount": 5.0, "t": "Feb 14 11:25", "venue": "Harvey Oak Supply Store", "note": "10x eggs"}
+{"kind": "tax", "who": "sales tax", "amount": 0.45, "t": "Feb 14 11:27", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Cledith Hardin", "amount": 5.0, "t": "Feb 14 11:27", "venue": "Harvey Oak Supply Store", "note": "10x eggs"}
+{"kind": "tax", "who": "sales tax", "amount": 1.37, "t": "Feb 14 11:27", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Cledith Hardin", "amount": 15.0, "t": "Feb 14 11:27", "venue": "Harvey Oak Supply Store", "note": "10x bread"}
+{"kind": "tax", "who": "sales tax", "amount": 1.09, "t": "Feb 14 11:27", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Cledith Hardin", "amount": 12.0, "t": "Feb 14 11:27", "venue": "Harvey Oak Supply Store", "note": "10x milk"}
+{"kind": "tax", "who": "sales tax", "amount": 1.09, "t": "Feb 14 11:27", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Cledith Hardin", "amount": 12.0, "t": "Feb 14 11:27", "venue": "Harvey Oak Supply Store", "note": "6x coffee_beans"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 11:30", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 11:31", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 11:34", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.28, "t": "Feb 14 11:35", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Amber Williamson", "amount": 3.0, "t": "Feb 14 11:35", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.8, "t": "Feb 14 11:35", "venue": "Harvey Oak Supply Store", "note": "grocery.tidy_aisle x1"}
+{"kind": "duty", "who": "Hua Lai", "amount": 0.8, "t": "Feb 14 11:36", "venue": "The Willows Market and Pharmacy", "note": "market.tidy_aisle x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 11:38", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.8, "t": "Feb 14 11:39", "venue": "Harvey Oak Supply Store", "note": "grocery.tidy_aisle x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 11:42", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Jennifer Moore", "amount": 1.2, "t": "Feb 14 11:42", "note": "park.pick_litter x1"}
+{"kind": "duty", "who": "Carlos Gomez", "amount": 1.2, "t": "Feb 14 11:43", "note": "library.shelve_books x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 11:43", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "tax", "who": "sales tax", "amount": 1.36, "t": "Feb 14 11:44", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Tony Stewart", "amount": 15.0, "t": "Feb 14 11:44", "venue": "Harvey Oak Supply Store", "note": "10x bread"}
+{"kind": "duty", "who": "Jennifer Moore", "amount": 1.2, "t": "Feb 14 11:48", "note": "park.pick_litter x1"}
+{"kind": "duty", "who": "Carlos Gomez", "amount": 1.2, "t": "Feb 14 11:48", "note": "library.shelve_books x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 5.04, "t": "Feb 14 11:50", "venue": "Harvey Oak Supply Store", "note": "grocery.stock_shelf x148.0"}
+{"kind": "tax", "who": "sales tax", "amount": 1.09, "t": "Feb 14 11:51", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Tony Stewart", "amount": 12.0, "t": "Feb 14 11:51", "venue": "Harvey Oak Supply Store", "note": "10x milk"}
+{"kind": "tax", "who": "sales tax", "amount": 0.73, "t": "Feb 14 11:51", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Tony Stewart", "amount": 8.0, "t": "Feb 14 11:51", "venue": "Harvey Oak Supply Store", "note": "4x coffee_beans"}
+{"kind": "duty", "who": "Jennifer Moore", "amount": 1.2, "t": "Feb 14 11:53", "note": "park.pick_litter x1"}
+{"kind": "duty", "who": "Hua Lai", "amount": 0.6, "t": "Feb 14 11:53", "venue": "The Willows Market and Pharmacy", "note": "market.ring_up x1"}
+{"kind": "duty", "who": "Carlos Gomez", "amount": 1.2, "t": "Feb 14 11:53", "note": "library.shelve_books x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 11:53", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Jennifer Moore", "amount": 1.2, "t": "Feb 14 11:58", "note": "park.pick_litter x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.8, "t": "Feb 14 11:59", "venue": "Harvey Oak Supply Store", "note": "grocery.tidy_aisle x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.27, "t": "Feb 14 12:02", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Andrea Lovetro", "amount": 3.0, "t": "Feb 14 12:02", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 12:02", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "tax", "who": "sales tax", "amount": 1.1, "t": "Feb 14 12:03", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Tony Stewart", "amount": 12.0, "t": "Feb 14 12:03", "venue": "Harvey Oak Supply Store", "note": "6x coffee_beans"}
+{"kind": "duty", "who": "Jennifer Moore", "amount": 1.2, "t": "Feb 14 12:03", "note": "park.pick_litter x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 12:04", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 12:06", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "fee", "who": "Eugene Middlebrooks", "amount": 8.0, "t": "Feb 14 12:07", "note": "clinic fee"}
+{"kind": "duty", "who": "Jennifer Moore", "amount": 1.2, "t": "Feb 14 12:08", "note": "park.pick_litter x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 12:08", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 12:10", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 12:13", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Jennifer Moore", "amount": 1.2, "t": "Feb 14 12:13", "note": "park.pick_litter x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.27, "t": "Feb 14 12:14", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Adam Smith", "amount": 3.0, "t": "Feb 14 12:14", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 12:15", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.27, "t": "Feb 14 12:15", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Sam Moore", "amount": 3.0, "t": "Feb 14 12:15", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 12:17", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Jennifer Moore", "amount": 1.2, "t": "Feb 14 12:19", "note": "park.pick_litter x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 12:19", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 12:21", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 12:22", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Latoya Williams", "amount": 0.2, "t": "Feb 14 12:22", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 12:23", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Latoya Williams", "amount": 0.2, "t": "Feb 14 12:23", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 12:23", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Jennifer Moore", "amount": 1.2, "t": "Feb 14 12:24", "note": "park.pick_litter x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 12:26", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.27, "t": "Feb 14 12:26", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Nair Viggiani", "amount": 3.0, "t": "Feb 14 12:26", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 12:28", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Jennifer Moore", "amount": 1.2, "t": "Feb 14 12:29", "note": "park.pick_litter x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 12:30", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 12:32", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.28, "t": "Feb 14 12:33", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Hailey Johnson", "amount": 3.0, "t": "Feb 14 12:33", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "duty", "who": "Jennifer Moore", "amount": 1.2, "t": "Feb 14 12:34", "note": "park.pick_litter x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 12:34", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.27, "t": "Feb 14 12:36", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Eddy Lin", "amount": 3.0, "t": "Feb 14 12:36", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 12:36", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 12:39", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 12:39", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Eugene Johnson", "amount": 0.2, "t": "Feb 14 12:39", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "duty", "who": "Jennifer Moore", "amount": 1.2, "t": "Feb 14 12:39", "note": "park.pick_litter x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 12:41", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 12:43", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "fee", "who": "Diane Bosse", "amount": 8.0, "t": "Feb 14 12:43", "note": "clinic fee"}
+{"kind": "duty", "who": "Jennifer Moore", "amount": 1.2, "t": "Feb 14 12:44", "note": "park.pick_litter x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 12:45", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 12:47", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Jennifer Moore", "amount": 1.2, "t": "Feb 14 12:50", "note": "park.pick_litter x1"}
+{"kind": "duty", "who": "Lesbia Martinez", "amount": 1.0, "t": "Feb 14 12:53", "venue": "The Rose and Crown Pub", "note": "pub.clean_tables x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.27, "t": "Feb 14 12:55", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Soo-jin Park", "amount": 3.0, "t": "Feb 14 12:55", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "duty", "who": "Jennifer Moore", "amount": 1.2, "t": "Feb 14 12:55", "note": "park.pick_litter x1"}
+{"kind": "duty", "who": "Jennifer Moore", "amount": 1.2, "t": "Feb 14 13:00", "note": "park.pick_litter x1"}
+{"kind": "duty", "who": "Lesbia Martinez", "amount": 0.8, "t": "Feb 14 13:01", "venue": "The Rose and Crown Pub", "note": "pub.serve_order x1"}
+{"kind": "duty", "who": "Lesbia Martinez", "amount": 0.8, "t": "Feb 14 13:04", "venue": "The Rose and Crown Pub", "note": "pub.serve_order x1"}
+{"kind": "duty", "who": "Jennifer Moore", "amount": 1.2, "t": "Feb 14 13:05", "note": "park.pick_litter x1"}
+{"kind": "duty", "who": "Lesbia Martinez", "amount": 0.8, "t": "Feb 14 13:07", "venue": "The Rose and Crown Pub", "note": "pub.serve_order x1"}
+{"kind": "duty", "who": "Klaus Mueller", "amount": 0.8, "t": "Feb 14 13:08", "venue": "Harvey Oak Supply Store", "note": "grocery.tidy_aisle x1"}
+{"kind": "duty", "who": "Lesbia Martinez", "amount": 0.8, "t": "Feb 14 13:09", "venue": "The Rose and Crown Pub", "note": "pub.serve_order x1"}
+{"kind": "duty", "who": "Jennifer Moore", "amount": 1.2, "t": "Feb 14 13:10", "note": "park.pick_litter x1"}
+{"kind": "duty", "who": "Lesbia Martinez", "amount": 0.8, "t": "Feb 14 13:11", "venue": "The Rose and Crown Pub", "note": "pub.serve_order x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 13:17", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 13:21", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 13:25", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Lesbia Martinez", "amount": 0.8, "t": "Feb 14 13:25", "venue": "The Rose and Crown Pub", "note": "pub.serve_order x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 13:28", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.87, "t": "Feb 14 13:30", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Adam Smith", "amount": 12.0, "t": "Feb 14 13:30", "venue": "Harvey Oak Supply Store", "note": "10x milk"}
+{"kind": "tax", "who": "sales tax", "amount": 0.87, "t": "Feb 14 13:30", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Adam Smith", "amount": 12.0, "t": "Feb 14 13:30", "venue": "Harvey Oak Supply Store", "note": "6x coffee_beans"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 13:32", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.25, "t": "Feb 14 13:33", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Eugene Middlebrooks", "amount": 3.6, "t": "Feb 14 13:33", "venue": "The Willows Market and Pharmacy", "note": "3x milk"}
+{"kind": "tax", "who": "sales tax", "amount": 0.22, "t": "Feb 14 13:34", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Latoya Williams", "amount": 3.0, "t": "Feb 14 13:34", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 0.17, "t": "Feb 14 13:34", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Eugene Middlebrooks", "amount": 2.4, "t": "Feb 14 13:34", "venue": "The Willows Market and Pharmacy", "note": "2x milk"}
+{"kind": "duty", "who": "Jenny Rivera", "amount": 0.6, "t": "Feb 14 13:35", "venue": "The Willows Market and Pharmacy", "note": "market.ring_up x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.8, "t": "Feb 14 13:36", "venue": "Harvey Oak Supply Store", "note": "grocery.tidy_aisle x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 13:36", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 13:39", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 13:40", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 13:41", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Jenny Rivera", "amount": 0.8, "t": "Feb 14 13:42", "venue": "The Willows Market and Pharmacy", "note": "market.tidy_aisle x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 13:43", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Hua Lai", "amount": 0.6, "t": "Feb 14 13:45", "venue": "The Willows Market and Pharmacy", "note": "market.ring_up x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 13:47", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Jenny Rivera", "amount": 0.6, "t": "Feb 14 13:48", "venue": "The Willows Market and Pharmacy", "note": "market.ring_up x1"}
+{"kind": "duty", "who": "Hua Lai", "amount": 0.6, "t": "Feb 14 13:48", "venue": "The Willows Market and Pharmacy", "note": "market.ring_up x1"}
+{"kind": "duty", "who": "Lesbia Martinez", "amount": 0.8, "t": "Feb 14 13:48", "venue": "The Rose and Crown Pub", "note": "pub.serve_order x1"}
+{"kind": "duty", "who": "Jenny Rivera", "amount": 0.6, "t": "Feb 14 13:50", "venue": "The Willows Market and Pharmacy", "note": "market.ring_up x1"}
+{"kind": "duty", "who": "Hua Lai", "amount": 0.6, "t": "Feb 14 13:50", "venue": "The Willows Market and Pharmacy", "note": "market.ring_up x1"}
+{"kind": "duty", "who": "Lesbia Martinez", "amount": 0.8, "t": "Feb 14 13:50", "venue": "The Rose and Crown Pub", "note": "pub.serve_order x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 13:51", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Jenny Rivera", "amount": 0.6, "t": "Feb 14 13:52", "venue": "The Willows Market and Pharmacy", "note": "market.ring_up x1"}
+{"kind": "duty", "who": "Hua Lai", "amount": 0.6, "t": "Feb 14 13:52", "venue": "The Willows Market and Pharmacy", "note": "market.ring_up x1"}
+{"kind": "duty", "who": "Lesbia Martinez", "amount": 0.8, "t": "Feb 14 13:53", "venue": "The Rose and Crown Pub", "note": "pub.serve_order x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.37, "t": "Feb 14 13:53", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Carmen Ortiz", "amount": 5.0, "t": "Feb 14 13:53", "venue": "Harvey Oak Supply Store", "note": "10x eggs"}
+{"kind": "tax", "who": "sales tax", "amount": 1.08, "t": "Feb 14 13:53", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Carmen Ortiz", "amount": 15.0, "t": "Feb 14 13:53", "venue": "Harvey Oak Supply Store", "note": "10x bread"}
+{"kind": "tax", "who": "sales tax", "amount": 1.15, "t": "Feb 14 13:53", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Carmen Ortiz", "amount": 16.0, "t": "Feb 14 13:53", "venue": "Harvey Oak Supply Store", "note": "8x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 13:54", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Latoya Williams", "amount": 0.2, "t": "Feb 14 13:54", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "t": "Feb 14 13:54", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Latoya Williams", "amount": 0.2, "t": "Feb 14 13:54", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "duty", "who": "Jenny Rivera", "amount": 0.6, "t": "Feb 14 13:54", "venue": "The Willows Market and Pharmacy", "note": "market.ring_up x1"}
+{"kind": "duty", "who": "Hua Lai", "amount": 0.6, "t": "Feb 14 13:54", "venue": "The Willows Market and Pharmacy", "note": "market.ring_up x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 13:55", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Lesbia Martinez", "amount": 0.8, "t": "Feb 14 13:55", "venue": "The Rose and Crown Pub", "note": "pub.serve_order x1"}
+{"kind": "duty", "who": "Jenny Rivera", "amount": 0.6, "t": "Feb 14 13:56", "venue": "The Willows Market and Pharmacy", "note": "market.ring_up x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 13:57", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Amber Williamson", "amount": 0.2, "t": "Feb 14 13:57", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 13:59", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Jenny Rivera", "amount": 0.6, "t": "Feb 14 13:59", "venue": "The Willows Market and Pharmacy", "note": "market.ring_up x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.21, "t": "Feb 14 14:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Sam Moore", "amount": 3.0, "t": "Feb 14 14:00", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 14:02", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.22, "t": "Feb 14 14:05", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Jenny Rivera", "amount": 3.0, "t": "Feb 14 14:05", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.8, "t": "Feb 14 14:06", "venue": "Harvey Oak Supply Store", "note": "grocery.tidy_aisle x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 14:06", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 14:09", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 14:10", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 14:11", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 14:13", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 14:14", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "fee", "who": "Yuriko Yamamoto", "amount": 8.0, "t": "Feb 14 14:17", "note": "clinic fee"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 14:17", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "fee", "who": "Wolfgang Schulz", "amount": 8.0, "t": "Feb 14 14:17", "note": "clinic fee"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 14:21", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 14:24", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.22, "t": "Feb 14 14:26", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Amber Williamson", "amount": 3.0, "t": "Feb 14 14:26", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 1.08, "t": "Feb 14 14:27", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Jason O'Brien", "amount": 15.0, "t": "Feb 14 14:27", "venue": "Harvey Oak Supply Store", "note": "10x bread"}
+{"kind": "tax", "who": "sales tax", "amount": 0.87, "t": "Feb 14 14:27", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Jason O'Brien", "amount": 12.0, "t": "Feb 14 14:27", "venue": "Harvey Oak Supply Store", "note": "10x milk"}
+{"kind": "tax", "who": "sales tax", "amount": 0.57, "t": "Feb 14 14:27", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Jason O'Brien", "amount": 8.0, "t": "Feb 14 14:27", "venue": "Harvey Oak Supply Store", "note": "4x coffee_beans"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 14:28", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.22, "t": "Feb 14 14:30", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Soo-jin Park", "amount": 3.0, "t": "Feb 14 14:30", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 14:32", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 14:36", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.22, "t": "Feb 14 14:38", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Carl Demissie", "amount": 3.0, "t": "Feb 14 14:38", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "t": "Feb 14 14:45", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Latoya Williams", "amount": 0.2, "t": "Feb 14 14:45", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "fee", "who": "Eugene Johnson", "amount": 8.0, "t": "Feb 14 14:47", "note": "clinic fee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.22, "t": "Feb 14 14:48", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Diane Bosse", "amount": 3.0, "t": "Feb 14 14:48", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 0.22, "t": "Feb 14 14:53", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Sharon Antle", "amount": 3.0, "t": "Feb 14 14:53", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "duty", "who": "Jennifer Moore", "amount": 1.2, "t": "Feb 14 15:06", "note": "park.pick_litter x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.21, "t": "Feb 14 15:06", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Latoya Williams", "amount": 3.0, "t": "Feb 14 15:06", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 15:06", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Tamara Taylor", "amount": 0.2, "t": "Feb 14 15:06", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "duty", "who": "Ryan Park", "amount": 2.0, "t": "Feb 14 15:06", "note": "lecture.prepare_lesson x1"}
+{"kind": "duty", "who": "Ryan Park", "amount": 2.0, "t": "Feb 14 15:13", "note": "lecture.prepare_lesson x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.21, "t": "Feb 14 15:16", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Tamara Taylor", "amount": 3.0, "t": "Feb 14 15:16", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 15:16", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Tamara Taylor", "amount": 0.2, "t": "Feb 14 15:16", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "t": "Feb 14 15:16", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Tamara Taylor", "amount": 0.2, "t": "Feb 14 15:16", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "duty", "who": "Ryan Park", "amount": 2.0, "t": "Feb 14 15:19", "note": "lecture.prepare_lesson x1"}
+{"kind": "duty", "who": "Ryan Park", "amount": 2.0, "t": "Feb 14 15:25", "note": "lecture.prepare_lesson x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 15:26", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Latoya Williams", "amount": 0.2, "t": "Feb 14 15:26", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "duty", "who": "Ryan Park", "amount": 2.0, "t": "Feb 14 15:31", "note": "lecture.prepare_lesson x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.36, "t": "Feb 14 15:34", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Lesbia Martinez", "amount": 5.0, "t": "Feb 14 15:34", "venue": "Harvey Oak Supply Store", "note": "10x eggs"}
+{"kind": "tax", "who": "sales tax", "amount": 1.08, "t": "Feb 14 15:34", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Lesbia Martinez", "amount": 15.0, "t": "Feb 14 15:34", "venue": "Harvey Oak Supply Store", "note": "10x bread"}
+{"kind": "duty", "who": "Jenny Rivera", "amount": 4.05, "t": "Feb 14 15:36", "venue": "The Willows Market and Pharmacy", "note": "market.stock_shelf x115.0"}
+{"kind": "duty", "who": "Ryan Park", "amount": 2.0, "t": "Feb 14 15:37", "note": "lecture.prepare_lesson x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.8, "t": "Feb 14 15:43", "venue": "Harvey Oak Supply Store", "note": "grocery.tidy_aisle x1"}
+{"kind": "duty", "who": "Ryan Park", "amount": 2.0, "t": "Feb 14 15:43", "note": "lecture.prepare_lesson x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "t": "Feb 14 15:44", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Tamara Taylor", "amount": 0.2, "t": "Feb 14 15:44", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "duty", "who": "Ryan Park", "amount": 2.0, "t": "Feb 14 15:50", "note": "lecture.prepare_lesson x1"}
+{"kind": "duty", "who": "Carlos Gomez", "amount": 1.2, "t": "Feb 14 15:50", "note": "library.shelve_books x1"}
+{"kind": "duty", "who": "Ryan Park", "amount": 2.0, "t": "Feb 14 15:56", "note": "lecture.prepare_lesson x1"}
+{"kind": "duty", "who": "Carlos Gomez", "amount": 1.2, "t": "Feb 14 15:59", "note": "library.shelve_books x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.21, "t": "Feb 14 16:00", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Ayesha Khan", "amount": 15.0, "t": "Feb 14 16:00", "venue": "Harvey Oak Supply Store", "note": "10x bread"}
+{"kind": "tax", "who": "sales tax", "amount": 0.16, "t": "Feb 14 16:00", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Ayesha Khan", "amount": 12.0, "t": "Feb 14 16:00", "venue": "Harvey Oak Supply Store", "note": "10x milk"}
+{"kind": "tax", "who": "sales tax", "amount": 0.06, "t": "Feb 14 16:01", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Sharon Antle", "amount": 5.0, "t": "Feb 14 16:01", "venue": "The Willows Market and Pharmacy", "note": "10x eggs"}
+{"kind": "tax", "who": "sales tax", "amount": 0.2, "t": "Feb 14 16:01", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Sharon Antle", "amount": 15.0, "t": "Feb 14 16:01", "venue": "The Willows Market and Pharmacy", "note": "10x bread"}
+{"kind": "tax", "who": "sales tax", "amount": 0.1, "t": "Feb 14 16:01", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Sharon Antle", "amount": 7.2, "t": "Feb 14 16:01", "venue": "The Willows Market and Pharmacy", "note": "6x milk"}
+{"kind": "tax", "who": "sales tax", "amount": 0.07, "t": "Feb 14 16:26", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Soo-jin Park", "amount": 5.0, "t": "Feb 14 16:26", "venue": "The Willows Market and Pharmacy", "note": "10x eggs"}
+{"kind": "tax", "who": "sales tax", "amount": 0.2, "t": "Feb 14 16:26", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Soo-jin Park", "amount": 15.0, "t": "Feb 14 16:26", "venue": "The Willows Market and Pharmacy", "note": "10x bread"}
+{"kind": "tax", "who": "sales tax", "amount": 0.14, "t": "Feb 14 16:26", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Soo-jin Park", "amount": 10.8, "t": "Feb 14 16:26", "venue": "The Willows Market and Pharmacy", "note": "9x milk"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 16:27", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 16:30", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "fee", "who": "Maria Urban", "amount": 8.0, "t": "Feb 14 16:40", "note": "clinic fee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "t": "Feb 14 16:41", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Tamara Taylor", "amount": 0.2, "t": "Feb 14 16:41", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.06, "t": "Feb 14 16:43", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Abigail Chen", "amount": 5.0, "t": "Feb 14 16:43", "venue": "The Willows Market and Pharmacy", "note": "10x eggs"}
+{"kind": "tax", "who": "sales tax", "amount": 0.2, "t": "Feb 14 16:43", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Abigail Chen", "amount": 15.0, "t": "Feb 14 16:43", "venue": "The Willows Market and Pharmacy", "note": "10x bread"}
+{"kind": "tax", "who": "sales tax", "amount": 0.13, "t": "Feb 14 16:43", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Abigail Chen", "amount": 9.6, "t": "Feb 14 16:43", "venue": "The Willows Market and Pharmacy", "note": "8x milk"}
+{"kind": "tax", "who": "sales tax", "amount": 0.06, "t": "Feb 14 16:43", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Ingrid Larsen", "amount": 4.5, "t": "Feb 14 16:43", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "t": "Feb 14 16:44", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Arthur Burton", "amount": 0.2, "t": "Feb 14 16:44", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "sale", "who": "Jane Moreno", "amount": 0.2, "t": "Feb 14 16:44", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 16:47", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 16:51", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 16:54", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 14 16:56", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Tamara Taylor", "amount": 3.0, "t": "Feb 14 16:56", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "sale", "who": "Tamara Taylor", "amount": 0.2, "t": "Feb 14 16:56", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.06, "t": "Feb 14 16:56", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Theo Nakamura", "amount": 4.5, "t": "Feb 14 16:56", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.06, "t": "Feb 14 16:58", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Cledith Hardin", "amount": 4.5, "t": "Feb 14 16:58", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 16:58", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 17:02", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 14 17:03", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Jane Moreno", "amount": 3.0, "t": "Feb 14 17:03", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "sale", "who": "Jane Moreno", "amount": 0.2, "t": "Feb 14 17:03", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 14 17:03", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 4.5, "t": "Feb 14 17:03", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 14 17:05", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Dalton Robinson", "amount": 5.0, "t": "Feb 14 17:05", "venue": "The Willows Market and Pharmacy", "note": "10x eggs"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 17:05", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 14 17:10", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Eugene Johnson", "amount": 4.5, "t": "Feb 14 17:10", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 14 17:10", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Diane Bosse", "amount": 4.5, "t": "Feb 14 17:10", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 17:13", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 17:17", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "sale", "who": "Latoya Williams", "amount": 0.2, "t": "Feb 14 17:19", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 17:21", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "fee", "who": "Rajiv Patel", "amount": 8.0, "t": "Feb 14 17:22", "note": "clinic fee"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.8, "t": "Feb 14 17:24", "venue": "Harvey Oak Supply Store", "note": "grocery.tidy_aisle x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 17:25", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "sale", "who": "Tamara Taylor", "amount": 0.2, "t": "Feb 14 17:26", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 17:29", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 1.56, "t": "Feb 14 17:30", "venue": "Harvey Oak Supply Store", "note": "grocery.stock_shelf x32.0"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 14 17:31", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Ryan Park", "amount": 3.0, "t": "Feb 14 17:31", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 17:33", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 17:33", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 17:35", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 17:36", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 17:37", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 17:39", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 17:42", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 14 17:42", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Victor Rosales", "amount": 3.0, "t": "Feb 14 17:42", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 17:43", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 17:44", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 17:46", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 17:47", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 14 17:48", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "John Lin", "amount": 3.0, "t": "Feb 14 17:48", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 14 17:48", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Michael Poirier", "amount": 3.0, "t": "Feb 14 17:48", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 17:48", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 17:50", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Jenny Rivera", "amount": 0.8, "t": "Feb 14 17:52", "venue": "The Willows Market and Pharmacy", "note": "market.tidy_aisle x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 17:53", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 17:55", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Jenny Rivera", "amount": 0.8, "t": "Feb 14 17:57", "venue": "The Willows Market and Pharmacy", "note": "market.tidy_aisle x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 14 17:58", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Theo Nakamura", "amount": 3.0, "t": "Feb 14 17:58", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "duty", "who": "Jenny Rivera", "amount": 0.8, "t": "Feb 14 18:01", "venue": "The Willows Market and Pharmacy", "note": "market.tidy_aisle x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 14 18:01", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Amilcar Rosales", "amount": 4.5, "t": "Feb 14 18:01", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "duty", "who": "Rafael Ibarra", "amount": 0.8, "t": "Feb 14 18:02", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 14 18:03", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Tony Stewart", "amount": 4.5, "t": "Feb 14 18:03", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 14 18:05", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Wolfgang Schulz", "amount": 5.0, "t": "Feb 14 18:05", "venue": "The Willows Market and Pharmacy", "note": "10x eggs"}
+{"kind": "duty", "who": "Rafael Ibarra", "amount": 0.8, "t": "Feb 14 18:06", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Jenny Rivera", "amount": 0.6, "t": "Feb 14 18:06", "venue": "The Willows Market and Pharmacy", "note": "market.ring_up x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 14 18:08", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Tamara Taylor", "amount": 4.5, "t": "Feb 14 18:08", "venue": "Hobbs Cafe", "note": "1x sandwiches"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 14 18:08", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Eugene Johnson", "amount": 3.0, "t": "Feb 14 18:08", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "duty", "who": "Jenny Rivera", "amount": 0.6, "t": "Feb 14 18:08", "venue": "The Willows Market and Pharmacy", "note": "market.ring_up x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 14 18:08", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Tom Moreno", "amount": 5.0, "t": "Feb 14 18:08", "venue": "Harvey Oak Supply Store", "note": "10x eggs"}
+{"kind": "tax", "who": "sales tax", "amount": 0.15, "t": "Feb 14 18:08", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Tom Moreno", "amount": 15.0, "t": "Feb 14 18:08", "venue": "Harvey Oak Supply Store", "note": "10x bread"}
+{"kind": "tax", "who": "sales tax", "amount": 0.2, "t": "Feb 14 18:08", "venue": "Harvey Oak Supply Store"}
+{"kind": "sale", "who": "Tom Moreno", "amount": 20.0, "t": "Feb 14 18:08", "venue": "Harvey Oak Supply Store", "note": "10x coffee_beans"}
+{"kind": "duty", "who": "Rafael Ibarra", "amount": 0.8, "t": "Feb 14 18:09", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.8, "t": "Feb 14 18:10", "venue": "Harvey Oak Supply Store", "note": "grocery.tidy_aisle x1"}
+{"kind": "duty", "who": "Jenny Rivera", "amount": 0.6, "t": "Feb 14 18:10", "venue": "The Willows Market and Pharmacy", "note": "market.ring_up x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 18:11", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Rafael Ibarra", "amount": 0.8, "t": "Feb 14 18:12", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 14 18:14", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "John Lin", "amount": 5.0, "t": "Feb 14 18:14", "venue": "The Willows Market and Pharmacy", "note": "10x eggs"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 18:15", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 18:15", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Rafael Ibarra", "amount": 0.8, "t": "Feb 14 18:16", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 18:17", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Jenny Rivera", "amount": 3.9, "t": "Feb 14 18:18", "venue": "The Willows Market and Pharmacy", "note": "market.stock_shelf x110.0"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 18:19", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Rafael Ibarra", "amount": 0.8, "t": "Feb 14 18:19", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "duty", "who": "Cledith Hardin", "amount": 0.6, "t": "Feb 14 18:19", "venue": "Harvey Oak Supply Store", "note": "grocery.ring_up x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.6, "t": "Feb 14 18:23", "venue": "Hobbs Cafe", "note": "cafe.serve_order x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.6, "t": "Feb 14 18:25", "venue": "Hobbs Cafe", "note": "cafe.serve_order x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.6, "t": "Feb 14 18:27", "venue": "Hobbs Cafe", "note": "cafe.serve_order x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.6, "t": "Feb 14 18:29", "venue": "Hobbs Cafe", "note": "cafe.serve_order x1"}
+{"kind": "fee", "who": "Sharon Antle", "amount": 15.0, "t": "Feb 14 18:31", "note": "clinic fee"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.6, "t": "Feb 14 18:31", "venue": "Hobbs Cafe", "note": "cafe.serve_order x1"}
+{"kind": "duty", "who": "Jenny Rivera", "amount": 0.8, "t": "Feb 14 18:33", "venue": "The Willows Market and Pharmacy", "note": "market.tidy_aisle x1"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.6, "t": "Feb 14 18:33", "venue": "Hobbs Cafe", "note": "cafe.serve_order x1"}
+{"kind": "fee", "who": "Job Amely", "amount": 8.0, "t": "Feb 14 18:35", "note": "clinic fee"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.6, "t": "Feb 14 18:36", "venue": "Hobbs Cafe", "note": "cafe.serve_order x1"}
+{"kind": "duty", "who": "Jenny Rivera", "amount": 0.6, "t": "Feb 14 18:37", "venue": "The Willows Market and Pharmacy", "note": "market.ring_up x1"}
+{"kind": "sale", "who": "Latoya Williams", "amount": 0.2, "t": "Feb 14 18:38", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "sale", "who": "Latoya Williams", "amount": 0.2, "t": "Feb 14 18:38", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 14 18:39", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Soo-jin Park", "amount": 3.0, "t": "Feb 14 18:39", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "duty", "who": "Jenny Rivera", "amount": 0.6, "t": "Feb 14 18:39", "venue": "The Willows Market and Pharmacy", "note": "market.ring_up x1"}
+{"kind": "duty", "who": "Jenny Rivera", "amount": 0.6, "t": "Feb 14 18:41", "venue": "The Willows Market and Pharmacy", "note": "market.ring_up x1"}
+{"kind": "duty", "who": "Jenny Rivera", "amount": 0.6, "t": "Feb 14 18:44", "venue": "The Willows Market and Pharmacy", "note": "market.ring_up x1"}
+{"kind": "duty", "who": "Jenny Rivera", "amount": 0.6, "t": "Feb 14 18:46", "venue": "The Willows Market and Pharmacy", "note": "market.ring_up x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 14 18:46", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Chad Kibler", "amount": 3.0, "t": "Feb 14 18:46", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.8, "t": "Feb 14 19:02", "venue": "Hobbs Cafe", "note": "cafe.clean_table x1"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 14 19:05", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Hailey Johnson", "amount": 5.0, "t": "Feb 14 19:05", "venue": "The Willows Market and Pharmacy", "note": "10x eggs"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 14 19:13", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Victor Rosales", "amount": 3.0, "t": "Feb 14 19:13", "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "fee", "who": "Jeanne Love", "amount": 10.0, "t": "Feb 14 19:40", "note": "clinic fee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 14 19:50", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Diane Bosse", "amount": 5.0, "t": "Feb 14 19:50", "venue": "The Willows Market and Pharmacy", "note": "10x eggs"}
+{"kind": "tax", "who": "sales tax", "amount": 0.15, "t": "Feb 14 19:50", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Diane Bosse", "amount": 15.0, "t": "Feb 14 19:50", "venue": "The Willows Market and Pharmacy", "note": "10x bread"}
+{"kind": "tax", "who": "sales tax", "amount": 0.09, "t": "Feb 14 19:50", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Diane Bosse", "amount": 8.4, "t": "Feb 14 19:50", "venue": "The Willows Market and Pharmacy", "note": "7x milk"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 14 19:54", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 5.0, "t": "Feb 14 19:54", "venue": "The Willows Market and Pharmacy", "note": "10x eggs"}
+{"kind": "tax", "who": "sales tax", "amount": 0.15, "t": "Feb 14 19:54", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 15.0, "t": "Feb 14 19:54", "venue": "The Willows Market and Pharmacy", "note": "10x bread"}
+{"kind": "tax", "who": "sales tax", "amount": 0.12, "t": "Feb 14 19:54", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 12.0, "t": "Feb 14 19:54", "venue": "The Willows Market and Pharmacy", "note": "10x milk"}
+{"kind": "sale", "who": "Eugene Johnson", "amount": 0.2, "t": "Feb 14 20:02", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 14 20:03", "venue": "The Rose and Crown Pub"}
+{"kind": "sale", "who": "Carlos Gomez", "amount": 3.5, "t": "Feb 14 20:03", "venue": "The Rose and Crown Pub", "note": "1x beer"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 14 20:03", "venue": "The Rose and Crown Pub"}
+{"kind": "sale", "who": "Carlos Gomez", "amount": 2.25, "t": "Feb 14 20:03", "venue": "The Rose and Crown Pub", "note": "0.5x wine"}
+{"kind": "fee", "who": "Job Amely", "amount": 10.0, "t": "Feb 14 20:05", "note": "clinic fee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "t": "Feb 14 20:16", "venue": "The Rose and Crown Pub"}
+{"kind": "sale", "who": "Carmen Ortiz", "amount": 3.5, "t": "Feb 14 20:16", "venue": "The Rose and Crown Pub", "note": "1x beer"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 20:16", "venue": "The Rose and Crown Pub"}
+{"kind": "sale", "who": "Carmen Ortiz", "amount": 2.25, "t": "Feb 14 20:16", "venue": "The Rose and Crown Pub", "note": "0.5x wine"}
+{"kind": "duty", "who": "Eugene Johnson", "amount": 0.6, "t": "Feb 14 20:20", "venue": "Hobbs Cafe", "note": "cafe.serve_order x1"}
+{"kind": "sale", "who": "Carlos Gomez", "amount": 0.2, "t": "Feb 14 20:21", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.04, "t": "Feb 14 20:22", "venue": "The Rose and Crown Pub"}
+{"kind": "sale", "who": "Jeanne Love", "amount": 3.5, "t": "Feb 14 20:22", "venue": "The Rose and Crown Pub", "note": "1x beer"}
+{"kind": "tax", "who": "sales tax", "amount": 0.02, "t": "Feb 14 20:22", "venue": "The Rose and Crown Pub"}
+{"kind": "sale", "who": "Jeanne Love", "amount": 2.25, "t": "Feb 14 20:22", "venue": "The Rose and Crown Pub", "note": "0.5x wine"}
+{"kind": "sale", "who": "Victor Rosales", "amount": 0.2, "t": "Feb 14 20:48", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "t": "Feb 14 20:52", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Carlos Gomez", "amount": 0.2, "t": "Feb 14 20:52", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "sale", "who": "Carlos Gomez", "amount": 0.2, "t": "Feb 14 20:52", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "sale", "who": "Victor Rosales", "amount": 0.2, "t": "Feb 14 21:14", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "fee", "who": "Ana Abad", "amount": 8.0, "t": "Feb 14 21:40", "note": "clinic fee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.05, "t": "Feb 14 21:40", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Amilcar Rosales", "amount": 5.0, "t": "Feb 14 21:40", "venue": "The Willows Market and Pharmacy", "note": "10x eggs"}
+{"kind": "tax", "who": "sales tax", "amount": 0.15, "t": "Feb 14 21:40", "venue": "The Willows Market and Pharmacy"}
+{"kind": "sale", "who": "Amilcar Rosales", "amount": 15.0, "t": "Feb 14 21:40", "venue": "The Willows Market and Pharmacy", "note": "10x bread"}
+{"kind": "fee", "who": "Tony Stewart", "amount": 8.0, "t": "Feb 14 21:57", "note": "clinic fee"}
+{"kind": "tax", "who": "draw tax", "amount": 14.48, "t": "Feb 14 22:00", "venue": "Hobbs Cafe"}
+{"kind": "owner_draw", "who": "Isabella Rodriguez", "amount": 130.27, "t": "Feb 14 22:00", "venue": "Hobbs Cafe"}
+{"kind": "tax", "who": "draw tax", "amount": 17.19, "t": "Feb 14 22:00", "venue": "Harvey Oak Supply Store"}
+{"kind": "owner_draw", "who": "Carmen Ortiz", "amount": 154.76, "t": "Feb 14 22:00", "venue": "Harvey Oak Supply Store"}
+{"kind": "tax", "who": "draw tax", "amount": 9.56, "t": "Feb 14 22:00", "venue": "The Willows Market and Pharmacy"}
+{"kind": "owner_draw", "who": "John Lin", "amount": 86.0, "t": "Feb 14 22:00", "venue": "The Willows Market and Pharmacy"}
+{"kind": "fee", "who": "Jane Moreno", "amount": 8.0, "t": "Feb 14 22:00", "note": "clinic fee"}
+{"kind": "fee", "who": "Jason O'Brien", "amount": 8.0, "t": "Feb 14 22:27", "note": "clinic fee"}
+{"kind": "fee", "who": "Wolfgang Schulz", "amount": 10.0, "t": "Feb 14 22:31", "note": "clinic fee"}
+{"kind": "fee", "who": "Carl Demissie", "amount": 8.0, "t": "Feb 14 22:33", "note": "clinic fee"}
+{"kind": "fee", "who": "Chad Kibler", "amount": 8.0, "t": "Feb 14 22:34", "note": "clinic fee"}
+{"kind": "fee", "who": "Lesbia Martinez", "amount": 10.0, "t": "Feb 14 22:35", "note": "clinic fee"}
+{"kind": "fee", "who": "Yuriko Yamamoto", "amount": 8.0, "t": "Feb 14 23:02", "note": "clinic fee"}
+{"kind": "fee", "who": "Mei Lin", "amount": 8.0, "t": "Feb 14 23:06", "note": "clinic fee"}
+{"kind": "fee", "who": "Jenny Rivera", "amount": 8.0, "t": "Feb 14 23:08", "note": "clinic fee"}
+{"kind": "sale", "who": "Latoya Williams", "amount": 0.2, "t": "Feb 14 23:33", "venue": "Hobbs Cafe", "note": "0.1x coffee_beans"}
+{"kind": "fee", "who": "Ingrid Larsen", "amount": 8.0, "t": "Feb 14 23:40", "note": "clinic fee"}
+{"kind": "fee", "who": "Ana Abad", "amount": 10.0, "t": "Feb 14 23:44", "note": "clinic fee"}
+{"kind": "fee", "who": "Diane Bosse", "amount": 8.0, "t": "Feb 14 23:58", "note": "clinic fee"}

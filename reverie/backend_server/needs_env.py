@@ -18,9 +18,12 @@ import os
 import re
 import time
 
-ENABLED = os.environ.get("GA_NEEDS_V2", "0") == "1"
-USE_LAYA = os.environ.get("GA_NEEDS_LAYA", "0") == "1"
+ENABLED = os.environ.get("GA_NEEDS_V2", "1") == "1"
+USE_LAYA = os.environ.get("GA_NEEDS_LAYA", "1") == "1"
 LOG_ENABLED = os.environ.get("GA_NEEDS_LOG", "1") == "1"
+# The v9 Laya server (need intent + replan gate heads); a transient CPU server in the A/B runs. If it is down the
+# keyword fallback / re-plan path is used, so a missing server never breaks the sim.
+DEFAULT_NEEDS_LAYA_URL = "http://127.0.0.1:8020"
 
 # Laya answer options (stable slugs); the instruction text carries the meaning.
 INTENT_OPTIONS = [
@@ -110,7 +113,7 @@ def laya_intent(persona, desc, address):
         key = ((desc or "")[:200], (address or "")[:120])
         if key in _intent_cache:
             return _intent_cache[key]
-        url = os.environ.get("GA_NEEDS_LAYA_URL", L.LAYA_URL).rstrip("/")
+        url = os.environ.get("GA_NEEDS_LAYA_URL", DEFAULT_NEEDS_LAYA_URL).rstrip("/")
         body = {"model": "laya-v3",
                 "state": {"who": persona.name,
                           "situation": f"{persona.name} is doing: {desc[:300]}\nLocation: {address[:120]}"},
@@ -447,6 +450,94 @@ def _charge(persona, economy, fee, now):
     return paid
 
 
+DASH_AT = 10.0                  # bladder below this and the agent drops everything for a toilet
+DASH_COOLDOWN_MIN = 25
+
+
+def _nearest_toilet(persona, maze):
+    """Own home's toilet or a public restroom (clinic / police / fire / gazette) - the closest one."""
+    try:
+        me = tuple(persona.scratch.curr_tile)
+        best = None
+        for a, tiles in maze.address_tiles.items():
+            if not a.endswith(":toilet") or not tiles:
+                continue
+            if "'s " in a and f"{persona.name}'s " not in a:
+                continue                                    # someone else's home
+            if "Co-living" in a or "Willow Court" in a:
+                continue                                    # other residents' flats
+            tile = sorted(tiles)[0]
+            d = abs(tile[0] - me[0]) + abs(tile[1] - me[1])
+            if best is None or d < best[0]:
+                best = (d, a, tile)
+        return (best[1], best[2]) if best else (None, None)
+    except Exception:
+        return None, None
+
+
+def restroom_dash(persona, maze, now):
+    """Before an accident happens: an agent with a nearly empty bladder who has not already been
+    heading for a toilet is carried to the nearest one (same one-step transport the clinic uses),
+    where the usual toilet relief applies. Returns True when a dash started."""
+    s = persona.scratch
+    needs = getattr(s, "needs", None)
+    if not (ENABLED and CRISIS_ENABLED) or not needs or s.chatting_with:
+        return False
+    if needs.get("bladder", 100) >= DASH_AT or now is None:
+        return False
+    d = (s.act_description or "").lower()
+    if "sleep" in d or d.startswith("rushing to the bathroom"):
+        return False                # an agent who merely INTENDS a bathroom trip (urgent replan) may be stuck: still dash
+    last = getattr(s, "_dash_at", None)
+    if last is not None and (now - last).total_seconds() < DASH_COOLDOWN_MIN * 60:
+        return False
+    until = getattr(s, "_crisis_until", None)
+    if until is not None and now < until:
+        return False
+    addr, tile = _nearest_toilet(persona, maze)
+    if not addr:
+        return False
+    s._dash_at = now
+    s.add_new_action(addr, 6, "rushing to the bathroom and using the toilet", "🚽",
+                     (persona.name, "is", "using the toilet"), None, None, None, None,
+                     "toilet", "🚽", ("toilet", "is", "occupied"))
+    s.planned_path = [tuple(tile)]
+    s.act_path_set = True
+    print(f"[NeedsDash] {persona.name} bladder {needs.get('bladder', 0):.0f} -> {addr}")
+    return True
+
+
+_URGENT_WORDS = {
+    "bladder": "you urgently need to use the toilet",
+    "hunger": "you are starving and need to eat soon",
+    "hydration": "you are dangerously thirsty and need to drink soon",
+    "energy": "you are exhausted and about to collapse from tiredness",
+    "hygiene": "you badly need to wash",
+}
+
+
+def urgent_need_note(persona):
+    """Text for a chat prompt when the speaker has a critical need, else ''. Lets the LLM choose between
+    wrapping up the conversation (end: true) and carrying on, instead of the agent silently suffering."""
+    try:
+        if not ENABLED:
+            return ""
+        s = persona.scratch
+        needs = getattr(s, "needs", None) or {}
+        critical = getattr(s, "needs_critical", 20)
+        worst = None
+        for need, phrase in _URGENT_WORDS.items():
+            v = needs.get(need)
+            if v is not None and v < critical and (worst is None or v < worst[0]):
+                worst = (v, need, phrase)
+        if not worst:
+            return ""
+        return (f"URGENT NEED: {worst[2]} ({worst[1]} {worst[0]:.0f}/100). Decide: politely cut the conversation short "
+                f"to deal with it (excuse yourself and set end to true), or stay and keep talking at your own risk.")
+    except Exception:
+        return ""
+
+
 def check_crises(persona, maze, economy, now):
     """Call once per step per persona (after the needs tick). Returns a list of crisis dicts that fired."""
     if not (ENABLED and CRISIS_ENABLED):
@@ -458,6 +549,10 @@ def check_crises(persona, maze, economy, now):
     until = getattr(s, "_crisis_until", None)
     if until is not None and now is not None and now < until:
         return []                                   # already being treated
+    try:
+        restroom_dash(persona, maze, now)
+    except Exception as e:
+        print(f"[NeedsDash] failed for {persona.name}: {e}")
     fired = []
     for need, spec in CRISIS.items():
         if needs.get(need, 100) > 0.05:
@@ -481,6 +576,15 @@ def check_crises(persona, maze, economy, now):
                 s.act_path_set = True
                 s._crisis_until = now + datetime.timedelta(minutes=spec["stay"]) if now else None
                 memo += (f" The clinic charged ${paid:.0f}." if paid else " The clinic waived the fee.")
+                try:                                   # a real patient is real work for the clinic staff
+                    import duties as _D
+                    if _D.ENABLED and economy is not None:
+                        st = economy.state.get("duties")
+                        if st is None:
+                            st = economy.state["duties"] = _D.new_state()
+                        _D.note_sale(st, "clinic")
+                except Exception as e:
+                    print(f"[NeedsCrisis] clinic duty note failed: {e}")
         needs[need] = float(spec["restore"])
         for k, v in (spec.get("also") or {}).items():
             needs[k] = max(needs.get(k, 0), float(v))

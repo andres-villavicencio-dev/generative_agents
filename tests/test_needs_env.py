@@ -73,7 +73,8 @@ def test_tick_equilibrium_and_social():
         v = N.tick_value("hunger", v, False, False, 1.0); ticks += 1
     assert 12 <= ticks / 360 <= 20          # hours awake
 
-def test_laya_off_uses_keywords():
+def test_laya_off_uses_keywords(monkeypatch):
+    monkeypatch.setattr(N, "USE_LAYA", False)
     p, m = mk()
     assert N.get_intent(p, "eating lunch", "x")[1] == "keyword"
 
@@ -206,3 +207,69 @@ def test_bottled_water_purchase_counts_and_drink_waits_for_a_tap():
     assert N.apply_relief(p, m, "drinking a glass of water", NOW) == {}
     m.access_tile = lambda t: {"sector": "x", "arena": "kitchen", "game_object": "cooking area"}
     assert N.recheck(p, m, NOW)["hydration"] == 25.0
+
+
+def test_restroom_dash_sends_critical_bladder_to_nearest_allowed_toilet():
+    import datetime, types
+    import needs_env as N
+
+    calls = []
+
+    class S:
+        needs = {"bladder": 4.0}
+        chatting_with = None
+        act_description = "reading a book"
+        curr_tile = (10, 10)
+        _crisis_until = None
+
+        def add_new_action(self, *a):
+            calls.append(a)
+
+    class M:
+        address_tiles = {
+            "the Ville:Ana Lee's apartment:bathroom:toilet": {(90, 90)},
+            "the Ville:Bo Day's apartment:bathroom:toilet": {(11, 10)},      # someone else's home
+            "the Ville:Police Station:restroom:toilet": {(20, 10)},
+            "the Ville:Maple Co-living:bathroom 1:toilet": {(12, 10)},       # other residents' flats
+        }
+
+    p = types.SimpleNamespace(name="Ana Lee", scratch=S())
+    now = datetime.datetime(2023, 2, 14, 12, 0)
+    assert N.restroom_dash(p, M(), now) is True
+    assert calls[0][0].endswith("Police Station:restroom:toilet")
+    assert p.scratch.planned_path == [(20, 10)]
+    assert N.restroom_dash(p, M(), now + datetime.timedelta(minutes=5)) is False   # cooldown
+
+
+def test_restroom_dash_fires_for_stuck_bathroom_intent_but_not_for_a_dash_in_progress():
+    import datetime, types
+    import needs_env as N
+
+    class S:
+        needs = {"bladder": 3.0}
+        chatting_with = None
+        act_description = "using the bathroom at home"      # urgent-replan intent; agent never arrived
+        curr_tile = (10, 10)
+        _crisis_until = None
+
+        def add_new_action(self, *a):
+            self.act_description = a[2]
+
+    class M:
+        address_tiles = {"the Ville:Police Station:restroom:toilet": {(20, 10)}}
+
+    p = types.SimpleNamespace(name="Ana Lee", scratch=S())
+    now = datetime.datetime(2023, 2, 14, 12, 0)
+    assert N.restroom_dash(p, M(), now) is True
+    p.scratch._dash_at = None
+    assert N.restroom_dash(p, M(), now) is False             # already rushing to the bathroom
+
+
+def test_urgent_need_note_only_when_critical():
+    import types
+    import needs_env as N
+    p = types.SimpleNamespace(scratch=types.SimpleNamespace(needs={"bladder": 6.0, "hunger": 80.0}, needs_critical=20))
+    note = N.urgent_need_note(p)
+    assert "toilet" in note and "end to true" in note
+    p.scratch.needs = {"bladder": 60.0}
+    assert N.urgent_need_note(p) == ""

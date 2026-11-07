@@ -181,6 +181,8 @@ STIPEND_STUDENTS = [
     "Klaus Mueller", "Eddy Lin", "Maria Lopez",
     "Wolfgang Schulz", "Ayesha Khan",
 ]
+TAX_RESERVE_DAYS = 5          # GA_DUTIES: the fund aims to hold this many days of spending
+HIRE_BACKLOG = 4.0             # GA_DUTIES: peak unclaimed paid work (dollars) that makes an owner post an opening
 STRESS_APPLY_THRESHOLD = 0.4   # financial_stress to be an applicant
 BROKE_APPLY_WALLET = 30.0      # ...or wallet below this
 
@@ -218,6 +220,7 @@ class EconomyManager:
             "last_dividend_day": -1,
             "posts": {},               # town-service task id -> [holders] (GA_JOBBOARD)
             "board_read": {},          # persona -> day of the last board visit
+            "duties": None,            # GA_DUTIES work engine state (duties.new_state())
         }
         self._load()
         self._apply_init = False
@@ -284,6 +287,15 @@ class EconomyManager:
                 self.state["daily_intake"][vid] + price, 2)
             self._log_pay("sale", buyer_name, price, vid,
                           note=f"{amount}x {item}")
+            try:
+                import duties as _D
+                if _D.ENABLED:
+                    ds = self.state.get("duties") or _D.new_state()
+                    self.state["duties"] = ds
+                    _D.note_sale(ds, vid)
+                    _D.note_visit(ds, vid)
+            except Exception:
+                pass
             self.save()
         except Exception as e:
             print(f"[Economy] credit_sale failed: {e}")
@@ -421,6 +433,18 @@ class EconomyManager:
             civic = self.state["civic"] if self.state.get("civic_day") == day else {}
             need = sum(CIVIC_TASKS[t]["rate"] * CIVIC_EXPECTED_HOURS
                        for t in civic.values())
+            try:
+                import duties as _D
+                if _D.ENABLED:
+                    ds = self.state.get("duties") or {}
+                    civic_vs = set(_D.CIVIC_DUTY_TYPES_VENUES)
+                    # public work waiting to be done, plus topping the reserve up to N days of spending
+                    need = sum(_D.ALL_TYPES[d["type"]]["base"] for d in (ds.get("open") or {}).values()
+                               if d["venue"] in civic_vs)
+                    spend = max(60.0, f.get("out_day", 0.0))
+                    need += max(0.0, TAX_RESERVE_DAYS * spend - f["balance"]) / 3.0
+            except Exception:
+                pass
             got = f.get("today_in", 0.0) if f.get("today_day") == day else 0.0
             seen = sum(self.state["daily_intake"].values())
             forecast = max(sum(self.state["yesterday_intake"].values()), seen)
@@ -512,8 +536,16 @@ class EconomyManager:
         self.state["civic_paid_day"] = day
         cp = self.__dict__.setdefault("_civic_presence", {})
         owed = {}
+        try:
+            import duties as _D
+            import duty_world as _DW
+            _duty_pay = _D.ENABLED
+        except Exception:
+            _duty_pay, _DW = False, None
         for name, tid in self.state["civic"].items():
             mins = cp.get(name, 0.0)
+            if _duty_pay and tid in _DW.CIVIC_TASK_DUTY_VENUE:
+                continue                       # GA_DUTIES: paid per completed duty
             if mins >= CIVIC_PRESENCE_MIN and name in (self._personas or {}):
                 owed[name] = round(CIVIC_TASKS[tid]["rate"] * mins / 60.0, 2)
         cp.clear()
@@ -593,9 +625,20 @@ class EconomyManager:
                 return
             self.state["last_wage_day"] = day
             self.pay_community(sim_time)
+            try:   # spending run-rate for the tax reserve target (GA_DUTIES)
+                _f = self.state["fund"]
+                _f["out_day"] = round(0.5 * _f.get("out_day", 0.0) + 0.5 * _f.get("today_out_acc", 0.0), 2)
+                _f["today_out_acc"] = 0.0
+            except Exception:
+                pass
+            try:
+                import duties as _D
+                _duty_pay = _D.ENABLED
+            except Exception:
+                _duty_pay = False
             for vid, emps in self.state["employees"].items():
                 intake = self.state["daily_intake"].get(vid, 0.0)
-                if not emps:
+                if not emps or _duty_pay:      # GA_DUTIES: paid per completed duty, not a time-on-site wage
                     continue
                 per = max(round(EMPLOYEE_WAGE_SHARE * intake, 2),
                           EMPLOYE_WAGE_FLOOR if intake > 0 else 0.0)
@@ -877,9 +920,27 @@ class EconomyManager:
                     continue
                 if not self._personas or cfg["owner"] not in self._personas:
                     continue
-                if not self._llm:
+                try:
+                    import duties as _Dchk
+                    _need_llm = not _Dchk.ENABLED
+                except Exception:
+                    _need_llm = True
+                if _need_llm and not self._llm:
                     continue
                 owner = self._personas[cfg["owner"]]
+                try:
+                    import duties as _D
+                    if _D.ENABLED:
+                        # GA_DUTIES: hire when there is more paid work than the owner can do alone
+                        ds = self.state.get("duties") or _D.new_state()
+                        peak = (ds["venues"].get(vid) or {}).get("backlog_peak", 0.0)
+                        if peak >= HIRE_BACKLOG:
+                            self.open_posting(vid, sim_time)
+                        if vid in ds["venues"]:
+                            ds["venues"][vid]["backlog_peak"] = 0.0
+                        continue
+                except Exception as _e:
+                    print(f"[Economy] backlog hiring failed: {_e}")
                 # Yesterday's takings (the live counter was reset at 6 AM).
                 intake = self.state.get("yesterday_intake", {}).get(
                     vid, self.state["daily_intake"].get(vid, 0.0))

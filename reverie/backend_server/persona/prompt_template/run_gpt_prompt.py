@@ -3919,6 +3919,14 @@ def run_gpt_generate_iterative_chat_utt(maze, init_persona, target_persona, retr
 
     init_iss = f"Here is Here is a brief description of {init_persona.scratch.name}.\n{init_persona.scratch.get_str_iss()}"
 
+    try:
+      from needs_env import urgent_need_note
+      _urgent = urgent_need_note(init_persona)
+      if _urgent:
+        init_iss += f"\n{_urgent}"
+    except Exception:
+      pass
+
     # Inject resource context for conversing agents (Phase 3.3)
     if hasattr(maze, 'resource_manager') and maze.resource_manager is not None:
       try:

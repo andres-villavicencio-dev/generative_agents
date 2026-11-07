@@ -14,6 +14,16 @@ sys.path.insert(0, BACKEND)
 import economy  # noqa: E402
 from economy import EconomyManager  # noqa: E402
 
+
+import pytest  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def _legacy_time_on_site_pay(monkeypatch):
+    """These tests cover the legacy pay-for-presence economy (duties off)."""
+    import duties
+    monkeypatch.setattr(duties, "ENABLED", False)
+
 PUB = "the Ville:The Rose and Crown Pub:pub:shelf"
 
 

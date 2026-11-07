@@ -20,7 +20,14 @@ def curr(sim):
 def summarize(sim, cut):
     out = {}
     eco = json.load(open(f"{ST}/{sim}/resources/economy_v2.json"))
-    pl = [p for p in eco["pay_log"] if pt(p["t"]) <= cut]
+    pl = eco["pay_log"]
+    try:                                    # the append-only ledger survives pay_log truncation
+        led = [json.loads(l) for l in open(f"{ROOT}/ga_traces_{sim}/econ_ledger.jsonl")]
+        if len(led) >= len(pl):
+            pl = led
+    except FileNotFoundError:
+        pass
+    pl = [p for p in pl if pt(p["t"]) <= cut]
     k = collections.defaultdict(lambda: [0, 0.0])
     for p in pl:
         k[p["kind"]][0] += 1; k[p["kind"]][1] += p["amount"]
@@ -60,7 +67,10 @@ def summarize(sim, cut):
     return out
 
 def main():
-    a = [x for x in sys.argv[1:] if not x.startswith("--")]
+    argv = sys.argv[1:]
+    if "--until" in argv:
+        i = argv.index("--until"); del argv[i:i + 2]
+    a = [x for x in argv if not x.startswith("--")]
     ctl, trt = (a + ["n56", "n70"])[:2] if len(a) < 2 else a[:2]
     cut = min(curr(ctl), curr(trt))
     if "--until" in sys.argv:

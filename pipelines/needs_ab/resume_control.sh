@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Control = the legacy engine: every new feature is now ON by default, so switch them OFF explicitly.
 # Control: resume n56 (needs engine v1, v7e) from its last checkpoint WITH the new code, so it also logs the hourly needs series.
 cd /home/andus/Projects/generative_agents; source pipelines/needs_ab/common_env.sh
 S=environment/frontend_server/storage/n56
@@ -12,4 +13,5 @@ for d in ("movement","environment"):
 P
 systemd-run --user --unit ga-n56r --working-directory=$PWD $ENVS \
   --setenv=GA_TRACE_DIR=$PWD/ga_traces_n56 --setenv=GA_DECOMP_CACHE_FILE=$PWD/ga_traces_n56/decomp_cache.json \
+  --setenv=GA_NEEDS_V2=0 --setenv=GA_NEEDS_LAYA=0 --setenv=GA_NEEDS_CRISIS=0 --setenv=GA_DUTIES=0 --setenv=GA_REPLAN_LAYA=off \
   --setenv=GA_FORK_SKIP_COPY=1 venv/bin/python run_live3d_resume.py n56 n56 $CK 60480

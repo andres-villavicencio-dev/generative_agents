@@ -989,6 +989,28 @@ class ReverieServer:
     s.resource_goals.append("buying groceries at the Harvey Oak Supply Store")
     s.last_grocery_attempt = now
 
+  def _info_lookup_hook(self, persona, act_description):
+    import info_lookup as _il
+    if not _il.ENABLED or self.economy is None or not _il.matches(act_description):
+      return
+    if not _il.has_device(self.maze, persona, act_description):
+      return
+    key = _il.once_key(persona)
+    if getattr(persona.scratch, "_last_lookup", None) == key:
+      return
+    persona.scratch._last_lookup = key
+    desc = _il.digest(self.economy, persona.name)
+    if not desc:
+      return
+    from persona.prompt_template.gpt_structure import get_embedding
+    try:
+      emb = get_embedding(desc)
+    except Exception:
+      emb = [0.0] * 768
+    persona.a_mem.add_event(
+      self.curr_time, None, persona.name, "look up", "computer", desc,
+      {persona.name, "computer", "information", "work"}, 4, (desc, emb), [])
+
   def _read_board_hook(self, persona, act_description):
     """GA_JOBBOARD: an agent that has arrived at the community bulletin board reads the
     openings and may apply; the outcome becomes a memory."""
@@ -2068,6 +2090,11 @@ class ReverieServer:
                 self.process_artifact_interaction(persona, curr_act_description)
               except Exception as e:
                 print(f"[Reverie] Warning: artifact processing failed: {e}")
+              # Computer lookup: seated at a PC and searching/checking -> a true digest of town information
+              try:
+                self._info_lookup_hook(persona, curr_act_description)
+              except Exception as e:
+                print(f"[InfoLookup] hook failed: {e}")
               # Ville Dots: simulated-PC work session on matching actions
               try:
                 if matches_pc_session(curr_act_description):
@@ -2202,6 +2229,13 @@ class ReverieServer:
               self.economy.weekly_flows(self.curr_time)
               self.economy.consider_hiring(self.curr_time)
               self.economy.record_presence(self.curr_time)
+              try:   # GA_DUTIES: work that must be done, verified, paid per completion
+                import duty_world as _dw
+                if _dw.D.ENABLED:
+                  _dw.step(self.economy, self.personas, self.maze, self.curr_time,
+                           self.resource_manager, trace=lambda r: needs_env._trace(r, "duties.jsonl"))
+              except Exception as _de:
+                print(f"[Duties] step failed: {_de.__class__.__name__}: {_de}")
               self.economy.pay_employees(self.curr_time)
               # hiring encounters: co-located applicant+owner
               _paths = {}

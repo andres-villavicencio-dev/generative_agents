@@ -1,11 +1,11 @@
 """Laya gate for the re-plan after a chat: skip the (slow) schedule-rewriting LLM call when the conversation did not
-commit the agent to anything. Modes (GA_REPLAN_LAYA): off (default) | shadow (ask + trace, always re-plan) | live
-(skip the LLM call when Laya says keep with prob >= GA_REPLAN_KEEP_CONF, default 0.75; ties/errors re-plan).
+commit the agent to anything. Modes (GA_REPLAN_LAYA): off | shadow (ask + trace, always re-plan) | live (default)
+(skip the LLM call when Laya says keep with prob >= GA_REPLAN_KEEP_CONF, default 0.9; ties/errors re-plan).
 Server: GA_REPLAN_LAYA_URL (default GA_NEEDS_LAYA_URL, then the sim's Laya)."""
 import json, os, re, time, urllib.request
 
-MODE = os.environ.get("GA_REPLAN_LAYA", "off").lower()
-KEEP_CONF = float(os.environ.get("GA_REPLAN_KEEP_CONF", "0.75"))
+MODE = os.environ.get("GA_REPLAN_LAYA", "live").lower()
+KEEP_CONF = float(os.environ.get("GA_REPLAN_KEEP_CONF", "0.9"))
 CRITERIA = {
     "replan": "the conversation created a commitment (appointment, promise, invitation, task to start) that changes the plan",
     "keep": "no commitment: ordinary talk, opinions or gossip; carry on with the plan",
@@ -34,7 +34,7 @@ def ask(persona, window, dur, plan, discussed):
     """-> (slug, keep_prob) or (None, None). Never raises."""
     try:
         from persona.prompt_template import laya_scoring as L
-        url = (os.environ.get("GA_REPLAN_LAYA_URL") or os.environ.get("GA_NEEDS_LAYA_URL") or L.LAYA_URL).rstrip("/")
+        url = (os.environ.get("GA_REPLAN_LAYA_URL") or os.environ.get("GA_NEEDS_LAYA_URL") or "http://127.0.0.1:8020").rstrip("/")
         body = {"model": "laya-v3",
                 "state": {"who": persona, "situation": situation(persona, window, dur, plan, discussed)},
                 "questions": {"replan": {"type": "choice", "instructions": INSTRUCTIONS, "criteria": CRITERIA}}}

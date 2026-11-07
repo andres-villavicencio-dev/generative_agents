@@ -12,6 +12,12 @@ import os
 import datetime
 import threading
 
+DUTY_VENUES = ("cafe", "pub", "grocery", "market")
+
+
+def _duties_on():
+    return os.environ.get("GA_DUTIES", "1") == "1"
+
 
 # Item prices for economy layer (Phase 5)
 ITEM_PRICES = {
@@ -546,6 +552,43 @@ class WorldResourceManager:
         except Exception as e:
             print(f"[ResourceManager] Error in tick: {e}")
 
+    # ---- GA_DUTIES stock adapter (duties.generate / tick_worker) -------------------------------
+    def _venue_stock(self, vid):
+        ent = self.VENUE_STOCK.get(vid)
+        if not ent or vid not in DUTY_VENUES:
+            return None, None, None
+        addr, maxes, _w = ent
+        norm = self._normalize_address(addr)
+        if not norm or norm not in self.world_state:
+            return None, None, None
+        return self.world_state[norm], self.world_state.setdefault(f"backroom:{vid}", {}), maxes
+
+    def counter_low(self, vid):
+        loc, back, maxes = self._venue_stock(vid)
+        if loc is None:
+            return False
+        return any(loc.get(i, 0) < m * 0.5 for i, m in maxes.items() if i != "water" or m)
+
+    def backroom_has(self, vid):
+        loc, back, maxes = self._venue_stock(vid)
+        if loc is None:
+            return False
+        return any(back.get(i, 0) > 0 and loc.get(i, 0) < m for i, m in maxes.items())
+
+    def refill(self, vid):
+        """Carry stock from the back room to the counter/shelf. Returns units moved."""
+        loc, back, maxes = self._venue_stock(vid)
+        if loc is None:
+            return 0.0
+        moved = 0.0
+        for item, m in maxes.items():
+            n = min(back.get(item, 0), max(0, m - loc.get(item, 0)))
+            if n > 0:
+                back[item] = back.get(item, 0) - n
+                loc[item] = loc.get(item, 0) + n
+                moved += n
+        return moved
+
     def _do_daily_delivery(self, sim_time, economy=None):
         """Perform daily store restocking. Economy v2 (Oct 2026): ALL
         commercial venues restock at 6 AM; each venue's wholesale bill is
@@ -567,11 +610,21 @@ class WorldResourceManager:
                         continue
                 location = self.world_state[normalized]
                 cost = 0.0
-                for item, max_stock in maxes.items():
-                    delivered = max(0, max_stock - location.get(item, 0))
-                    location[item] = max_stock
-                    cost += wholesale.get(item, 1.0) * delivered
-                location["last_delivery"] = time_str
+                if _duties_on() and vid in DUTY_VENUES:
+                    # GA_DUTIES: the delivery lands in the BACK ROOM; a worker must carry it to the counter
+                    back = self.world_state.setdefault(f"backroom:{vid}", {})
+                    for item, max_stock in maxes.items():
+                        have = back.get(item, 0) + location.get(item, 0)
+                        delivered = max(0, max_stock * 2 - have)      # back room holds up to a day extra
+                        back[item] = back.get(item, 0) + delivered
+                        cost += wholesale.get(item, 1.0) * delivered
+                    back["last_delivery"] = time_str
+                else:
+                    for item, max_stock in maxes.items():
+                        delivered = max(0, max_stock - location.get(item, 0))
+                        location[item] = max_stock
+                        cost += wholesale.get(item, 1.0) * delivered
+                    location["last_delivery"] = time_str
                 if cost > 0:
                     economy.debit_restock(vid.split("_")[0], cost, sim_time)
                 print(f"[ResourceManager] Daily delivery to {normalized} "

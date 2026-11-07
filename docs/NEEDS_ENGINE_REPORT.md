@@ -106,7 +106,9 @@ Built, all behind flags that default OFF (the running n56 sim is unchanged, exce
 - Tests: `tests/test_needs_env.py` (8 pass): no food means no hunger relief, sub-tasks don't re-trigger, toilet needs a bathroom, shower needs hot water or a fixture, cooldowns, decay reaches critical in 12-20 awake hours.
 - Laya "need" decision: `pipelines/laya_plan/needs_extract.py` (3,698 stratified distinct actions from n55), `needs_label.py` (cloud-teacher labels: glm-5.3 + minimax-m3.1-flash, nemotron tie-break), `needs_build.py` (v7e replay data + need items, persona-disjoint test), trainer `OVERSAMPLE["need"]=3`. Training needs the GPU.
 
-Not yet done: train/evaluate the Laya need model; run the v1 vs v2 A/B on `base_the_ville_n55`; persona variance (E); extend the urgent map and prompts to comfort/stimulation/social (F).
+Laya need model (updated 2026-11-07): trained as `laya-ga-finetuned-v8` (need intent) and `-v9` (adds replan); v9 is what `:8020` serves and what n70/n72 used. Evaluated with `pipelines/laya_plan/needs_eval.py 8020` on `v8_data/test.jsonl` (478 need items, persona-disjoint, cloud-teacher labels): **Laya 0.923 vs keyword baseline 0.554**. Per intent (correct/n): engage 170/178 (kw 77), socialize 42/45 (kw 3), wash 29/30 (kw 15), rest 69/73, none 92/104, sleep 13/13, eat 21/24, toilet 2/2, **drink 3/9 (kw 8/9)**. Drink is the one regression (n=9, small); next retrain should add drink examples.
+
+Not yet done: persona variance (E); extend the urgent map and prompts to comfort/stimulation/social (F). The v1 vs v2 A/B was effectively run as n56/n70 (see compare_econ.py).
 
 ## 9. Need-zero crises (GA_NEEDS_CRISIS, on under v2)
 

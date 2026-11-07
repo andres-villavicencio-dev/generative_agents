@@ -6,7 +6,8 @@ import collections, json, os, random, shutil, sys
 sys.path.insert(0, "/home/andus/Projects/generative_agents/reverie/backend_server")
 import needs_env as N
 REPO = "/home/andus/Projects/generative_agents"
-BASE = "/home/andus/Projects/laya-test/v7e_data"
+BASE = os.environ.get("NEEDS_BASE", "/home/andus/Projects/laya-test/v7e_data")
+ONLY = set(open(os.environ["NEEDS_ONLY"]).read().split()) if os.environ.get("NEEDS_ONLY") else None  # only these keys (incremental build on top of NEEDS_BASE)
 OUT = sys.argv[1] if len(sys.argv) > 1 else "/home/andus/Projects/laya-test/v8_data"
 P = set(json.load(open("/home/andus/Projects/laya-test/v4_data/build_report.json"))["test_personas"])
 rng = random.Random(81)
@@ -27,6 +28,7 @@ def label(v):
     return None
 K = len(N.INTENT_SLUGS); items = []; stats = collections.Counter()
 for k, v in T.items():
+    if ONLY is not None and k not in ONLY: continue
     r = rows.get(k); lab = label(v) if r else None
     if not lab: stats["dropped"] += 1; continue
     ans, conf, minority = lab

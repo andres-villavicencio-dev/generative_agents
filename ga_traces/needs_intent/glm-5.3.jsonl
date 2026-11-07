@@ -3696,3 +3696,703 @@
 {"key": "3c866ebe3e3b4c41979a9034bccb387c", "ans": "engage", "raw": ". This is reading/studying/working on something \u2014 that's \"engage\".output: engage", "model": "glm-5.3:cloud"}
 {"key": "9be400fd7c42556c97f315f78c8e43ef", "ans": "rest", "raw": "inding. That matches \"rest: sitting, lounging, napping or relaxing\".output: rest", "model": "glm-5.3:cloud"}
 {"key": "a66b688974ffd980066f29cfc04938d9", "ans": "eat", "raw": "g his breakfast. This clearly maps to \"eat\" - eating a meal or snack.output: eat", "model": "glm-5.3:cloud"}
+{"key": "35e73795880bcf3a666783e67703b51d", "ans": "eat", "raw": "ion, but the main action is having lunch. So the best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "f53a7be057902e8fa2443221d8c4e66c", "ans": "drink", "raw": "he actual action is drinking water. So the answer is drink.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "30c4590b2b2445464acbd484c42b9ae1", "ans": "toilet", "raw": "ilet is using the toilet. The basic need being acted on is toilet.output: toilet", "model": "glm-5.3:cloud"}
+{"key": "18329e2bd772602d9b5f65d6afaf4687", "ans": "engage", "raw": "omething.\"\n\nServing coffee is her job - working. I'd say \"engage\".output: engage", "model": "glm-5.3:cloud"}
+{"key": "e770259ed54c7c854f8c7c865a067082", "ans": "engage", "raw": "to do her job. \"engage\" covers working. So output: engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "477a85a2b2167e3008738a369d8d2e3a", "ans": "drink", "raw": "urpose is preparing drinks (coffee, tea). So the answer is \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "5b2dbccf5162d1194bf4e9eab306b64b", "ans": "rest", "raw": "it\" - so the purpose is relaxing/unwinding, which is \"rest\".</think>output: rest", "model": "glm-5.3:cloud"}
+{"key": "ec5bac1d64857cb5ea789b191932c687", "ans": "none", "raw": "is restocking supplies, which is an errand. So the answer is \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "0cf0674835dc756dcf03464f1d26aa36", "ans": "none", "raw": "eaning/errand-type work, which is explicitly in the \"none\" category.output: none", "model": "glm-5.3:cloud"}
+{"key": "1e9157a138bc4491e13231fbcc6da52b", "ans": null, "raw": "uestions seem to come from a dataset where compound actions are annotated with a", "model": "glm-5.3:cloud"}
+{"key": "8ee443d519b0b9973a6c146fb5f7b3e9", "ans": "socialize", "raw": " it's a conversation about billing. So the answer is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "f2a6055f205344c8af1790129c6e8978", "ans": "eat", "raw": "but the primary purpose is eating dinner. So the best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "da0e82f04410229ee9a81896ed371ff7", "ans": "socialize", "raw": "n is socialize - talking or spending time with someone.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "3d91cfeb36fa25068616a305eff06a83", "ans": "engage", "raw": "work activities. Serving customers is her work. So output: engage.output: engage", "model": "glm-5.3:cloud"}
+{"key": "bef46182a72735e79be0958c063e4182", "ans": "eat", "raw": "the main action is eating breakfast. The best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "f0ea2cbb3871cf41fe754339ce9a86d8", "ans": "socialize", "raw": "c need behind conversing is socialize.\n\nI'll go with socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "427d5e422061e70abce0c950a858be5c", "ans": "eat", "raw": "st\" - eating a meal is the primary purpose. I'll go with eat.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "ed6f8c65bdf39334b52105b4e89bc9b2", "ans": "none", "raw": "he's making and serving it as her job.\n\nThe answer should be \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "fd3145f06abc6b9a989d3f92f7a0ecb0", "ans": "socialize", "raw": "ction itself is conversing. So the answer is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "f43e4da79d2ba51944fad73382b615c7", "ans": "drink", "raw": "ink of water at the bathroom sink. The basic need is drink.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "8b6cd8e17c16387e02c935a99f35d633", "ans": "eat", "raw": "t\" since the purpose of preparing breakfast is to eat a meal.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "6b88055e3af174a5722e15bef448d362", "ans": "none", "raw": "e - it's an errand/work-related task. So the answer would be \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "eb46b17c4cf171e9a77e91d67ffd3064", "ans": "engage", "raw": "ards is creating something. So \"engage\" is the best match.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "b74ace8dfe9fa0ebe6460832dfd2a53d", "ans": "socialize", "raw": "out lunch, the action itself is conversing, which is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "891b19ca8cc9c37fa940e963d8fae1fe", "ans": "socialize", "raw": "conversing - socializing.\n\nThe best match is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "979c997aa4628d67bf09262d71f886c8", "ans": "none", "raw": "drinking. The purpose is shopping, which falls under \"none\".</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "76e3ea24641560acb5d1f6a4f07e844a", "ans": "socialize", "raw": "ction itself is conversing. The purpose is socializing.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "890f16296407c2f96515a1f42769f2d9", "ans": "socialize", "raw": " \"conversing\" - talking with someone. That's socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "2701f92e90eb64cc778d80c1bb99e912", "ans": "socialize", "raw": "s in it.\" The action is conversing, which is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "ee8575f4e783cdb7046f8f245ce01ecf", "ans": "socialize", "raw": "tual action is conversing.\n\nSo the answer is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "b9ac984f02a781bf0312c1c5871ec908", "ans": "drink", "raw": " \u2014 addressing his need to drink.\n\nSo the answer is \"drink\".</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "61c064b35492267b8e343e9fa6608140", "ans": "eat", "raw": "al (breakfast). Drinking water is secondary. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "cc1ba39616d2495dc72d3c389367f516", "ans": "eat", "raw": "mentioned, the main action is eating dinner. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "f34bf25b7fbbbb7b17418b2ec01cd6bf", "ans": "eat", "raw": "best match for the purpose of the action. Having lunch = eat.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "935f6e1fce4d72c68c50fc9777c9ab2f", "ans": "none", "raw": "this is work/cleaning/serving, not a basic need fulfillment.</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "4e8f13dd261031cb6ec889e6b262971f", "ans": "eat", "raw": "is having breakfast, which is eating a meal. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "23e8734cd782a553c3e2e50a33f29514", "ans": "none", "raw": " or drinking. The purpose of the action is shopping/errands.</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "de18b76abe2b592c3c556bdb494e060a", "ans": "none", "raw": "der \"none\" as it's an errand/outdoor activity.\n\nI'll go with \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "d581d25c61feee0aeeefcf49afe5bd54", "ans": "none", "raw": "g a basic need like eating or resting.\n\nI'll go with \"none\".</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "ad005c815dff61a466732818abb1913e", "ans": "engage", "raw": "ion is finishing coursework and budgeting - that's engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "b84cd5df14ca8273b1bf16c55f0eb90b", "ans": "none", "raw": "her job, not her own need to drink. So the answer is \"none\".</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "8790206cd476778854da055dd639f4fe", "ans": "eat", "raw": "ring water, but the purpose is having lunch. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "4612b3fd6756073db54ce6e1d51b2f1e", "ans": "drink", "raw": "ches \"drink: drinking water, coffee, tea or another drink\".</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "a9f37d4f34ce95a3a3f8810619ad3d1b", "ans": "eat", "raw": " the main action is having lunch. So the best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "b73c8453c06e9f7062b7365a33e3b093", "ans": "drink", "raw": "d sugar. The purpose is drinking coffee. The best match is \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "43f9b157c46cfccd4bbaedb59b8be09c", "ans": "eat", "raw": "ping water, the main action is having lunch. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "4f0001ca3e632d5a07c4cfa84f3aba7d", "ans": "engage", "raw": "ass = working on something = engage.\n\nI'll answer: engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "7f52315e8fe965dae3876ce3415ffba4", "ans": "drink", "raw": "ches \"drink: drinking water, coffee, tea or another drink\".</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "8356e887622a362a8c5daee537cd8f1e", "ans": "eat", "raw": "outine with coffee and meal is breakfast - eating. I'd go with \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "7ada537f3e352bc09208bbcf7c4879bc", "ans": "socialize", "raw": "tting/talking with someone. So the answer is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "a1b26ea2986d1723295a7a655b7df47c", "ans": "engage", "raw": "ch includes \"reading, studying, working on or creating something.\"output: engage", "model": "glm-5.3:cloud"}
+{"key": "1537e947ed10706ff2260a018181c7e6", "ans": "eat", "raw": "is ordered, the main action is having lunch. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "6d2ba298b2a6a5c7217e53ed9b5561f8", "ans": "socialize", "raw": " The action is conversing, so the purpose is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "b867b8c0dc3e5eddf3bb06c9ed7f701b", "ans": "eat", "raw": "(breakfast). The water is secondary. The best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "9c072cf90cf4334342b8f579fd59edd0", "ans": "socialize", "raw": "ewell social interaction.\n\nThe best match is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "54c5b02c151d0a5ace4ba37d6b2bd152", "ans": "socialize", "raw": "he action itself. The action is conversing, which is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "aabdcf23df2f39477e533c8a43ad496e", "ans": "engage", "raw": "something\" - working fits here. So \"engage\" is the answer.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "6e78ca18002cf44ea3ebaf583afad4e0", "ans": "drink", "raw": "ose of making tea is to drink it. So \"drink\" is the answer.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "3a1743a829b996835751ffee0742e8c4", "ans": "none", "raw": "er \"none\" since shopping is listed in the examples for none.</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "c89ccd71e4d0de273271a63608ebb306", "ans": "drink", "raw": "d being acted on is drinking coffee, which matches \"drink\".</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "ac54910f132c9b2f02a069199022d866", "ans": "none", "raw": "shopping/stocking, which is an errand. The answer is \"none\".</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "4c958227bbc32803323a645c3d5f34e6", "ans": "none", "raw": " is shopping/bagging, not drinking. So the answer is \"none\".</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "0121ba14f5476222ad7a1bb561a98471", "ans": "drink", "raw": "nk\" category: drinking water, coffee, tea or another drink.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "b894c91261703c249febf16047f63684", "ans": "engage", "raw": "st match is \"engage\" since the primary purpose is reading.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "377366f080fbc7f53f2a38a3dd41eef7", "ans": "engage", "raw": " on\" something fits working a shift.\n\nI'll go with engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "060e75c19c5c2e8026c1a3f76cfa1e49", "ans": "rest", "raw": "ting, lounging, napping or relaxing\". So the answer is rest.</think>output: rest", "model": "glm-5.3:cloud"}
+{"key": "80eaadd8aa80b530cdd711124008231e", "ans": "socialize", "raw": "lking or spending time with someone.\n\noutput: socialize</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "74b9992d56dfe9222fe693d187d0677d", "ans": "socialize", "raw": "hare with Isabella \u2192 socialize.\n\nI'll answer socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "3ef0bd8148d826863cdc77318eec0064", "ans": "socialize", "raw": "ending time with someone).\n\nSo the answer is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "175e4618128e54d4ddc99889dc8258ce", "ans": "socialize", "raw": "tea is mentioned, the action is conversing, which is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "313b44967e39602e674d8960f279b201", "ans": "drink", "raw": "\". The basic need is drinking water, which matches \"drink\".</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "70f905ba73d8ac3065e199717b1d0a89", "ans": "socialize", "raw": "e action is conversing. Socialize seems the best match.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "32b5fa1bc354583098359904725d802d", "ans": "eat", "raw": "tioned, the main action is eating breakfast. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "d5124628525645b986938bad26ca5c63", "ans": "rest", "raw": "g. The tea drinking is incidental to the relaxation purpose.</think>output: rest", "model": "glm-5.3:cloud"}
+{"key": "6a5c94dc6e4348897153e6622629e11c", "ans": "socialize", "raw": "he action is conversing/discussing, which is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "e10c6560d3ebe8c47e02e5726ebcf2d8", "ans": "drink", "raw": "water\" at the kitchen sink. The basic need being acted on is drink.output: drink", "model": "glm-5.3:cloud"}
+{"key": "22d5c26b1c19e942265c2d2f9ce3c203", "ans": "drink", "raw": "nk\" category: drinking water, coffee, tea or another drink.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "7183c40804692c858d50caebcdc87824", "ans": "socialize", "raw": "ng memories is socializing. So the answer is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "06aa1740c2647e735dd640f7baf665f1", "ans": "eat", "raw": " details are just scene-setting. So \"eat\".\n\nFinal answer: eat</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "d94a2be1db51a53f8aff49ef3cfd5163", "ans": "drink", "raw": "laxing. The drink need seems primary.\n\nI'll answer \"drink\".</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "9fa5ba6f7ee6c5a6791c7761b07d7542", "ans": "none", "raw": "e words. The purpose of restocking is organizing/errands, so \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "6a1012aeb2798deeb9db7a53b12976fe", "ans": "socialize", "raw": "al action. The action is conversing.\n\nAnswer: socialize</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "16a7986ef7c26420a5d8db702f30fbd0", "ans": "socialize", "raw": "on is talking with someone. So the answer is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "8ac0ff2fdd07881eb7d844030d94addb", "ans": "eat", "raw": "meal. The sip of drink is incidental. So the answer is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "29cf4512603f6e9f9e34c79a1d6bbc1d", "ans": "drink", "raw": " is clearly drinking, which matches the \"drink\" basic need.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "91bb39e9cbab7c057867828ac8f09d2e", "ans": "engage", "raw": "se is work/service, not socializing.\n\nI'll go with engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "ca82d42b9359bfb8ec1cd6a421282676", "ans": "socialize", "raw": "food, but the action is conversing. So the answer is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "60594353ed2713945aaf2f261858ee46", "ans": "eat", "raw": " water is secondary/while eating. So the best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "43947ca48afcfca0a717c5bba00e1349", "ans": "socialize", "raw": " primary intent seems social.\n\nFinal answer: socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "f88853d161674bfba21d93a98c07098c", "ans": "eat", "raw": "ting lunch. The drinking water is secondary. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "631655341a7331643bcb3da278999ed6", "ans": "engage", "raw": "medium, but the purpose is creation.\n\nI'll go with engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "5a6d0edd0691574f2702b2ed9337965e", "ans": "socialize", "raw": "versing, which is talking with someone. That maps to socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "3662ad9ee86d4a14de8e0c898075c072", "ans": "eat", "raw": "e best match - the purpose of the action. Having lunch = eat.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "507204628edae532bcd5381ed0493f21", "ans": "eat", "raw": "r drink. Since breakfast is mentioned, eat is the best match.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "0e3757bbd095f436933bad190ac257cd", "ans": "none", "raw": "ng, which falls under \"none\" (walking, shopping, cleaning, errands).output: none", "model": "glm-5.3:cloud"}
+{"key": "142b4dad03388060257d267a68805ec0", "ans": "socialize", "raw": "t the action itself is talking. So the best match is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "8045298cd85ea41690641abf5aab22c0", "ans": "eat", "raw": "nner - the primary purpose is eating. So \"eat\" is the answer.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "95168562c2e58800d50589c8041c2fe8", "ans": "drink", "raw": "\" since they went for coffee and are enjoying their coffee.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "fae79812fe8ab63f8b566829664bbc92", "ans": "rest", "raw": "nk, the main action is \"Relax\". So the best match is \"rest\".</think>output: rest", "model": "glm-5.3:cloud"}
+{"key": "e2fe86cbe3199d8b9c502b058a658861", "ans": "socialize", "raw": "g/talking with someone. So the best match is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "919dd464af1e920f043ba15defa8372d", "ans": "socialize", "raw": "ing, which is socializing. The best match is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "2cfeba95a346351920ca114d187e51fa", "ans": "eat", "raw": ")\". The purpose is eating breakfast. The best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "668e28b6663198579bd9c927956c7f56", "ans": "eat", "raw": "he purpose of having lunch is to eat. So the answer is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "49ce313f2975fa7ce89d63ac5cbb7dc1", "ans": "rest", "raw": "he compound action. The purpose is relaxation.\n\nI'll go with \"rest\".output: rest", "model": "glm-5.3:cloud"}
+{"key": "e4692bb35ca7b3cafa11e0b70b1a4eea", "ans": "eat", "raw": " the main action is having lunch. So the best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "78e15301ae6de949c68e4cc40be7032e", "ans": "socialize", "raw": "talking with someone. The answer should be \"socialize\".</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "2621b133ae25eb5184cb061fd45f1e81", "ans": "eat", "raw": "in action is making breakfast and eating it. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "2e864f84e64c17f3e30f1fc90481512f", "ans": "socialize", "raw": "action, not just the words. So the answer is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "d00fd7cd92ca97effe2b45260bc6132c", "ans": "none", "raw": "se of the action is shopping, not drinking. So the answer is \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "c6713a97c612fb24e5b27abc4990db97", "ans": "engage", "raw": "something\" \u2014 working on something fits. So output: engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "9c84e64262328f473f99e0f9cf07cefa", "ans": "drink", "raw": "is the primary item at a cafe and listed first, \"drink\" seems best.output: drink", "model": "glm-5.3:cloud"}
+{"key": "e70609d8b9a404a13595eb0832ca2e12", "ans": "eat", "raw": "mentioned, the main action is eating dinner. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "d2171c3ecf5a7599d194917fba9dfc04", "ans": "none", "raw": "offee beans is not drinking coffee. So the answer is \"none\".</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "2f93f831f2c85a35813bffb41d9e3f81", "ans": "eat", "raw": "primary purpose is lunch - eating a meal. So the best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "3a80f9cb99bcffbff5bcf858c0231e8b", "ans": "eat", "raw": "English, \"tea\" can mean the evening meal. So the best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "e3859be7663509d5777174184a3a7cd7", "ans": "drink", "raw": " cup of coffee\" which is drinking. The best match is drink.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "d6fbb05230f9dec6c1fad2622d44cd70", "ans": "rest", "raw": "ion. The coffee is incidental. So \"rest\" is the best answer.</think>output: rest", "model": "glm-5.3:cloud"}
+{"key": "16f3f50c70a2852a7a586f1becaad316", "ans": "engage", "raw": " assisting), I'll go with \"engage.\"\n\nFinal answer: engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "984149b620803013fc537a85fd62125b", "ans": "eat", "raw": "est single match is \"eat\" since breakfast is the main action.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "9637841c0eb1860f667c58318e39a9e5", "ans": "none", "raw": "ry explicitly lists cleaning and errands. I'll go with none.</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "8f6745c0af2da0fef4668289549307c0", "ans": "drink", "raw": "early drinking water, which matches the \"drink\" basic need.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "2cb5d187fd51ac4063b635723f0a79d6", "ans": "socialize", "raw": "s in it.\" The action is conversing, which is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "81472a27a6fd57645d3b149b92cb7070", "ans": "socialize", "raw": "ds in it.\" The action is conversing \u2014 that's socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "0fb8016af0edbaf1ef83e6d030622c05", "ans": "socialize", "raw": "need driving conversing is socialize.\n\nFinal answer: socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "d09da197b06120546b9d604210118e9b", "ans": "socialize", "raw": "he conversation/social interaction. So the answer is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "a2d6dc1405fe6aee1c0af091320b6a91", "ans": "socialize", "raw": "phasizes conversing/discussing. So the best match is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "55f7f27b5222dd511627edc5ea472ead", "ans": "none", "raw": "rket. This is shopping/errands, not eating. So the answer is \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "5f4265046e175029722f60ef2595d914", "ans": "socialize", "raw": "rganize the event - socialize.\n\nI'll go with socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "7b4e9a5b888d7bcdedaa6b63f6b8b485", "ans": "drink", "raw": "of water is the basic need component. So the best match is \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "c5eb2db6e07d6a9f897319afb83307b7", "ans": "engage", "raw": "he content of the sketch, not actually eating or drinking.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "9550bac1bb2cdbf8b081f44aa8586145", "ans": "engage", "raw": "ge\" (reading, studying, working on or creating something).</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "fea86bd4cd08e6796b245672e87e5d75", "ans": "socialize", "raw": "ot just the words in it).\"\n\nSo the answer is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "0812427f49336db7758f8752f5b8fd6a", "ans": "none", "raw": "king/thinking/organizing, not drinking tea. So \"none\" is the answer.output: none", "model": "glm-5.3:cloud"}
+{"key": "54c5cd666ec0b2fc2f36d56acb1b7591", "ans": "socialize", "raw": "on itself is conversing/chatting, which is socializing.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "77e394b95d6d64aded69c6c4a0cf2630", "ans": "eat", "raw": "the main action is eating dinner. So the best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "2e53da759a7843ebf6cca44b154c0c80", "ans": "engage", "raw": "d preparing coffee is work. So \"engage\" is the best match.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "9cf0fbf8392ad05fbd765223f725219b", "ans": "none", "raw": " for groceries, which is an errand. So the answer is \"none\".</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "def084d199d30f9477bdbcb17004b486", "ans": "socialize", "raw": "or conversing/chatting is socialize.\n\noutput: socialize</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "b3ead228336c48963639096143f5e3c1", "ans": "eat", "raw": "zing brushes and palettes is secondary.\n\nThe best match: eat.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "e140ed3f1d062fc2a17af067accf7619", "ans": "socialize", "raw": "lking or spending time with someone.\n\nAnswer: socialize</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "3ff51bd8bdb137231e464cfe1eb9fd7a", "ans": "drink", "raw": "being acted on is drinking water. So the answer is \"drink\".</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "f89249156d6a722ecc1d43505b850d02", "ans": "eat", "raw": "hich is eating. The relaxation is secondary. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "288a7d4850144ba1886287b3e53026e0", "ans": "engage", "raw": "erving customers is part of her work.\n\nI'll answer: engage</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "ed0834378c3decf1ca05665719c40efc", "ans": "socialize", "raw": "ng/spending time with Sam. The best match is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "2abd6a7e378a99535507970f5d1d1177", "ans": "engage", "raw": "ngage. Work/creating falls under \"engage\".\n\nI'll go with \"engage\".output: engage", "model": "glm-5.3:cloud"}
+{"key": "9bb47eb9918c4ba5fa01516752b5f88a", "ans": "none", "raw": "like shopping/errands/cleaning. So \"none\" is the best match.</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "ae317a60e8e834c50600e673964d0f36", "ans": "rest", "raw": " at home\" - that's the purpose. So \"rest\" is the best match.</think>output: rest", "model": "glm-5.3:cloud"}
+{"key": "08d42731e610c1a0d394291b94da4ac8", "ans": "drink", "raw": "e coffee maker on is to drink coffee. So the best match is \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "b00204db1ebad1cd4eeb1aa772d86a94", "ans": "none", "raw": "ntioned as an example of \"none\" (cleaning). So the answer is \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "1d1fcd406481e8e910253f33b3d70703", "ans": "engage", "raw": "ing - yes, engage covers working. So the answer is engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "fc76646800ec54bd46cb0cb9680d917a", "ans": "eat", "raw": "est match is \"eat\" since the main action is eating breakfast.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "50c253772b1c61684191ea3f4932b953", "ans": "engage", "raw": " bulletin board notices fits engage.\n\nI'll go with engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "ff9c43e1877966aeaf4ae0774dc60e1b", "ans": "eat", "raw": "the main purpose is eating breakfast. So the answer is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "2b3cce16313bea74b686fa8f7b88d311", "ans": "eat", "raw": "er is mentioned, the main purpose is eating. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "850b0208065ab6db9a5633d321cf0736", "ans": "eat", "raw": "ed, the main purpose of breakfast is eating. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "d8391c1fe5dd90c86c04258fc1cdd2e2", "ans": "drink", "raw": " is clearly drinking, which matches the \"drink\" basic need.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "186cd0d782656a9cea013781102ae1c9", "ans": "engage", "raw": "s about work tasks, not consuming. So \"engage\" seems best.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "ef511fc006c137ad80691a1deb8c3dad", "ans": "socialize", "raw": "ing with Eddy. The purpose is talking with someone - socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "1cdc29e17b0d818de4b72a14c42742cc", "ans": "rest", "raw": "tting comfortably by the window is rest.\n\nI'll go with rest.</think>output: rest", "model": "glm-5.3:cloud"}
+{"key": "cae7b8f99c237f105ccae02479d46958", "ans": "rest", "raw": " purpose of the whole action: relaxation. I'll go with rest.</think>output: rest", "model": "glm-5.3:cloud"}
+{"key": "8f6158b03e0773ca46443d77f1912881", "ans": "drink", "raw": "ing a drink of water\" at the refrigerator. The basic need is drink.output: drink", "model": "glm-5.3:cloud"}
+{"key": "0a009bddfcd63319bc437b827b02d949", "ans": "eat", "raw": " (oatmeal). The coffee is secondary. The best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "6b10d430a875ff7e2b5f740c0e53d2d8", "ans": null, "raw": " remember this exact action now: \"waking up and completing her morning routine (", "model": "glm-5.3:cloud"}
+{"key": "f3796046e270cf2bd8d8f059745f1801", "ans": "drink", "raw": " is about drinking. The basic need being acted on is drink.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "38e67ba80de4985e14a5cb6ab5160539", "ans": "socialize", "raw": "ing/talking with someone.\n\nThe best match is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "dde3629378b8f401a410fb6132a300e6", "ans": "eat", "raw": "water pouring is a side action during lunch. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "e344c087a6b8ea55f93b70717d7c11aa", "ans": "eat", "raw": "rby cafe\" is the clearest basic need: eat.\n\nI'll go with eat.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "961452be48e1b2ee6a536a56d41f94e1", "ans": "drink", "raw": "ave a coffee\" - this is drinking coffee. The best match is \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "65ec30a0ea32178545569a8f9a5f4168", "ans": "drink", "raw": "t a cafe. The action is drinking coffee. The best match is \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "b2bada656a5eebe381d816e816f81d7f", "ans": "eat", "raw": "he primary purpose is lunch (eating a meal). The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "09b207c64f1086587e7b2b41efe31af1", "ans": "eat", "raw": "mentioned, the main action is eating dinner. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "ee65c622e954d492f6cc8e9d4aaf986c", "ans": "socialize", "raw": "rsing (talking). So the basic need being acted on is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "161de5e906d13b69db8a2b6b5492ea96", "ans": "drink", "raw": "up with water is to drink it. So the basic need is \"drink\".</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "a238a2bba3dc504d53131f9c261ee287", "ans": "engage", "raw": "elf; he's taking someone's order. So the answer is engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "d9ca929dc8fb86a63bdb5915639c947f", "ans": "eat", "raw": " water. The primary action is eating a meal. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "161b311670bbdd379bb958b1d9040ec3", "ans": null, "raw": "so the possibility that the intended answer is \"none\" because the whole scenario", "model": "glm-5.3:cloud"}
+{"key": "de8e51373ff2a475ec0985892a02a224", "ans": "socialize", "raw": "s not eating or drinking).\n\nSo the answer is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "a169017e3088d0dd3b5c592d767f6807", "ans": "eat", "raw": "ge, the main action is having lunch. The best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "b0b511d60225c1de273f703c16598b7b", "ans": "rest", "raw": "h relaxing.\n\nI'll go with rest as the primary purpose is relaxation.output: rest", "model": "glm-5.3:cloud"}
+{"key": "cfa16a467a60f56c70c8fb24344c8f68", "ans": "none", "raw": "chases, not eating or drinking yet. So the answer is \"none\".</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "002bb1f3531e52eda68675ac40409803", "ans": null, "raw": "h? To eat lunch (need: hunger) and to enjoy each other's company (need: social).", "model": "glm-5.3:cloud"}
+{"key": "5f1252523dbe1f9144173efc2e4d5b0e", "ans": "socialize", "raw": "g with Nair Viggiani. This is talking with someone - socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "6a2afd1bd9e85042490f1e701940ee87", "ans": "drink", "raw": "e need = drink (water for dehydration).\n\nI'll answer drink.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "69a6c4d56a5e05ae0ac4c51fe7e470cf", "ans": "engage", "raw": "eparing coffee is creating something. I'll go with engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "ffe1d377d07b1fec7e3a380700dae8cf", "ans": "socialize", "raw": "e, not eating or drinking.\n\nSo the answer is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "d303c7d4c7f237ca927c6dbb56e279bc", "ans": "engage", "raw": "n is work, which falls under \"engage\".\n\nSo the answer is \"engage\".output: engage", "model": "glm-5.3:cloud"}
+{"key": "768e4ba6ee54ded1f3888f22ef699b87", "ans": "none", "raw": "ed action. The purpose is shopping/errands, so the answer is \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "26e461b704747d4f9259e0e1eec24667", "ans": "drink", "raw": "he action is drinking water, not washing. So the answer is \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "57b27bca91b4c747a832b4248e3c0fc8", "ans": "drink", "raw": " is drink. The relaxation comes after.\n\nI'll go with drink.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "aa0ddcf7ee8cfda13212bba7aa6baa94", "ans": "socialize", "raw": "he actual action is conversing. So the best match is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "b78b969b92d376072edc5d4bf2d5645b", "ans": "socialize", "raw": "ink socialize is the best match since the action is conversing.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "5d58a895b049899da07be828cd7dd497", "ans": "drink", "raw": "sic need being acted on is drinking. The answer is \"drink\".</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "258a06b6ed2a7311c4136bca7b50deef", "ans": "engage", "raw": " it for customers as part of his work.\n\nSo the answer is \"engage.\"output: engage", "model": "glm-5.3:cloud"}
+{"key": "9088dfbbec4e365e010e0b7c743800d9", "ans": "socialize", "raw": " best match for conversing/talking with someone is \"socialize\".output: socialize", "model": "glm-5.3:cloud"}
+{"key": "054ea544a63460393ad8dde493f66aab", "ans": "socialize", "raw": "nding time with someone = socialize.\n\nAnswer: socialize</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "b09863a2e9763e63bd966530f30ec786", "ans": "drink", "raw": "purpose is to have water to drink. So \"drink\" seems the best match.output: drink", "model": "glm-5.3:cloud"}
+{"key": "4ed25e0a83f4f6053470e1b23096028c", "ans": "engage", "raw": "reating/updating a menu, which is work. So the answer is \"engage.\"output: engage", "model": "glm-5.3:cloud"}
+{"key": "c25bd64c8ec02b24b724e9b37752b76f", "ans": "none", "raw": "e action is shopping, not drinking. So the answer is \"none\".</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "531ca2a82027c92a2d1eb50e4c617e93", "ans": "socialize", "raw": "g and talking with someone. The purpose is socializing.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "dabd34cc0d651260f678a4989f048dd8", "ans": "drink", "raw": "ater, coffee, tea or another drink. So the answer is drink.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "39831af7f7367903003e7de52adabb96", "ans": "eat", "raw": " The purpose is eating breakfast, so the basic need is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "dcb8e44ebf9ce5f8d52caecbb4903f8c", "ans": "drink", "raw": "o drinking. The action \"make tea and relax\" \u2014 I'll go with \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "58751f2bfc9309a7073b489d24aa621d", "ans": "socialize", "raw": "rsation, so the basic need being acted on is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "af50994f550fec2f4bdcd6cee96c7d08", "ans": "rest", "raw": "relax. The purpose is relaxation \u2192 rest.\n\nI'll go with rest.</think>output: rest", "model": "glm-5.3:cloud"}
+{"key": "c21089d5b0317309fae53e49f789190a", "ans": "eat", "raw": "the main action is eating at a cafe. The best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "ceba2d53ce6083a551ffdf81bdafb802", "ans": "eat", "raw": " overall purpose is eating breakfast. So the answer is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "c9a85bb9f4dfeeb492d601b2b5ccd7f7", "ans": "socialize", "raw": "at's socialize - talking or spending time with someone.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "d8f6a108cbd0a9b2ea4e46e61e80b8bc", "ans": "none", "raw": "he purpose is shopping/errands, so \"none\" is the best match.</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "ee294b8c154c82c4e8c300eb0fc55aa4", "ans": "engage", "raw": "upation \u2014 engaging in work activity.\n\nI'll go with engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "dde73350624b912e8c439dd0826812ba", "ans": "drink", "raw": "t the kitchen sink. This is clearly the \"drink\" basic need.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "4d361b2c2355b50c9a4cbddb988865cc", "ans": "socialize", "raw": " on each other - social interaction.\n\nAnswer: socialize</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "b85139706eb1e08265446c88517225a8", "ans": "rest", "raw": "ome\" with tea being the means. So \"rest\" is the best answer.</think>output: rest", "model": "glm-5.3:cloud"}
+{"key": "d227e309fe272f2d86a1d352edffc6a6", "ans": "eat", "raw": "water is secondary, while eating. So the best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "41a835a9d958718bcbc86098ccda7a16", "ans": "drink", "raw": " The purpose is to drink coffee. The best match is \"drink\".</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "3bd1deab324c2dd8b18dbee6848b6e52", "ans": "eat", "raw": "kfast, which serves the need to eat. The best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "87248a03ca9ed291d9e63f174af5eb9b", "ans": "drink", "raw": "coffee\" is about drinking coffee. So the answer is \"drink\".</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "d8cae104f434786550e43f5f3f4ab112", "ans": "engage", "raw": "ge includes \"working on something\".\n\nFinal answer: engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "efce22d80db92cf312de68598437d2e6", "ans": "eat", "raw": "h preparing water and fruit, the main purpose is lunch = eat.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "3644363f78528711babb19dea2623e37", "ans": "none", "raw": "ce it's work tasks like cleaning/prepping, not engaging in creation.output: none", "model": "glm-5.3:cloud"}
+{"key": "12f7a6fd88488c4ce7c11829f48e9c80", "ans": "socialize", "raw": "t story with Sam)\" suggests socializing is the purpose.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "3b66ece5b890a1effe14216b7d147cf3", "ans": "engage", "raw": "thers. His purpose is work. So \"engage\" is the best match.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "7afcc4cd6e45a96ed29c07e3bdaa0de9", "ans": "socialize", "raw": "d tidying, the actual action is conversing, which is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "ef055559a1c448dcb3fc91c294ab4ad2", "ans": "engage", "raw": "g on or creating something \u2014 designing/sketching. That's \"engage\".output: engage", "model": "glm-5.3:cloud"}
+{"key": "bf350de60e99c6722e2da0402b4d3812", "ans": "eat", "raw": " drink is secondary. The main purpose of \"have lunch\" is eat.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "606fb632bd6e2df7c728f17ab3bf6cbc", "ans": "socialize", "raw": "ans, the current action is chatting.\n\nAnswer: socialize</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "024512ebf45c08c2a69d108df7dfbae7", "ans": "engage", "raw": " is broad enough to include making coffee.\n\nI'll go with \"engage\".output: engage", "model": "glm-5.3:cloud"}
+{"key": "5f99c0d08e2ca447149d392abaa7293c", "ans": "eat", "raw": "\". Reviewing food and drink suggests consuming it. So eat seems best.output: eat", "model": "glm-5.3:cloud"}
+{"key": "94b05fba29490a32cd45bad2d30e99c0", "ans": "engage", "raw": "nd preparing coffee for customers is work. I'd say engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "61a913d3ab5927c895b17ef09bfd7f4e", "ans": "none", "raw": "action is shopping, not eating or drinking. So the answer is \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "b82eded346092f44db3b05bb35668281", "ans": "socialize", "raw": "match for \"talking or spending time with someone\" is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "e34db70a243a4a68bd08bdbcd0d8c986", "ans": "socialize", "raw": "itself is conversing. The purpose of the action is socializing.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "025a8953b5c4a42f0f1f371ea6a57525", "ans": "eat", "raw": "h, \"tea\" can mean the evening meal. So the basic need is eat.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "feab33825e90c729f8f08dc455aebdb8", "ans": "drink", "raw": "nk\" category: drinking water, coffee, tea or another drink.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "49f89df25d78dd453b21a658972df60e", "ans": "drink", "raw": "on is getting a drink of water, so the basic need is drink.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "980967c2f1a518521b379f49583648ab", "ans": "drink", "raw": "ling a cup with water is to drink it. So the best match is \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "8f2eccbd10244feec25a7a29a7351847", "ans": "socialize", "raw": "he purpose is socializing.\n\nSo the answer is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "afaa4ff1cecfba42450f13e02b8c3de7", "ans": "socialize", "raw": " which is socializing.\n\nThe answer should be socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "8439113eeb87ec5eca7de4e9a3ef0ccb", "ans": "engage", "raw": "eative activity, not actually drinking. So the answer is \"engage.\"output: engage", "model": "glm-5.3:cloud"}
+{"key": "1b796251f40f6ca19e1ea9e92d171748", "ans": "none", "raw": "offee beans is not drinking coffee. So the answer is \"none\".</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "57a81e1a82e574a699ea16ab513fd6c8", "ans": "drink", "raw": "asic need being acted on is drinking coffee, which matches \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "fa6cba6674c2ad370d3ac0bf54db3937", "ans": "none", "raw": "shopping, not eating or drinking right now. So the answer is \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "2297e099e3a34668530073f1ead8fa0f", "ans": "socialize", "raw": "\" The purpose is social interaction.\n\nAnswer: socialize</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "ecc5b366c046de4ea3cc58c894996f7f", "ans": "eat", "raw": "ry purpose is having dinner - eating a meal. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "b4be9bcf930a49480e0c0bbf2c168fef", "ans": "eat", "raw": "eal is the main action, coffee is secondary. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "90ac6d53cb828988e0af009068a67db1", "ans": "rest", "raw": "est match is \"rest: sitting, lounging, napping or relaxing\".</think>output: rest", "model": "glm-5.3:cloud"}
+{"key": "7112a8f3bbf3f84ed26530129ebd0cb1", "ans": "socialize", "raw": "This is a conversation, so the basic need is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "434101a20a7c0f300436a0f0735c4259", "ans": "toilet", "raw": "the location is the toilet. So the best match is \"toilet\".</think>output: toilet", "model": "glm-5.3:cloud"}
+{"key": "14e89f701035b969c02c51289f33bd99", "ans": "drink", "raw": "on is drinking tea. The basic need being acted on is drink.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "1d1d78f2052dab6b4e742657abe41986", "ans": "drink", "raw": "lass is incidental. The basic need being acted on is drink.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "be7184b37caf6895f7e8bbdb415a2d7f", "ans": "eat", "raw": "purpose is preparing a meal. The best match for the purpose is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "5839a2cb8af544e6770195ff920b5376", "ans": "rest", "raw": "ords in it.\" The primary purpose is relaxing and unwinding, so rest.output: rest", "model": "glm-5.3:cloud"}
+{"key": "f5d732beb38a9a62536dc7a716adf7fa", "ans": "socialize", "raw": "t the action is conversing. So the answer is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "47629331b933f3f9f8d919b13302467b", "ans": "eat", "raw": "rinking water and short break are secondary. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "f4bf13a6c33219a1ffbdf448bf718fb7", "ans": "drink", "raw": "ist. Waking up isn't a need category. So the best match is \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "339bc78127b62cccf04515d48ae8f783", "ans": "eat", "raw": "primary purpose is eating dinner. So the best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "0a8763c92f3062536e99aca9772e38ea", "ans": "drink", "raw": " the action described is drinking water. The best match is \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "cbf71fbbbfbe2bebec29590d6fb67040", "ans": "engage", "raw": "dying, working on or creating something\". So the answer is engage.output: engage", "model": "glm-5.3:cloud"}
+{"key": "041b038f9385923e88c13afc3b21d178", "ans": "drink", "raw": "nd checking its taste \u2014 the purpose is to drink coffee. So \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "393a1129a1d5948e889f376937ea13a0", "ans": "rest", "raw": "the action, not just the words. So \"rest\" is the best match.</think>output: rest", "model": "glm-5.3:cloud"}
+{"key": "c1caa084fd8d8ac66ee7e16dc65b2f45", "ans": "eat", "raw": "included, the main purpose is eating a meal. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "eb3d5d6d6c5f6ef3d97042847de53173", "ans": "rest", "raw": "right now\" - he's relaxing. So \"rest\".\n\nI'll go with \"rest\".</think>output: rest", "model": "glm-5.3:cloud"}
+{"key": "81231d153d9226e38ada07676209588c", "ans": "eat", "raw": "n action is having dinner (eating the meal). The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "c444fa999f7f8dee9cffa736c0f76ef8", "ans": "socialize", "raw": "rpose of conversing is socializing. So the answer is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "33048deb0ac2243b1743535ee980e30d", "ans": "socialize", "raw": "pose of the action is conversing, which is socializing.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "09eead04feb93e32a9dd6597897bfdf0", "ans": "eat", "raw": "r or light beverage is secondary. So the best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "e22cf61fe53faaeb2ada7e4ca965c8ee", "ans": "engage", "raw": "der \"engage: reading, studying, working on or creating something.\"output: engage", "model": "glm-5.3:cloud"}
+{"key": "d477b2610d4552a137b10051b2080357", "ans": "socialize", "raw": " the actual action is conversing, which is socializing.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "9657c3d6ee9f47f46c91a967d1d7c036", "ans": "eat", "raw": " water as a secondary activity while eating. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "f33c82f85e5d3a16a4ca000abdc77bb5", "ans": "engage", "raw": "e.\n\nI'll go with \"engage\" since it's her work at the cafe.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "afc4799037e3b23bea1b21e5f027c409", "ans": "socialize", "raw": "not just the words in it.\"\n\nSo the answer is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "56fdbdad68fb9ef1eed8bd68e0669239", "ans": "socialize", "raw": "n is socialize - talking or spending time with someone.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "15edf3e701d1deebd9ecf641d19f78e1", "ans": "eat", "raw": "er, the main action is having lunch. The best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "23cea6dfcf364b7d342659474e9882c5", "ans": "none", "raw": "ction is shopping/errands, not eating or drinking right now.</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "33dcb5e194c78c567c44a3f3bcc96125", "ans": "none", "raw": "pplying for a job, which is an errand.\n\nThe answer should be \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "c6a0a06481a0eee305804199d1e5038d", "ans": "eat", "raw": "urpose of the action is eating. The best single match is eat.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "a7cf6ff2fe6524596f4d6200af0ed364", "ans": "socialize", "raw": "tion itself is conversing. The best match is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "3ac190a5658f70cc79de6bb994f635ba", "ans": "socialize", "raw": "spending time with someone. So the answer is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "10b37eb35e372b0edde8ff95db6b8418", "ans": "eat", "raw": "ole action is to eat breakfast (with tea).\n\nI'll go with eat.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "c0e6e3d34d7e9a41680605acb13abf06", "ans": "none", "raw": "ually. Checking inventory is more of a chore/errand. I'd say \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "38295dd3b58277745df7d465da2f6701", "ans": "socialize", "raw": "ng to Sam share his story. The best match is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "953d8f42b619c61b712af01724e7b669", "ans": "rest", "raw": "unwinding at home\". The purpose is rest.\n\nI'll go with rest.</think>output: rest", "model": "glm-5.3:cloud"}
+{"key": "ef939ec938b199901220edb74c93d82a", "ans": "eat", "raw": "rimary purpose is breakfast (eating a meal). The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "5df0d08c2fb00dc5940956b6f403a887", "ans": "none", "raw": "urchasing items, which is shopping/errands. So the answer is \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "7f9ae69d43c496288f2b4c0b3e319de3", "ans": "engage", "raw": "age\" covers working on something. So the answer is engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "417fcbcb412f79b3272d244b5f68f008", "ans": "engage", "raw": "l her job \u2014 working. \"engage\" covers working. I'll go with engage.output: engage", "model": "glm-5.3:cloud"}
+{"key": "ed69ca7fcc457bd974991c81cf66f75a", "ans": "eat", "raw": "meal. The drink is accompanying the meal. So the best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "0260befe772d95449e42be953663aa9a", "ans": "drink", "raw": "match since the core action is making tea and taking a sip.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "f413306a47a9775e1a1c341761deb1df", "ans": "engage", "raw": "h is work. So \"engage\" - working on or creating something.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "abb6190ef2754d88190b61f83385a3fd", "ans": "eat", "raw": "derlying need - nourishment, which is eat.\n\nI'll go with eat.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "d6fd0c102488c0bd5ad17aafaf909bae", "ans": "socialize", "raw": "aps to socialize. The action is conversing \u2014 socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "c2a188ee5bd18984984871c199101268", "ans": "drink", "raw": "es drinking a glass of water. So the best match is \"drink\".</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "edd2fa9d7c8972dade1753b1fb5f0b8e", "ans": "engage", "raw": "on/review the application and plans.\n\nI'll go with engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "991b339ec671a6bebf338a77114d0964", "ans": "eat", "raw": "\n\nThe best match is \"eat\" since the purpose is to have lunch.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "94ed56772299b35f798bc8c506cead27", "ans": "engage", "raw": "er job. Engage covers \"working on\" something. I'll go with engage.output: engage", "model": "glm-5.3:cloud"}
+{"key": "bf46f11c51daac3f0edfb2dd582c1390", "ans": "eat", "raw": " secondary; the purpose is eating breakfast. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "d7beaf41956433addd70c4bf7c8a1789", "ans": "none", "raw": "e groceries are for breakfast later, the current action is shopping.output: none", "model": "glm-5.3:cloud"}
+{"key": "dcaec8629aa7b5d0e064f35ce4756b3e", "ans": "drink", "raw": "d is about the coffee machine brewing.\n\nI'll go with drink.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "d210033a7695a356ddba5e69b2dd1ce4", "ans": "none", "raw": "ying groceries, which is an errand. So the answer is \"none\".</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "01d92d0c9bc04fabc80d109b8824348e", "ans": "socialize", "raw": "ent action is conversing.\n\nThe best match is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "aa7fc95d4166c8abb6463bc34db535ec", "ans": "none", "raw": " is shopping/errands, not drinking. So the answer is \"none\".</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "2050b1ed605bc6cbb06e9d88f5d61caf", "ans": "none", "raw": "he best match is \"none\" since shopping is listed under none.</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "2fcb2c0543aef8e2a6f9e317e88c7ace", "ans": "drink", "raw": "ng time. Filling water bottle \u2192 drink.\n\nI'll go with drink.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "ba3cccd70193271cc68cfd8995754793", "ans": "eat", "raw": " action is \"eat breakfast\" - eating oatmeal. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "2aa4f9d85c6e816b83ae0ff5a4857f53", "ans": "none", "raw": "ting or drinking. The purpose is shopping, which falls under \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "a80dbf11585bf82e82a6cdf9c096386a", "ans": "rest", "raw": "d tea are just accompaniments. So \"rest\" is the best answer.</think>output: rest", "model": "glm-5.3:cloud"}
+{"key": "beee3b76fbb809bb01e337fb25fe77c7", "ans": "eat", "raw": "of a morning routine at a cafe... eating breakfast. I'll go with eat.output: eat", "model": "glm-5.3:cloud"}
+{"key": "3c6b7bfe5d87d82ca6cc6ebe7b580d0a", "ans": "engage", "raw": " \"engage\" - working on/creating something (making coffee).</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "b298624a8150277eea6788554d45bb96", "ans": "eat", "raw": " \"eat.\" The drink is just water accompanying. So \"eat\" is the answer.output: eat", "model": "glm-5.3:cloud"}
+{"key": "7263b5e277a00045b674eedab5b38362", "ans": "eat", "raw": "ting. Sipping water is secondary. So the best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "8e4531569015a6805cdbe47e139b8b4f", "ans": "eat", "raw": "nd drinking water, the primary purpose of a dinner is to eat.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "18ee1527a586eae4a1ac15b08df34892", "ans": "eat", "raw": " mentioned, the main action is eating lunch. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "b5b1cdb7e8832a14a3051b1d68ccea16", "ans": "eat", "raw": "ner. Drinking water is secondary. So the best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "5d58ff29dbdb8f1031eb8c8cf5970a89", "ans": "drink", "raw": "asic need being acted on is drinking. The answer should be \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "cb4a39e6e3688e4183d2e144e20028d7", "ans": "none", "raw": ", ...). The purpose is shopping, not eating or drinking yet.</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "9547747796c64d53b2b7dcc26e257a56", "ans": "eat", "raw": "the main purpose is breakfast/eating. So the answer is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "a7d0ad1e5aa30edd86c89efa780ae307", "ans": "eat", "raw": "is having breakfast, which is eating a meal. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "7487c07b9d0f30b256131ce32d2a3066", "ans": "drink", "raw": "out drinking water. The basic need being acted on is drink.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "2b705adc1a525f3412a4cbcd286bd1cf", "ans": "toilet", "raw": "he restroom\" is the dominant phrase.\n\nI'll go with toilet.</think>output: toilet", "model": "glm-5.3:cloud"}
+{"key": "b376194b158a5fd4c2a367df7a689a04", "ans": "socialize", "raw": " conversing is the main activity.\n\nSo output: socialize</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "b2a632c359fa4f3cad2ea8b1108182c6", "ans": "socialize", "raw": "offee, but the action itself is conversing, which is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "95f616013a5d2bf7594bbff9a4257124", "ans": "eat", "raw": "mentioned, the main purpose is eating lunch. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "28a3bd0641b8e37e539ea8578127c4c0", "ans": "eat", "raw": "ss of water)\". The purpose is eating a meal. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "0d492c129c7c15c99fe0ba91884aa25d", "ans": "engage", "raw": " that's creating something, so \"engage\" is the best match.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "e932240af16a37af99ba025661c1f071", "ans": "engage", "raw": "ge\" - reading, studying, working on or creating something.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "6e8e4fc351e0e531cb3811448386b346", "ans": "engage", "raw": "rking on or creating something\".\n\nSo the answer is engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "d3083c312eb33af12f8b011ad6fcb559", "ans": "socialize", "raw": "they're conversing about plans. So the best match is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "75ac017e434df43a12205e3b1eae7357", "ans": "drink", "raw": "water bottle - which is for drinking. So the best match is \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "cae7b355ae53f7293f069517ad215b55", "ans": "rest", "raw": "ription says \"relaxing and unwinding at home\" - the purpose is rest.output: rest", "model": "glm-5.3:cloud"}
+{"key": "f05a4bceb53ac2fc40aa806ad9687d39", "ans": "eat", "raw": " The purpose of the action is eating. So the answer is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "7b20403e9613cc2b457b14133232824e", "ans": "drink", "raw": "k. This is clearly the \"drink\" basic need - drinking water.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "222dd78571e2566195a2d42d71a91782", "ans": "eat", "raw": "\" is odd, but the main action is having lunch. The best match is eat.output: eat", "model": "glm-5.3:cloud"}
+{"key": "fca48ac247673e49e5921a9e9b1b2b28", "ans": "drink", "raw": "ches \"drink: drinking water, coffee, tea or another drink\".</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "055a7838a57612592584c376234ebf17", "ans": "engage", "raw": "st the words. The purpose is painting (creating art), so \"engage\".output: engage", "model": "glm-5.3:cloud"}
+{"key": "183f216ac9271e6b813ec31b1c88104d", "ans": "eat", "raw": "s tea\" means eating the evening meal. So the answer is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "1375323375875a9e149f1459db7db07b", "ans": "socialize", "raw": "ng a walk, the action itself is conversing, which is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "b8ac82a747466b61d0fea4ceb6e777a8", "ans": "rest", "raw": "o relax, not the purpose itself.\n\nThe answer should be rest.</think>output: rest", "model": "glm-5.3:cloud"}
+{"key": "33f0f3250862c4986a33b33ba7509a86", "ans": "eat", "raw": "\". The purpose is eating breakfast, so the basic need is eat.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "55560175adcd21ad34e2f31d4e7afdc5", "ans": "drink", "raw": "offee)\". The purpose is drinking coffee. The best match is \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "3352d362bd8c27b4ccd4c8268e7d2df0", "ans": "socialize", "raw": "asizes the social nature.\n\nThe best match is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "faa92688ce54ea6602c17e599adca9fb", "ans": "socialize", "raw": "cussing with Giorgio. This is talking with someone - socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "183ee9562c0edfe51486b3437e4f434c", "ans": "eat", "raw": "e\" which typically maps to eating breakfast. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "e0e8d1c1562545793b12729563da6751", "ans": "socialize", "raw": "\u2014 this is talking with someone, so the basic need is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "4801f1d717c829e916c6a5d78eb70e03", "ans": "engage", "raw": " purpose is work, not socializing.\n\nI'll go with \"engage\".</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "ab3caf49fa1cd796cc2fa4e0e8a18093", "ans": "eat", "raw": "t).\" The purpose of having breakfast is to eat. So the answer is eat.output: eat", "model": "glm-5.3:cloud"}
+{"key": "c8316104f80ebfac35badad6e03a1086", "ans": "socialize", "raw": "hich is socializing.\n\nThe answer should be \"socialize\".</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "4829bdae85862bdf1ee589825cbd2694", "ans": "none", "raw": "he current action is shopping.\n\nThe answer should be \"none\".</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "b39ee637166e558fbd4487b408efefc0", "ans": "eat", "raw": "g). The primary purpose is eating dinner. So the best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "c68943612435d84db9dc991fe701a4bd", "ans": "socialize", "raw": "ending time with someone.\"\n\nSo the answer is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "c21701a69d5ccd4e3b66b0720dbad7b2", "ans": "none", "raw": "ting or drinking. The purpose is shopping, which falls under \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "df9d1a5e11a5868efc9f3dec7d8e66ae", "ans": "engage", "raw": "hing\" explicitly includes working. So the answer should be engage.output: engage", "model": "glm-5.3:cloud"}
+{"key": "1404a93aebcf0b257ced65cb4d357377", "ans": "drink", "raw": " - this is clearly about drinking. The basic need is drink.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "0d9a05e3fd150372685f2f6fe708fdbe", "ans": "eat", "raw": "drink is also taken out, the primary purpose is eating lunch.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "5e3f029de166e752e7c8f0e6ff5c149d", "ans": "engage", "raw": " is helping customers while working.\n\nI'll go with engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "447592db7afc2acfde4784b372ddcb8d", "ans": "drink", "raw": "itly mentions drinking water. So the best match is \"drink\".</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "6fb5ef28fcf294ba0eb960dbd1de8c1a", "ans": "socialize", "raw": "eakfast together. The action is conversing, which is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "b9c18f5f931056599b2e0f8a987fbd72", "ans": "drink", "raw": "ned and drink explicitly covers \"tea.\"\n\nI'll go with drink.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "493823e68e0bc4c13fcbb148bbba7dca", "ans": "eat", "raw": "in action is having dinner (eating). The best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "23090ffd117862a2086228fe3796e75e", "ans": "eat", "raw": "kfast addresses hunger. The water is incidental.\n\nI'll go with \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "11a48f10d2d44e336d987158a6cee7a7", "ans": "eat", "raw": "water. The primary purpose is eating a meal. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "1c8ad24032238a0e3e867805cac0fcd9", "ans": "drink", "raw": "e. The purpose is to drink coffee. So the answer should be \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "5a04572f3c836944c3f7a22836c666f5", "ans": "eat", "raw": "ner. Drinking water is secondary. So the best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "c502d76f976411e29834053460d44bfb", "ans": "eat", "raw": "ping water, the main action is having lunch. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "a7d1abd08fca8c4f9ba89582d82d13c5", "ans": "drink", "raw": "sink. The purpose is drinking water, which matches \"drink\".</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "d457b4807b969bb796ecdd96fdfdb239", "ans": "eat", "raw": "pose is eating a meal - preparing breakfast. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "00df0522114a18b3e086a0b2312b987c", "ans": "engage", "raw": "r a customer. So \"drink\" isn't right.\n\nBest match: engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "7584267be29e0443d267c177c245dab4", "ans": "socialize", "raw": "n is socialize (talking or spending time with someone).</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "94ba5c05286f65f935f556bfe1f5d375", "ans": null, "raw": "ng: to serve customers, do his job, earn income. Is this acting on a basic need?", "model": "glm-5.3:cloud"}
+{"key": "991e71e030df852a3cda5debf9af4598", "ans": "rest", "raw": "ng or relaxing). The purpose is relaxation. So output: rest.</think>output: rest", "model": "glm-5.3:cloud"}
+{"key": "cdfd1f892c0a87185576f7bb133f1f20", "ans": "eat", "raw": "rimary purpose is breakfast, which is eating. So output: eat.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "b6be10351633c6c5161c8a6cf6fc995c", "ans": "eat", "raw": "y purpose is having dinner, which is eating. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "389e5b9e889e4dc3c3997b152078d375", "ans": "eat", "raw": ")\". The purpose is eating a meal - breakfast. So the answer is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "f6c01ab7279441cb5e52a499d0b2e530", "ans": null, "raw": " \u2192 \"none\". Or is it?\n\nBut then \"buy groceries for the fridge\" \u2014 the supply store", "model": "glm-5.3:cloud"}
+{"key": "0392d88c5c6eeaa880aef7a31f59b51b", "ans": "socialize", "raw": "lved, the core activity is chatting.\n\nAnswer: socialize</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "511e14db0590fcd75709fc7791a74405", "ans": "engage", "raw": "one\". Serving customers = working = engage.\n\nFinal answer: engage.output: engage", "model": "glm-5.3:cloud"}
+{"key": "be102087f015d714765d5f6ef92f32f1", "ans": "none", "raw": "rands/preparation, not the actual act of eating or drinking.</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "9f2a441ac9c6aa7e088f388aa9c7046c", "ans": "eat", "raw": "ing prepared, the primary purpose is dinner. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "4ad72190e4e4c28f1b8b85db01f97a27", "ans": "drink", "raw": "resh\" at a refrigerator in a cafe. The basic need is drink.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "c956cd84de196218b6f052f4435a321b", "ans": "engage", "raw": "mething - it's a work task. So \"engage\" is the best match.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "43b9f6925f1efb4e505403577726451f", "ans": "engage", "raw": " the cafe counts as engaging in work. I'll go with engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "51e6b1776fd01ef18d3463efa670eca3", "ans": "eat", "raw": " The purpose is eating breakfast, so the basic need is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "1455c85bb64ebd1e77c48fb69b992030", "ans": "eat", "raw": "ion is \"have lunch\" - eating a meal. The best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "5744c536d7c95fd434080051e4cae701", "ans": "drink", "raw": "ic action being done is drinking coffee. The best match is \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "c282d5730348b7dc8d8eba31a636fd5f", "ans": "wash", "raw": "g ready for the day, which involves washing up. I'll go with \"wash\".output: wash", "model": "glm-5.3:cloud"}
+{"key": "874d4ccd9bdd3f178adf4ba7576f75ae", "ans": "eat", "raw": "ded, the primary purpose is dinner (eating). The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "d0e8e25802ea45c3f09fb2e7024d065d", "ans": "drink", "raw": "ches \"drink: drinking water, coffee, tea or another drink\".</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "33fb4b02cdfa3041ee3ac2c3ff205c64", "ans": "none", "raw": "\"none of these (walking, shopping, cleaning, errands, ...)\".</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "9609e070dee32397c576d85f02b87083", "ans": "socialize", "raw": "in it.\" The purpose is to meet and discuss - socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "9f69d73a9e40868aa5898af3d393661a", "ans": "eat", "raw": " yes, ordering a light meal is for eating.\n\nI'll go with eat.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "acd5c2f332da4011b45a950b497ef0ec", "ans": "socialize", "raw": "it).\" The purpose is chatting/talking with someone - socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "c26ad137aab92f3a6fca407d1e4f2d9b", "ans": "none", "raw": "ng at the pub wouldn't be a basic need. The answer should be \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "94c1dc4fba4ef87bf8cc6379f11abb23", "ans": null, "raw": "ld argue brewing coffee is \"creating something\" (creating a pot of coffee). That", "model": "glm-5.3:cloud"}
+{"key": "8b9fb9d87a02f5cb7a23d55c4be66339", "ans": "eat", "raw": "volved, the main action is eating breakfast. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "34e9f3dd9666c75befcf09ad5f3a1880", "ans": "eat", "raw": " best match would be \"eat\" since the purpose is having lunch.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "411a6ccecfc966447170f473f80e1a9e", "ans": "drink", "raw": " be drinking water. The basic need being acted on is drink.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "6a2ed6e09741498ff6aa7958672ae15a", "ans": "drink", "raw": " and returning to his seat. The drink is explicit. I'd say \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "5004b54f0ca237730ea719be9aae86ab", "ans": "engage", "raw": " is creating something, and it's her work.\n\nI'll go with \"engage.\"output: engage", "model": "glm-5.3:cloud"}
+{"key": "c78de5c66a27e91333ceb49673835181", "ans": "socialize", "raw": " The purpose of the action: talking with someone. So socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "670e0c83a2c57f3e6c048894e8bc8ad9", "ans": "socialize", "raw": "ood and creative projects.\n\nSo the answer is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "446d49d52b145c3f72a3e3871ef23ee2", "ans": "eat", "raw": " purpose is eating breakfast. The best single match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "b3953d8cc28b62ad00bafd1df4e5a13d", "ans": "engage", "raw": " something\". Repairing is working on something. So engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "aeb9e766515cb57d849456c2fce92a12", "ans": "eat", "raw": "se of making breakfast is to eat. The answer should be \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "0bf7a75bffee8f3f510968d20ede8c63", "ans": "socialize", "raw": "purpose is social interaction.\n\nI'll go with socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "e7ec0373672309e496ba33bdff965998", "ans": "engage", "raw": "gage\" is the best match here since she's actively working.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "a51c1ff5b16e133579f862c0986cd37c", "ans": "eat", "raw": " on the table. The purpose is eating a meal. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "58d62fb125627a3e3ac24074226349de", "ans": "drink", "raw": "se of the action. Getting a drink of water maps to \"drink\".</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "fb8714c02319b4ed5c1994cda1f6ff68", "ans": "socialize", "raw": "nking; he's conversing. So the best match is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "aa41402478ca77eb42d426db40efb5a1", "ans": "eat", "raw": " main action is eating breakfast, so the best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "54f422585f47efc17d097b0e92495417", "ans": "socialize", "raw": ", but the action itself is talking. So the answer is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "d1f78cbade7b45f5b3cf00ddf3b2e824", "ans": "eat", "raw": "t the action itself is having lunch. The best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "8473f15339584244841437593b918b0e", "ans": "socialize", "raw": "ems, not consuming them. The best match is \"socialize\".</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "28674e31d02a7c270207efff47c7f3b6", "ans": "eat", "raw": "od and drink - the purpose could be to have a meal. I'll go with eat.output: eat", "model": "glm-5.3:cloud"}
+{"key": "ec1e142294fd64eecba2396daeb37b21", "ans": "socialize", "raw": "So the action is conversing/chatting. That's socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "a99eac8b8e7d696bb3ee307cf42b7da6", "ans": "socialize", "raw": "opics, not actual actions.\n\nSo the answer is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "9f0edf583e6f16631944231dd46f8ce8", "ans": "engage", "raw": "mething as part of work. I think engage is the best match.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "c10bc36ae3c564726c03315df5a2e36e", "ans": "socialize", "raw": "s talking with someone, so the basic need is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "5d889153e120252f466d51cb8822c77d", "ans": "eat", "raw": "aving dinner is to eat. The basic need being acted on is eat.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "70a3b70d9fe23669ae8625e8206d5985", "ans": "engage", "raw": " is creating/working on something.\n\nI'll go with \"engage.\"</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "86d8dc756a6532b0edadb5f19312b62e", "ans": "drink", "raw": "ffee\". So the person is drinking coffee. The best match is \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "4b59e827ef691b87c862c9ee6a7fdd28", "ans": "none", "raw": "ion. Serving coffee is a service task.\n\nI'll go with \"none\".</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "b631d91a5df9549ae5bad5c377daa676", "ans": "engage", "raw": "vice, not socializing. The best match is engage (working).</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "b4f2de75cdc5672e8052f3fc8d14bb7a", "ans": "engage", "raw": "words). The main action is working on the manuscript. So \"engage\".output: engage", "model": "glm-5.3:cloud"}
+{"key": "ec868a1103aceacd38427928205a8607", "ans": "drink", "raw": " the explicit action is drinking coffee. The best match is \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "7ae8acb39065527514d36138cded7c23", "ans": "eat", "raw": "urpose, and coffee drinking is part of the breakfast routine.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "6ebe22c5d472d9d116d25f41277fc820", "ans": "drink", "raw": "s is clearly the \"drink\" basic need. The answer is \"drink\".</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "5da80951819501c72454a16fb0022611", "ans": "rest", "raw": "elaxing session, not urgently quenching thirst.\n\nFinal answer: rest.output: rest", "model": "glm-5.3:cloud"}
+{"key": "88173621a993b8938681ada3ab70f6d4", "ans": "none", "raw": " drinking. The purpose is shopping/errands, so the answer is \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "97a1e27d842b010f58cec92f4b20ee98", "ans": "eat", "raw": "is having breakfast, which is eating a meal. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "78645f7f58eaadd45eac412d54c67564", "ans": "none", "raw": "o the best match is \"none\" since it's work/cleaning/errands.</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "c0a0db9e635f8de47d8be7c075a9ffdc", "ans": "socialize", "raw": "g, not eating or drinking.\n\nSo the answer is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "02109ce87a5861c2eae4c3a1fd10e5fc", "ans": "engage", "raw": "omething\" \u2014 working on something. So the answer is engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "31d4faee5b242889aaafe38fa812afb5", "ans": "eat", "raw": "the lunch, so the purpose is eating. The best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "c2cdb08f5914ce7465e201fce39ebb6e", "ans": "socialize", "raw": "clinic fundraiser matters \u2014 talking with someone. So socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "7bdab9ec0c868a57acd9eb6e469479a8", "ans": "none", "raw": "because shopping is explicitly listed as an example of none.</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "1fdc1a6b194197b6516bb7b96d18c94c", "ans": "none", "raw": "lves is physical labor/errand. So \"none\" is the best answer.</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "b29907d5f6ebb27ec1db273a6700bbf8", "ans": "socialize", "raw": "talking/spending time with someone. So the answer is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "7dbd3d3c9de4bc2bdd21aaa1343563b0", "ans": "engage", "raw": "ls (comparing with campaign quotes) is the main work task.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "cc31529b1d8fdc52517d705b8770348d", "ans": "eat", "raw": "cluded, the main action is eating breakfast. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "88b28482e6f68d8235d5be7e7ee6d9a3", "ans": "socialize", "raw": "y. The purpose is socializing.\n\nI'll go with socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "9150aeafbf67f4662891eaac673b9765", "ans": "none", "raw": " in reading/creating. This is work/cleaning/preparation - so \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "c72acd9fbeef721dc82d6fb42c4aca94", "ans": "eat", "raw": "might suggest drink, the overall purpose is eating breakfast.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "e6271ab59917ff5076f836814d14bf67", "ans": "drink", "raw": "water. The walk is secondary. So the best match is \"drink\".</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "e08a902e37a9af1aa0430b342de12b85", "ans": "engage", "raw": "The order is \"study and eat\" - study first. I'll go with \"engage\".output: engage", "model": "glm-5.3:cloud"}
+{"key": "e2137001b7364cfbd980c1d9596bb749", "ans": "eat", "raw": "oatmeal pot)\". The purpose is eating a meal. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "103ed8fdb286be417009daf7a2d515fe", "ans": "socialize", "raw": "o socialize with Isabella over coffee.\n\nI'll go with socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "9d6ffb4f18ce1f31e49cfc4d3d5221b7", "ans": "drink", "raw": "ting coffee for himself - the need is drink.\n\nI'll go with \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "f48965a9cbdfc564b2621c5231a6f743", "ans": "drink", "raw": "tea is to drink it. The basic need being acted on is drink.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "bf8c4f89412b9add9629bb892ab0c667", "ans": "socialize", "raw": " or spending time with someone. So the best match is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "8153e7bb3504521d0b8a4d7dfaa611d9", "ans": "eat", "raw": " the primary purpose of breakfast is eating. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "e5cd2eb391493b0ad94e200f7507931d", "ans": "socialize", "raw": "ion, not the actual action. So the answer is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "7d1c8f89927a2094c226039f1834d7d6", "ans": "drink", "raw": "ose seems to be drinking coffee. The best match is \"drink\".</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "888aac6bdad10d56f0114da196feebb3", "ans": "engage", "raw": "se could be seen as engaging in work. I'll go with engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "90ba50904f1adab9c7ecb760198e847d", "ans": "drink", "raw": "oom sink. The purpose is drinking water. The best match is \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "b456b6653b4cdae223a0036a7485440d", "ans": "none", "raw": "shopping, cleaning, errands, ...).\n\nSo the answer is \"none\".</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "1bf93c298ea0a697a3b409848e6ad90e", "ans": null, "raw": "tions in this series, not specific to this one.\n\nOK let me just think about what", "model": "glm-5.3:cloud"}
+{"key": "99ab6f24a2e43dab351840fd9933724e", "ans": "socialize", "raw": "ting/vehicle for socializing).\n\nI'll go with socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "b3fd620ca4efc98a14edd01fbc1c8967", "ans": "socialize", "raw": " conversing \u2014 the purpose is socializing. So output: socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "84d56b16ff80cc5a09ba89bc273da902", "ans": "socialize", "raw": "pose is talking/spending time with someone, which is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "30990a951080046f1e62cd79f3999d5b", "ans": "socialize", "raw": "ans. The action is conversing, which matches socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "1aa356e24d6db702fae2e9de9937b9e5", "ans": "engage", "raw": "omething. But \"working on\" is broad.\n\nI'll go with engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "f039039c8f16222f6445ef96a3053c72", "ans": "eat", "raw": "right now\" - at the caf\u00e9, it's eat/drink.\n\nI'll answer \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "b262cf39e1d3d6210dad7e79093e6586", "ans": "eat", "raw": ")\". The purpose is eating a meal - breakfast. So the answer is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "3c430aedc83c8ce81561dec2b5c7419b", "ans": "engage", "raw": "tivity, not eating or drinking. So the answer is \"engage\".</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "074a1273d248dfe9af8175198c5541b9", "ans": "eat", "raw": "l)\". The purpose is eating lunch. So the basic need is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "22529a85f2909fea643314664754ac15", "ans": "eat", "raw": "ry purpose is having lunch, which is eating. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "d019fceed2476c4671c6b01018c2a6e5", "ans": "socialize", "raw": "interacting with and serving guests at the pub counter.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "db28a6726bf5633d01418c6ccb8b1154", "ans": "drink", "raw": " the purpose is drinking coffee. The best match is \"drink\".</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "a95d8dab61a5c1ee6e9a8c21693f0ae9", "ans": "drink", "raw": "the words. Preparing tea is for drinking. So the answer is \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "ef0f175b9e4d9498ab4f2d25beb85945", "ans": "socialize", "raw": "day\". So the action is conversing. The best match is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "7bf3f9f6665376caa1ef490ecf32fc02", "ans": "socialize", "raw": " action itself is talking.\n\nSo the answer is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "c617f65760caec5d7773d680f2f4948b", "ans": "drink", "raw": " the primary action mentioned first is coffee.\n\nI'll go with drink.output: drink", "model": "glm-5.3:cloud"}
+{"key": "0770b3ca084a8914bd8ea6c1604c8071", "ans": "engage", "raw": "ize, but the primary purpose is work. I'll go with engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "bba7b226617fcccf73dc9c7bd01fd44f", "ans": "rest", "raw": " verb is \"relax\" - the purpose is to relax. So \"rest\" is the answer.output: rest", "model": "glm-5.3:cloud"}
+{"key": "9c3ca8a483300766345494d08a23e834", "ans": "eat", "raw": "est match is \"eat\" since the main action is eating breakfast.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "21fa8771b0c9b1ec9bab24d415772635", "ans": "engage", "raw": " is preparing a drink, not chatting.\n\nI'll go with engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "18f5bf4d5a862f144d39d8db8907452e", "ans": "rest", "raw": "g purpose is relaxation/unwinding = rest.\n\nI'll answer: rest</think>output: rest", "model": "glm-5.3:cloud"}
+{"key": "bc0cf6bf7f6346b2101e2be453240e8c", "ans": "eat", "raw": "e of the action is eating a meal. So the best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "bdf16ec98b5c993a7edc79213e2b69f3", "ans": "socialize", "raw": "s conversing/catching up.\n\nThe best match is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "9b8bb392a600ef74ff247370678a1832", "ans": "drink", "raw": "morning coffee\" - ordering coffee and tea. This is clearly \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "39c31cecf4aa883727587e248d3d72e9", "ans": "drink", "raw": "is is clearly the \"drink\" basic need - drinking a beverage.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "5ffc1d74c9c2e0d94816a4b932e69462", "ans": "drink", "raw": "n being done is drinking a glass of water. The basic need is drink.output: drink", "model": "glm-5.3:cloud"}
+{"key": "20d892e7e6482322c530869c1bff36df", "ans": "eat", "raw": "water is incidental while eating. So the best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "5c14260edf4adcc7f8ed406ad8d6b7f4", "ans": "socialize", "raw": "bed is \"conversing\" and \"chatting\". The purpose is socializing.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "eec33517246b8465e6970c118f804781", "ans": "eat", "raw": "is having breakfast, which is eating a meal. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "5e01fd2f0db5ec68d99f8485a6d26b86", "ans": "socialize", "raw": "eer is mentioned, the action is conversing, which is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "74565523d52861f03e52c407104e81f2", "ans": "rest", "raw": "ans. The parenthetical emphasizes relaxing at the end. I'd say rest.output: rest", "model": "glm-5.3:cloud"}
+{"key": "d9636499e9bb33bf4e3288a468452f62", "ans": "eat", "raw": "est match for \"grabbing a quick breakfast and coffee\" is eat.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "b26dd212acd675a3e4c269a59f783f83", "ans": "eat", "raw": "is eating breakfast. The best match for the purpose is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "b74648bd3aa2845ec0e60b24ff93d785", "ans": "engage", "raw": "nder \"engage\" (working on something). I'll go with engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "9849362fa904c279986412ed8745cfa8", "ans": "engage", "raw": "ating something\" \u2014 working fits here. I'll go with engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "0942d389fd7b4751da442a58d80acb2d", "ans": "socialize", "raw": "urpose of the action is socializing.\n\nAnswer: socialize</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "5037046c4663d04ac7f8d0626cab7536", "ans": "engage", "raw": " though serving involves interaction.\n\nI'll answer engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "f1450d9ed5ffdba4af75e580858cb5ca", "ans": "socialize", "raw": "is conversing/socializing.\n\nSo the answer is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "5b7369a2a3222053c187dc4052be9869", "ans": "drink", "raw": "r. The purpose is to drink water, so the answer is \"drink\".</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "cabaeb70f974b1f5ca1913b2a7870519", "ans": "engage", "raw": "s is more like following content/interest.\n\nI'll go with \"engage\".output: engage", "model": "glm-5.3:cloud"}
+{"key": "8f86a163fb232e5af26bcc5cc37a391c", "ans": "socialize", "raw": " the action itself is conversing, which is socializing.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "e6f0501470c5445eb6ed18193c33abf4", "ans": "eat", "raw": "erage. The primary purpose is eating a meal. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "7e30f7f4213437e4f0bddfcea67a5f55", "ans": "drink", "raw": " - the purpose is drinking coffee. The basic need is drink.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "59d272330335c727c6416c4b406d0a59", "ans": "drink", "raw": " coffee. The purpose is to drink coffee. The best match is \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "225fd2d3bb3894839cd40ecadfee25bc", "ans": "socialize", "raw": "over is to share \u2014 social interaction.\n\nI'll go with socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "4f88c145b7356625b589ab4d192cbdc9", "ans": "socialize", "raw": "he action itself is conversing. So the best match is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "1590de3207946473453d03c0991cfe3f", "ans": "socialize", "raw": "e returning. So the current action is conversation = socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "d92e9c31b202e2fea0224033624f0e34", "ans": null, "raw": "ony is also part of the conversation \u2192 socialize. But Tony is eating \u2192 eat.\n\nThe", "model": "glm-5.3:cloud"}
+{"key": "f0beeb9a7d9cd821b2a3ef682a173244", "ans": "engage", "raw": "ontent, not eating or drinking. So the answer is \"engage\".</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "df9e8a6f002d2db218296c1a6e6e12ac", "ans": "engage", "raw": "nformation - reading. That's engage.\n\nI'll go with engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "bc9c8fede2dced8283c8c0ea0acf729e", "ans": "drink", "raw": "ches \"drink: drinking water, coffee, tea or another drink\".</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "dc1532d360d75824375b40788d4eb7e5", "ans": "engage", "raw": " on or creating something.\n\nThe answer should be \"engage\".</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "9733c9a17eea38434d17ba2e2a0cf24e", "ans": "drink", "raw": ", which is a drink. The basic need being acted on is drink.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "93ae0a1aba17556a5de29a78d7d256d3", "ans": "socialize", "raw": "ight now. Ayesha Khan is conversing/chatting. That's socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "44b5192d7d00ede1c15206040cd14b1d", "ans": "socialize", "raw": "ction is \"conversing\" - talking with someone. That's socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "218f5b888a4da7d6c4dd413d54677bbe", "ans": "engage", "raw": "s \"working on or creating something.\" I'll go with engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "635ad9af2e7088ccbe97af5e285f5e19", "ans": "eat", "raw": "esent, the meal (eat) typically dominates. I'll answer \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "2cca280df1672b996df46e64f1992859", "ans": "engage", "raw": " \"working on or creating something.\"\n\nI'll go with engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "93349aa8086833350e42a62b641adf14", "ans": "socialize", "raw": "me with someone. The conversation is the main activity.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "2200abb912ff9d427b022ebc6b370552", "ans": "socialize", "raw": " on: socialize (talking or spending time with someone).</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "f36ada4aaac6d91de8a2c1de3f5ae2e3", "ans": "wash", "raw": "utine, which at a bathroom sink is washing up.\n\nI'll go with \"wash\".output: wash", "model": "glm-5.3:cloud"}
+{"key": "5fbfd207dd78970071641208c6fc85c0", "ans": "eat", "raw": "ded, the primary action is eating breakfast. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "5f82b23d253a6f3fb3e4a867c7617e87", "ans": "socialize", "raw": "n is conversing, which is socialize.\n\nAnswer: socialize</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "7e45e3fc9897503e844307cc6f9d9245", "ans": "drink", "raw": "ction is getting a drink of water, so the purpose is drink.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "26fbb2d32977699076cfbf9719096c9c", "ans": "socialize", "raw": " work, but the action itself is conversing/socializing.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "f022c9920f5bfeeb949c563d4840494c", "ans": "engage", "raw": "ing something\". He's working, so engage is the best match.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "736e669c5983730867976549fb508616", "ans": "drink", "raw": "a drink of water\" - this is clearly the \"drink\" basic need.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "6c0a53c3bbf59eaffc11f8b0d02d500a", "ans": "engage", "raw": "atting. The primary purpose is work.\n\nI'll go with engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "f9728c0a6cf4ff82ae33c1143c2808cd", "ans": "socialize", "raw": "nd the action is chatting/conversing. That's socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "539b3e779903013a46dc63778eb45946", "ans": "none", "raw": "opping, not eating or drinking yet. So the answer is \"none\".</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "322c36066d786de850ba850c04fb1e6b", "ans": "none", "raw": "ob tasks like serving could fit there.\n\nI'll go with \"none\".</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "0a5d5a8bf8f038a199c31c6716468217", "ans": "eat", "raw": "r). The social component is there, but the basic need is eat.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "41b8c4f54155c7bf75dd91b21c286d9a", "ans": "drink", "raw": " waking up, not sleeping). So \"drink\" seems the best match.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "85180f598be60297d72990da0ba4a37a", "ans": "socialize", "raw": " talking/spending time with someone.\n\nAnswer: socialize</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "fcb35c8e46808d881f8d76be1b9e744f", "ans": "socialize", "raw": "onversation, talking with someone. The best match is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "089fe163eaa25ce66fa9ec0991b8b61f", "ans": "eat", "raw": " water as secondary during the meal. The best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "3c7bb168790c3dc788dd9e0afe3636da", "ans": "eat", "raw": "water is secondary, while eating. So the best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "06874644ee061581f26d021090ed02f3", "ans": "socialize", "raw": "ioned but the action is conversing. So the answer is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "3d983994e1e78c964164a3653cf0fe05", "ans": "eat", "raw": "e drinking water is incidental while eating. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "c8277409aef03b71dad85ac0c5cd61df", "ans": "none", "raw": "g shelves is similar to cleaning/errands. I'll go with none.</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "8c2199f2e9067723b0bcde55f398609e", "ans": "none", "raw": "ng, which falls under \"none\" (walking, shopping, cleaning, errands).output: none", "model": "glm-5.3:cloud"}
+{"key": "90619437b2e93e98a055a9953c83780d", "ans": "socialize", "raw": ". The main action is conversing/discussing, which is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "cad6f219af7edfdc06296ba4e9a58714", "ans": "drink", "raw": "the action is getting a drink of water, so the basic need is drink.output: drink", "model": "glm-5.3:cloud"}
+{"key": "7acafb73337beca4a0a41d9294497b33", "ans": "eat", "raw": "ut the main purpose is eating dinner. So the answer is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "64209797298c491c63b70bf92c8f48b7", "ans": "none", "raw": "ht now is shopping, not eating or drinking. So the answer is \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "64f6caf15e8419c144141f605748e1d3", "ans": "rest", "raw": "se is relaxation, not drinking. So the best match is \"rest\".</think>output: rest", "model": "glm-5.3:cloud"}
+{"key": "5fbf520a6fb23849cf6b9c5bf040af3a", "ans": "socialize", "raw": "s conversation, not eating. So the answer is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "4f45c45c6fa5725028016e702e6faf44", "ans": "socialize", "raw": "alking/spending time with someone.\n\nSo the answer is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "c43ec8ecb93e9004c84561fa4b274e86", "ans": "wash", "raw": " teeth\". Washing hands is washing up. So the answer is wash.</think>output: wash", "model": "glm-5.3:cloud"}
+{"key": "ee40c6e0ecb2240ce8c98c8427b70a2b", "ans": "none", "raw": " cleaning. So \"none\" is the best match.\n\nFinal answer: none.</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "86b59123929b135fcae47c8cd5666b99", "ans": "eat", "raw": "parenthetical is just detail about how they're doing it.\n\nFinal: eat.output: eat", "model": "glm-5.3:cloud"}
+{"key": "ba68e3d125e4151d4092280f0bc94f40", "ans": "eat", "raw": "ch, eating a snack). The water is secondary. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "52a5593763f2d0e4041d8e7e6a58f159", "ans": "eat", "raw": " the main action is eating lunch. So the best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "1e0c21226882bf543f451aaa4773b50c", "ans": "socialize", "raw": "ain activity is conversing. So the answer is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "73a735a0a3f7cd36a5b714fb8a1f227c", "ans": "socialize", "raw": " itself is talking.\n\nSo the answer should be: socialize</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "18dbbb555799e7b11362e2c2896d6bc4", "ans": "none", "raw": "es, which falls under \"none\" (walking, shopping, cleaning, errands).output: none", "model": "glm-5.3:cloud"}
+{"key": "5a019be73b57dc4ed22fa3e11d29f7f8", "ans": "none", "raw": "ee right now\u2014she's shopping for it. So the answer is \"none\".</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "a38ae20ac51f3cd5239cb2b1200f984f", "ans": "drink", "raw": "ords in it.\" Preparing tea is for drinking. So the answer is drink.output: drink", "model": "glm-5.3:cloud"}
+{"key": "cb9dce1c0f8beb4a9b7f50285ca6d23d", "ans": "eat", "raw": "tioned, the main action is eating breakfast. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "bffec05bd49574d0e16a3aa59afc7d8b", "ans": "socialize", "raw": "i. The action is chatting/conversing. That's socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "c872b358c4097ad243030a4b616a4049", "ans": "eat", "raw": "ng acted on... The overall purpose is eat (dinner). I'll go with eat.output: eat", "model": "glm-5.3:cloud"}
+{"key": "5ba9395392ba59c4266d12714fb2602a", "ans": "socialize", "raw": "onversation, not drinking.\n\nSo the answer is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "9be419e8cc49c9a07796da2afeb2d3af", "ans": "socialize", "raw": "is conversing - talking with someone. That's socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "4fa6d76ae0fafc940b71852b1162515d", "ans": "socialize", "raw": "- so socialize seems the best match.\n\noutput: socialize</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "9c91e69b46d2c7d0c30cd42f013ebff4", "ans": "eat", "raw": "ed, the main action is having lunch. The best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "b27fffd74a69310bd7a5149aaf0ddcd6", "ans": "wash", "raw": "wer, the primary activity is showering. I'll go with \"wash\".</think>output: wash", "model": "glm-5.3:cloud"}
+{"key": "2e5ed4f22f5b403d791dab2d591c3f94", "ans": "socialize", "raw": " The action is conversing \u2014 talking with someone. So socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "3b6a5efcf0f592050b9e8af14ef165d8", "ans": "socialize", "raw": "action is a conversation \u2192 socialize.\n\nFinal answer: socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "baa9730e89338d99345686b424a5f2da", "ans": "none", "raw": "c needs match \u2014 it's work/cleaning/errands. So the answer is \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "89ad5c6604bad3c2c8b87f13c9d5363c", "ans": "none", "raw": " stocking shelves \u2014 similar to shopping/errands. I'd go with \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "f3aeda88383093506f843468620e12b2", "ans": "drink", "raw": "poses. The first mentioned is grab a coffee. \n\nI'll answer \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "6545234d38f78799462f6bddd0681b45", "ans": "engage", "raw": "er \"engage\" \u2014 engagement need.\n\nSo the answer is \"engage\".</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "d5393d38e48f41e3b47317f20bd7edb8", "ans": "drink", "raw": " is about drinking. The basic need being acted on is drink.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "ada92325b84e2501fcb2c69270e3e5a5", "ans": "eat", "raw": "unch (finishing the remaining food). The best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "db356c858e22d6b2cbd392d4c79c7bcf", "ans": "none", "raw": "\" - this seems like work/errand type activity.\n\nI'll go with \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "77db3b602120450538bd19ad54f45d8d", "ans": "socialize", "raw": "urpose is talking/spending time with someone. That's socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "9e49f5570c77afb861c07197e5c10d2e", "ans": "rest", "raw": "cup of tea is part of relaxing. So the best match is \"rest\".</think>output: rest", "model": "glm-5.3:cloud"}
+{"key": "cf1eca7673eea9924ed8ada3e0587e17", "ans": "socialize", "raw": "stocking supplies, the action itself is conversing \u2014 socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "11441764e0ff39a54c14bde951680532", "ans": "none", "raw": "though they're buying coffee, the action itself is shopping.</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "69e5bd0e10d14adefe152287e0153e98", "ans": "rest", "raw": " overarching purpose is relaxation. So \"rest\" is the answer.</think>output: rest", "model": "glm-5.3:cloud"}
+{"key": "1f82ba6dde57058d8fab4806c850bb65", "ans": "none", "raw": "se of the action is shopping, not drinking. So the answer is \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "c59435cc42f6561ee3139dd0e1d63c3c", "ans": "socialize", "raw": "out food, but the action is conversation - socializing.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "685963c7e017ba35c86ed35fb045c222", "ans": "eat", "raw": " The primary purpose of breakfast is eating. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "347b51bc3780ba14195df1ae253434ec", "ans": "socialize", "raw": " the medium for socializing. The best match would be socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "00dd888d04ac75a76a57c22519900d5b", "ans": "rest", "raw": "s in it\" - so the purpose is relaxing/unwinding, which maps to rest.output: rest", "model": "glm-5.3:cloud"}
+{"key": "8f93ba4218bbf5faa17066c433945553", "ans": "eat", "raw": "hy breakfast. The walk is secondary.\n\nBest single match: eat.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "a65126d4e196aa9ecfe7a4f5463fb76a", "ans": "eat", "raw": "ved, the primary action is having lunch, which maps to \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "9aab29ec7e31e4317d51ceab1c1dbfd4", "ans": "eat", "raw": "is meal\" suggests eating is the main event. I'll go with eat.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "9821faed5da3255d4c3b66b5d95001f2", "ans": "socialize", "raw": "t action. The current action is conversing, which is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "0a4d35a4e6990d503de59396cc6e4fda", "ans": "drink", "raw": "ventory check is secondary work detail. I'll go with drink.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "f47b1efad1d197beeab7730827d2ecf4", "ans": "drink", "raw": "drink from the bartender. The basic need being acted on is \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "27d0271a4a8103d28ef9d6cd7ac8ebce", "ans": "eat", "raw": ". The purpose of the action is eating a meal. So the answer is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "e7cd24190bec4282d59938c8634c203c", "ans": "socialize", "raw": " now, the action is conversing. So the best match is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "dfe0a25c709c24a9103fcfd7bd9064ae", "ans": "eat", "raw": "urpose of the action is to eat lunch. So the answer is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "27ca916dada2a049708a95e5554ae428", "ans": "eat", "raw": " water as a secondary activity while eating. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "cf5b028a0d3fb921b99f30cfd141ddd3", "ans": "eat", "raw": "primary purpose is eating breakfast. The best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "e945ad5190b0e2c947ca5ac87c0e7349", "ans": "socialize", "raw": " the action itself is conversing, which is socializing.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "2c022d8ffd3f140dddab77509f735ab7", "ans": "rest", "raw": "st match is \"rest\" (sitting, lounging, napping or relaxing).</think>output: rest", "model": "glm-5.3:cloud"}
+{"key": "42652830b369d52c6ee1eb1f29d8a039", "ans": "engage", "raw": "omething\" which fits making coffee.\n\nI'll answer \"engage\".</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "732614cecb95bd3088e49e7256bfa9c7", "ans": "socialize", "raw": "t action. The current action is conversing, which is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "13c2598a291ea3bfd388d70bba41b669", "ans": "eat", "raw": "nch\" - the purpose is eating a meal. The best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "9ace3cdca9645846dc779ee3de4ff0bc", "ans": "none", "raw": " actually eating, drinking, or socializing for its own sake.</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "11cd5424ecb967658a90e3bc8ade8f07", "ans": "socialize", "raw": " which is socialize.\n\nThe answer should be \"socialize\".</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "7612a812b818ae50ed154be6b58ad489", "ans": "eat", "raw": "but the primary action is \"have breakfast\" which maps to eat.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "d4ad8a3e3d73dadc48b0ca3e9354bb27", "ans": "none", "raw": "urpose is shopping, not eating or drinking. So the answer is \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "ee4820a7e07e3531be1c516f141887cd", "ans": "socialize", "raw": "ivery is the topic of conversation. So the answer is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "7de83517d41c917e1b3cd59a926b9c10", "ans": "drink", "raw": "s of water and drinking it. The basic need being acted on is drink.output: drink", "model": "glm-5.3:cloud"}
+{"key": "fa77b208b811e8aff66f1b37b0334278", "ans": "socialize", "raw": "food, but the action is conversing. So the answer is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "acb6abe6cb74d64bc188bb3b54caca89", "ans": "none", "raw": "uming them. So the best match is \"none\" since shopping is an errand.output: none", "model": "glm-5.3:cloud"}
+{"key": "0cd6aa6746c4de340ba9f77fb51dd219", "ans": "drink", "raw": "ink of water\" - this is clearly drinking, so the answer is \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "9382e8f222abe91048856f2648eca53a", "ans": "socialize", "raw": "bout John Lin's action. John is conversing, which is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "3e73d1b8b6c6c4d2638b731bc0bffa7a", "ans": "none", "raw": "ey're shopping. The combined action is errands. I'll go with \"none.\"output: none", "model": "glm-5.3:cloud"}
+{"key": "e9a63a818b84fdc75e1b5f79601f7fb8", "ans": "wash", "raw": "best match is \"wash\" since washing hands is the core action.</think>output: wash", "model": "glm-5.3:cloud"}
+{"key": "98f5fb9c1e3cdd04de26a4588b303d07", "ans": "socialize", "raw": "Lin, and the action is conversing/discussing. That's socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "36643c7b7405e87c8256d029786c4b84", "ans": "eat", "raw": "al details focus on food preparation. The single best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "9986aa6644ab2b4bc665c2219b21cea1", "ans": "engage", "raw": " which is work. The purpose is work-related, so engage seems best.output: engage", "model": "glm-5.3:cloud"}
+{"key": "5b1c930c021ecc66216cad3a941b84c6", "ans": "none", "raw": "ne\" since making coffee for customers is work, not drinking.</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "bd5bd5ab4f7e0bb57f607bd28510f6d3", "ans": "socialize", "raw": "n itself is social interaction. I'll go with socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "edf7800d0b8d45a585353a08d2f423b6", "ans": "eat", "raw": " the dishes)\". The purpose is eating dinner. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "e616e762d5056c5d7ecb47443d38a3e6", "ans": "eat", "raw": "primary purpose is eating breakfast. The best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "e005a539c2d91f51bf5c9ce03bd912a3", "ans": "none", "raw": "on is shopping, which is an errand. So the answer is \"none\".</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "b10e51dfb5739a4c14795a19312737ab", "ans": "socialize", "raw": "ion itself is conversing.\n\nThe best match is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "84ca19b5a3198d4b9d10de392f1406d9", "ans": "eat", "raw": "n, drinking water is secondary/accompanying. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "60a597817a59e994c46eacad8d189687", "ans": "eat", "raw": "ic need. The inventory checking is secondary. So the answer is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "f08945ec268d345b29dfb59798409c45", "ans": "eat", "raw": "rinking water and short break are secondary. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "cfeeef2ced39265971361efe937a8037", "ans": "drink", "raw": " yet drinking), the purpose is to drink. The best match is \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "25c1c0d02bec5e1c10c0079d19fe0b63", "ans": "socialize", "raw": "This is a conversation, so the basic need is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "b4e58bd93fde22c9ee601228f2d52fae", "ans": "socialize", "raw": "hich is socializing.\n\nThe answer should be \"socialize\".</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "b0f76dce8a6039375ccd012e87a7d434", "ans": "socialize", "raw": "conversing/discussing. That's talking with someone \u2014 socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "e99873b8bc46f3a22415ae67bc51d63a", "ans": "socialize", "raw": "nd eating, the actual action is conversing, which is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "5be3f683a0556cf2b3ab6158254264ba", "ans": "none", "raw": "since this is work/errands (stocking, cleaning, organizing).</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "330436d2aa94dd499f9ecb663d4f23e9", "ans": "drink", "raw": "- making tea is for drinking tea. So the answer is \"drink\".</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "bb4415d8a6b9c3eff8d6ca511f0d2b0f", "ans": "socialize", "raw": "e action is conversing, not eating. So the answer is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "137aa7fa288840331943b28aca786f85", "ans": "socialize", "raw": "pose is talking/spending time with someone, which is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "5f19383a1554d3ea5fe5ecde344d518b", "ans": "drink", "raw": "coffee/preparing a drink. The basic need being acted on is \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "06fe4206b9aa530d0597b47a8e075096", "ans": "eat", "raw": " mentioned, the main action is having lunch. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "f03bc874cd5f4bf7b7b6c635572a992d", "ans": "rest", "raw": "elaxation, with tea as the vehicle. So \"rest\" seems the best answer.output: rest", "model": "glm-5.3:cloud"}
+{"key": "b8ab49aaea59ecec68cc3d4735ebe19e", "ans": "eat", "raw": " involved, the main purpose of being at a pub eating dinner is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "935285ac2e2ba115b88d1a61a70948cd", "ans": "socialize", "raw": " action is conversing - talking with someone. That's socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "d8651122525acdba924830f603b56ab8", "ans": "drink", "raw": "nk of water\" - this clearly matches the \"drink\" basic need.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "93070dad124d04bca4a3e34c1953222c", "ans": "rest", "raw": " purpose is relaxing and unwinding. So \"rest\" is the answer.</think>output: rest", "model": "glm-5.3:cloud"}
+{"key": "e8f2356ce6dc1eacb0f0eaff455c14cf", "ans": null, "raw": "...\" \n\nOr: the persona Carmen Ortiz's action is \"conversing with Wolfgang Schulz", "model": "glm-5.3:cloud"}
+{"key": "bc42c9cd297da59e4a5849b53eb0257a", "ans": "eat", "raw": "k\" too. But pantry+fridge = food-focused.\n\nFinal: output: eat</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "840bbaebe8b836e1ac088a0ee2764abd", "ans": "engage", "raw": " conversation is to accomplish work tasks. I'd say engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "7b944ecd5c46fe6b226e8210f537dd3d", "ans": "drink", "raw": "cafe opens?).\n\nThe single best match: drink (for a coffee).</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "4b88ee05fcead88c9ff77fe9ec3042e0", "ans": "eat", "raw": "ich serves the purpose of eating. So \"eat\" is the best match.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "999de91e6a5ca1e6201cc5966f8d1c3d", "ans": "socialize", "raw": "pose of the action is conversation, which is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "a1e266362062ce8d4a133f4a60cf8ebb", "ans": "drink", "raw": "he tea sip is a concrete drink action.\n\nI'll go with drink.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "c8fe8489296991dd630cee8464c71fb9", "ans": "eat", "raw": " overall purpose is eating breakfast. So the answer is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "7637691bf9834a93900e91510d7d8220", "ans": "socialize", "raw": "pose of the action is conversing, which is socializing.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "6f6e9151ffd4ab2a92d06544d657fe05", "ans": "eat", "raw": " best match for the purpose. Eating breakfast is the primary purpose.output: eat", "model": "glm-5.3:cloud"}
+{"key": "27a4fe4be43ab07d6956d7c61c69cabd", "ans": "eat", "raw": "ck. The dominant need is likely eating (breakfast). I'll go with eat.output: eat", "model": "glm-5.3:cloud"}
+{"key": "17949e85fddf1fb70d36a27e3f4379c4", "ans": "drink", "raw": "- the purpose is to drink it. So \"drink\" is the best match.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "01dac32a9ebcc01e1ba0bad55fbb9342", "ans": null, "raw": "needs. The categories: eat, drink, wash, toilet, rest, sleep, socialize, engage,", "model": "glm-5.3:cloud"}
+{"key": "3e336fc09fcb0149f7e4234288d3572a", "ans": "socialize", "raw": "e of the action, not just the words in it\" - so it's socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "bca33ca630be2aa215e60c3d12e3228d", "ans": "socialize", "raw": " \"conversing\" - talking with someone. That's socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "05657ae8c81c3f320ffc34856830ec03", "ans": "socialize", "raw": "m indicates social interaction. So the best match is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "28d840a4ad5fc1693196ccd3aeb63065", "ans": "socialize", "raw": "rsing with Eugene Middlebrooks. So the basic need is socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "9ddabcfcd2012172e44f727c65bee233", "ans": "engage", "raw": " working on or creating something.\n\nSo the best match is \"engage\".output: engage", "model": "glm-5.3:cloud"}
+{"key": "68579d9a2f2d42c1227234ccb5d6b351", "ans": "eat", "raw": "rimary purpose is breakfast (eating a meal). The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "8ea18fc53766e85391eaffd92cd22cd0", "ans": "engage", "raw": "ger. But that's work talk, not socializing. So no.\n\nFinal: engage.output: engage", "model": "glm-5.3:cloud"}
+{"key": "89e711045127f25afffd112dec624c04", "ans": "eat", "raw": "ing. The purpose of preparation is eating.\n\nI'll answer: eat.</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "aa5000b0bcf52ee2b6aeb7519757cc4c", "ans": "none", "raw": "answer should be \"none\" since shopping is listed under none.</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "242d494574b1189919be1be38e4d2eed", "ans": "rest", "raw": "s a short break, not the main action.\n\nThe best match: rest.</think>output: rest", "model": "glm-5.3:cloud"}
+{"key": "7b5839b643e0e2c8d48c96f2f4924dbc", "ans": "socialize", "raw": "ersing is socializing.\n\nThe answer should be socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "47a4d6f5ab6b321692d31bf96fcc1b2d", "ans": "socialize", "raw": "on is talking with someone. So the answer is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "5e9754e5534ea997346691411acc9896", "ans": "drink", "raw": "being acted on is drinking water. So the answer is \"drink\".</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "8f8e61516e33c63bf51e20cfac26ee35", "ans": "engage", "raw": " under \"engage\" (working on something).\n\nSo output: engage</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "5ebd50df517ffe868770bf2e7648789c", "ans": "eat", "raw": " and drink - \"food and drink\" - eat is the primary. I'll go with eat.output: eat", "model": "glm-5.3:cloud"}
+{"key": "c37367ea1994ebaee23cbbf9872cd1d4", "ans": "drink", "raw": ". Making tea is for drinking. So \"drink\" is the best match.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "80cd0d2e5e5d30576768e6357fb611ce", "ans": "rest", "raw": "ed purpose is relaxing and unwinding. So the answer is rest.</think>output: rest", "model": "glm-5.3:cloud"}
+{"key": "e1ec961d2f6d4c14bf5df552a2869658", "ans": "drink", "raw": "coffee, taking a final sip. The purpose is to drink coffee.</think>output: drink", "model": "glm-5.3:cloud"}
+{"key": "7d3c9e5c9b7d415f93377cdb468af88c", "ans": "eat", "raw": "The purpose of the overall action is eating a meal. I'll go with eat.output: eat", "model": "glm-5.3:cloud"}
+{"key": "9e7ba9bd4d083728d952f42ee325299e", "ans": "socialize", "raw": "ing time with someone.\n\nThe answer should be socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "3075e8dd1458a1de701417958bc70031", "ans": "socialize", "raw": "e drinking water is incidental. The answer should be socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "c22be5c2310387c94816117936ea8302", "ans": "none", "raw": "king, shopping, cleaning, errands).\n\nSo the answer should be \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "b9c9a7ef496ee0b44e05e8dc1f16cf76", "ans": "none", "raw": "is is his job - cleaning, working, errands. So the answer is \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "fbb1ec3c47e7d7ca0000130b5332b976", "ans": "none", "raw": "ting or drinking. The purpose is shopping, which falls under \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "4e967b9123363af9e46be9ff67a322c5", "ans": "eat", "raw": "tioned, the main action is eating breakfast. The best match is \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "ffe21b33dcb97c30c225aa542dd14da2", "ans": "socialize", "raw": "rent action is conversing.\n\nSo the answer is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "9eb17c505ffa7fdc73b87401e6dc9747", "ans": "socialize", "raw": "he purpose of the action is talking with someone, so socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "7ae39c5a6f957361ebae6776e8dfddf0", "ans": "none", "raw": "s shopping. The action is shopping/errands, so the answer is \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "f86b063ba06dedbda6752b9795f1d58e", "ans": "socialize", "raw": "the action: chatting = socialize.\n\nSo output: socialize</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "e87a85242d8f8a8be3d74c186556207d", "ans": "eat", "raw": "ner. Drinking water is secondary. So the best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "6664d8a8b8d45654c476b7d78489fe4d", "ans": "eat", "raw": "as it's the meal. Coffee accompanies it.\n\nI'll go with \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "56a7c22c3cefb51b329eff09de269ff0", "ans": "eat", "raw": "eating. The purpose is eating dinner. So the answer is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "5985005710ad9d39356b703ba6a23f4f", "ans": "socialize", "raw": "e main action is chatting/conversing. That's socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "df52bdf9ee62a6e5890e79f1ad8e09aa", "ans": "drink", "raw": "enthetical says she's drinking her tea.\n\nThe best match is \"drink\".output: drink", "model": "glm-5.3:cloud"}
+{"key": "f690f23b9191727391d4218fccaf8430", "ans": "none", "raw": "plicitly includes shopping and errands. So the best match is \"none\".output: none", "model": "glm-5.3:cloud"}
+{"key": "2ae5ba86c1decb476a3c93b58e3dd5b7", "ans": "rest", "raw": "unwinding = rest. Making tea is a supporting activity. Answer: rest.output: rest", "model": "glm-5.3:cloud"}
+{"key": "b45f38d6bd5eb089fcd1cae04bd15f4f", "ans": "none", "raw": "t socializing. The best match is \"none\" since it's shopping/errands.output: none", "model": "glm-5.3:cloud"}
+{"key": "1cd2cb6b78fdcbfa7f818141146d6d4e", "ans": "eat", "raw": "nk, the main action is eating lunch. The best match is \"eat\".</think>output: eat", "model": "glm-5.3:cloud"}
+{"key": "728978d1da34b0ee27b25799b273aa63", "ans": "engage", "raw": "st match is \"engage\" since he's going to the cafe to work.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "e19e9df4cdf179f6a287afa20d786a51", "ans": "socialize", "raw": "t the words in it.\"\n\nSo the answer should be socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "a0485de83f3a32ddafb711df81e1af38", "ans": "socialize", "raw": " The purpose is talking/spending time with someone = socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "84751856b19028b4dbccf03edb6fd1d6", "ans": "socialize", "raw": "ction is socializing, not eating. So the answer is \"socialize\".output: socialize", "model": "glm-5.3:cloud"}
+{"key": "5875bcfebc83dfa8ae76fa4b655ad217", "ans": "socialize", "raw": "imary action is conversing = socialize. I'll go with socialize.output: socialize", "model": "glm-5.3:cloud"}
+{"key": "6d7af9997caeab9340e51a444a489d4d", "ans": "none", "raw": "atch would be \"none\" since it's an errand (job application).</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "1c3c747b40396a7092d55a5957ed4831", "ans": "socialize", "raw": "he words in it).\" The action is conversing - socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "eb306a037bf8642f9ba47d4741af9d6b", "ans": "none", "raw": "since shopping is explicitly listed as an example of \"none\".</think>output: none", "model": "glm-5.3:cloud"}
+{"key": "4ee8e0c9add50543102cb155e4389623", "ans": "socialize", "raw": "king with Francisco Lopez.\n\nSo the answer is socialize.</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "965096fb65ea7935f75e15f1bc005bdd", "ans": "engage", "raw": ", and serving customers is her work.\n\nI'll go with engage.</think>output: engage", "model": "glm-5.3:cloud"}
+{"key": "a2d4590586a3249fc39b83f4dbb47ffd", "ans": "rest", "raw": "itting by the window are the means. So the answer is \"rest\".</think>output: rest", "model": "glm-5.3:cloud"}
+{"key": "c1dd605fb3ed5b249e419cabcbb909fa", "ans": "eat", "raw": " the action. Having lunch is the basic need being acted on. So \"eat\".output: eat", "model": "glm-5.3:cloud"}
+{"key": "6724820626de89b582807718a14eab87", "ans": "socialize", "raw": "which is socialize.\n\nSo the answer should be: socialize</think>output: socialize", "model": "glm-5.3:cloud"}
+{"key": "5f252eee218e9f13c4716c4694b46ed5", "ans": "socialize", "raw": " warns against keyword matching (coffee \u2192 drink). So socialize.output: socialize", "model": "glm-5.3:cloud"}

@@ -4,7 +4,7 @@ Compares each served model (ports) against the word-boundary keyword baseline. U
 import collections, json, sys, urllib.request
 sys.path.insert(0, "/home/andus/Projects/generative_agents/reverie/backend_server")
 import needs_env as N
-items = [json.loads(l) for l in open("/home/andus/Projects/laya-test/v8_data/test.jsonl")]
+items = [json.loads(l) for l in open(__import__("os").environ.get("NEEDS_TEST", "/home/andus/Projects/laya-test/v8_data/test.jsonl"))]
 items = [i for i in items if i["kind"] == "need"]
 def ask(port, it):
     body = {"model": "laya-v3", "state": it["state"], "questions": it["questions"]}

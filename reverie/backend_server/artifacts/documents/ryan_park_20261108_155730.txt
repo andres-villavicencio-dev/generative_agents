@@ -1,0 +1,11 @@
+Project Notes: Mobile App Development
+
+Date: Monday, February 13  
+Time: 1:15 AM  
+Location: Home, kitchen
+
+I spent the last hour reviewing the ideas I developed while writing my book. The core concept is simple: create a mobile app that helps users solve everyday problems by connecting them with the right tools. I’ve been thinking about how the app could be structured, what features would make it useful, and how I could improve the underlying systems.
+
+The biggest challenge so far has been balancing usability with functionality. I want the app to be intuitive enough for someone who has never used it, but powerful enough to solve real problems. I’m also considering how to scale the platform as the user base grows.
+
+I’m still evaluating the latest technologies and frameworks. I don’t need the newest technology every time, but I want to understand how it could improve the app’s performance, security, and reliability. I’ve been reading about serverless architectures, edge computing, an...

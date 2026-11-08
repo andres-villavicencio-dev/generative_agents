@@ -1,0 +1,13 @@
+Hi Team,
+
+I’m writing this to give you a brief overview of the animation project we’re working on so far. The client’s goal is an interactive piece that uses motion and visual feedback to explore how technology can express ideas. We’re currently at the conceptual and prototype phase.
+
+So far, we’ve established the core mood and visual direction, then built a working prototype with a few testable interactions. The piece is still exploring how user input should shape the animation rather than forcing a single expected reaction. That means our next step is to refine the interaction loop, test how the motion responds to different inputs, and make the final visual adjustments without losing the project’s creative identity.
+
+I’ve also been experimenting with a new tool for creating layered, animated backgrounds. It’s giving us more flexibility in how we can move elements across the screen, but I’m still working through the performance requirements. I want to keep the project’s creative direction at the center and test the tool’s strengths rather than simply pushing every idea through it.
+
+On a personal note, Carlos hasn’t seen me yet. I’ll follow up with him on Wednesday.
+
+Looking ahead, I’ll focus on finalizing the animation sequence, finishing the prototype test, and preparing a presentation of the client’s next steps. I’m also reviewing the town-service application and will make sure Carlos is updated by Wednesday.
+
+Thanks for your support. Let me know if you’d like to chat about the animation direction or the project’s progress.

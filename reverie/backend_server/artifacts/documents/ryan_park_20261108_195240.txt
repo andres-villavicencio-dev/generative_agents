@@ -1,0 +1,15 @@
+Johnson Park Town-Services Clinic – Technical Requirements and Acceptance Criteria
+
+Purpose  
+This document establishes the non-functional requirements and acceptance criteria for the clinic’s mobile application. It defines the technical scope, performance expectations, and criteria for determining whether the app meets the project’s goals.
+
+Non-Functional Requirements
+
+1. Availability and Reliability  
+   The app must be available for users to access during clinic hours and remain responsive during peak usage. It should not interrupt clinical operations or other essential services.
+
+2. Performance  
+   The app should load within two seconds, display critical information clearly, and process routine tasks without noticeable delays. The app must be optimized for mobile devices and support smooth navigation across common screen sizes.
+
+3. Security and Privacy  
+   All user data must be encrypted in transit and at rest. Access controls must prevent unauthorized changes, and the app mus...

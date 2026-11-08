@@ -1,0 +1,53 @@
+Physics Review Notes – Monday, February 13
+
+Today I’ve been reviewing the kinematic equations and solving a series of practice problems. My formula sheet has been organized into three main sections: position, velocity, and acceleration. I’m especially focused on the equations of motion, because they connect the variables in a single, predictable way.
+
+Problem 1
+
+A car starts from rest and reaches a speed of 25 m/s in 5.0 seconds. How far does it travel during this time?
+
+Formula:  
+\[
+d = v0 t + \frac{1}{2} a t^2
+\]
+
+Given:  
+Initial velocity, \(v0 = 0 \text{ m/s}\)  
+Final velocity, \(v = 25 \text{ m/s}\)  
+Time, \(t = 5.0 \text{ s}\)  
+Acceleration, \(a = \frac{v - v0}{t} = \frac{25 \text{ m/s}}{5.0 \text{ s}} = 5.0 \text{ m/s}^2\)
+
+Substitution:  
+\[
+d = (0)(5.0) + \frac{1}{2}(5.0)(5.0)^2 = 0 + 2.5 \times 25 = 62.5 \text{ m}
+\]
+
+Answer: The car travels 62.5 meters.
+
+Problem 2
+
+A stone is dropped from a bridge and reaches the ground after 3.0 seconds. If the bridge is 100 meters above the water, how fast was the stone when it left the bridge?
+
+Formula:  
+\[
+v = v0 + a t
+\]
+
+Given:  
+Initial velocity, \(v_0 = 0 \text{ m/s}\)  
+Acceleration due to gravity, \(a = 9.8 \text{ m/s}^2\)  
+Time, \(t = 3.0 \text{ s}\)  
+Height, \(h = 100 \text{ m}\)
+
+Substitution:  
+\[
+v = 0 + (9.8)(3.0) = 29.4 \text{ m/s}
+\]
+
+Answer: The stone left the bridge at 29.4 m/s.
+
+Reflection
+
+Completing these problems helped me connect the concepts I learned in class with real-world examples. I also realized that I can apply physics outside of the classroom by analyzing game mechanics. If I treat the speed, acceleration, and distance of a character the same way, the math becomes easier to visualize.
+
+I’m especially excited about trying my own physics problems while streaming. By combining my academic work with my passion for gaming and connecting with viewers, I hope to learn more while earning extra income. I’ll continue this routine tomorrow and keep working through the review notes.

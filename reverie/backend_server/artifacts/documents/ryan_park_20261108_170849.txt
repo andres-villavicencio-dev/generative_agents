@@ -1,0 +1,9 @@
+Project Notes: Mobile App Development – February 13, 2025
+
+I’ve been reflecting on the ideas I developed while writing my book. The central idea was that technology should serve human needs, not just impress them. That’s the principle I want to carry into my mobile app.
+
+The app should solve a real problem, not become another shiny interface. I’m focusing on a workflow that reduces repetition and decision fatigue. The core feature will let users input data once and have it transformed into actionable insights across several connected tools. That’s a pragmatic approach: start with a clear value proposition, then build the smallest useful loop.
+
+I’m also reviewing the latest technologies to ensure the app remains competitive. Performance, accessibility, and security are non-negotiable. I want the experience to feel reliable, not flashy.
+
+For now, I’ll avoid over-engineering. A working prototype is worth more than a perfect design. I’ll measure usage, gather feedback, and iterate. The ...

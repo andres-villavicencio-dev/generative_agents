@@ -1,0 +1,11 @@
+Johnson Park Clinic – Technical Requirements & Development Plan
+
+Final Requirements  
+The clinic app must support the clinic’s primary services: appointment scheduling, patient records, prescription management, billing, and staff access. It should be mobile-first, accessible to residents with varying levels of technical literacy, and capable of handling peak usage during clinic hours. The app must also integrate with the clinic’s existing systems and provide a clear path for staff to onboard new users.
+
+Technical Decisions  
+I will use a cross-platform framework with a single codebase, prioritizing maintainability and performance.  
+Authentication will be handled through a secure, centralized identity provider with role-based access control.  
+The app will use an offline-first architecture, allowing users to access basic services without constant connectivity.  
+Cloud storage will be used for patient records and prescriptions, with automatic backups and access controls.  
+I will use...

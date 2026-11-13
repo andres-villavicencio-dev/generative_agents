@@ -204,6 +204,7 @@ class Scratch:
 
     # Resource goals: priority actions triggered by depletion events
     self.resource_goals = []  # e.g. ["go to Hobbs Cafe for breakfast"]
+    self.agenda = []          # dated events (agenda.py); [] for old saves
 
     # ARTIFACT TRACKING
     self.last_artifact_action = None  # dedup guard for artifact creation
@@ -319,6 +320,8 @@ class Scratch:
         self.needs_danger = scratch_load["needs_danger"]
       if "resource_goals" in scratch_load:
         self.resource_goals = scratch_load["resource_goals"]
+      if isinstance(scratch_load.get("agenda"), list):
+        self.agenda = scratch_load["agenda"]
       self.last_artifact_action = scratch_load.get("last_artifact_action", None)
       self.artifact_progress = scratch_load.get("artifact_progress", {})
       # VILLE DOTS: load long-term projects; absent in old checkpoints = [].
@@ -454,6 +457,7 @@ class Scratch:
     if hasattr(self, "needs_danger"):
       scratch["needs_danger"] = self.needs_danger
     scratch["resource_goals"] = self.resource_goals if hasattr(self, "resource_goals") else []
+    scratch["agenda"] = self.agenda if hasattr(self, "agenda") else []
     scratch["last_artifact_action"] = self.last_artifact_action if hasattr(self, "last_artifact_action") else None
     scratch["artifact_progress"] = self.artifact_progress if hasattr(self, "artifact_progress") else {}
     # VILLE DOTS: long-term projects persist across checkpoints/forks.

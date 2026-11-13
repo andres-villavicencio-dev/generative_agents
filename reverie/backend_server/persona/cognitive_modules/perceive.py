@@ -65,7 +65,7 @@ def generate_poig_score(persona, event_type, description):
     # scorer: MAE 0.53 vs rizzo 0.85 on the 85-event blind gold set, 44ms).
     # Served by ga-laya.service on :8018 (/v1/systemone, same wire as rizzo).
     # Fail-open: (None, None) -> rizzo -> legacy generation.
-    if os.environ.get("GA_LAYA_POIGNANCY", "0") == "1":
+    if os.environ.get("GA_LAYA_POIGNANCY", "1") == "1":
       try:
         from persona.prompt_template.laya_scoring import laya_score_poignancy
         ls, lc = laya_score_poignancy(persona.scratch.name,

@@ -1045,7 +1045,7 @@ def run_gpt_prompt_task_decomp(persona,
   print (prompt)
   # FIX: free_form=True - task decomp needs multi-line numbered list output,
   # not a single {"output": "..."} JSON string. Schema constraint breaks this.
-  _dc_on = os.environ.get("GA_DECOMP_CACHE", "0") == "1"
+  _dc_on = os.environ.get("GA_DECOMP_CACHE", "1") == "1"
   output = None
   if _dc_on:
     try:
@@ -3937,6 +3937,15 @@ def run_gpt_generate_iterative_chat_utt(maze, init_persona, target_persona, retr
       except Exception:
         pass  # Fail silently - resource context is optional
 
+    # AGENDA: the clock and what is coming up, so people say which day and
+    # time they mean ("tomorrow at 5") and know what they have on.
+    try:
+      import agenda as _ag
+      if _ag.enabled():
+        init_iss += "\n" + _ag.time_context(init_persona.scratch, persona=init_persona, maze=maze)
+    except Exception:
+      pass
+
     prompt_input = [init_iss, init_persona.scratch.name, retrieved_str, prev_convo_insert,
       curr_location, curr_context, init_persona.scratch.name, target_persona.scratch.name,
       convo_str, init_persona.scratch.name, target_persona.scratch.name,
@@ -4392,6 +4401,15 @@ def run_gpt_prompt_choose_activity(persona, sched_item, sched_next, pulls):
       parts.append("Recently " + first + " noticed: " + " | ".join(recent))
   except Exception:
     pass
+  _agenda_notes = getattr(s, "_agenda_pull_notes", None) or {}
+  try:
+    import agenda as _ag
+    if _ag.enabled():
+      _view = _ag.render(s, now, limit=4)
+      if _view:
+        parts.append(f"{first}'s agenda (events {first} knows about):\n{_view}")
+  except Exception:
+    pass
   where = (s.act_address or "").split(":")[1:3]
   opts = [f"0. Follow the plan: {sched_item}"
           + (f" (next on the plan: {sched_next})" if sched_next else "")]
@@ -4413,7 +4431,7 @@ def run_gpt_prompt_choose_activity(persona, sched_item, sched_next, pulls):
       pass
     return g
   for k, g in enumerate(pulls, 1):
-    opts.append(f"{k}. {_pull_note(g)}")
+    opts.append(f"{k}. {_agenda_notes.get(g) or _pull_note(g)}")
   prompt = (
     "\n".join(p for p in parts if p) + "\n\n"
     f"It is {now.strftime('%A %H:%M')}. {first} is at {' / '.join(where) or 'home'}.\n"
@@ -4422,6 +4440,9 @@ def run_gpt_prompt_choose_activity(persona, sched_item, sched_next, pulls):
     f"{s.get_str_firstname()}'s state, money, mood or an opportunity better.\n\n"
     "Options for the next while:\n" + "\n".join(opts) + "\n"
     f"X. Something else of {first}'s own choosing\n\n"
+    + ("An event on your agenda that is about to start or under way is "
+       "something you were invited to or promised; going needs no special "
+       "reason, and so does staying away (say why). " if _agenda_notes else "") +
     "Default to option 0: the plan is what the day is built around, and "
     "other people and jobs depend on it. Choose a numbered pull when it "
     "applies. Choose X ONLY for a concrete reason: a need that is low, an "
@@ -4462,7 +4483,7 @@ def run_gpt_prompt_choose_activity(persona, sched_item, sched_next, pulls):
   # GA_CHOICE_LAYA=1: laya decides comply / pull / own (the rebellion dial is
   # GA_CHOICE_LAYA_THR); the LLM only writes the activity text when laya says
   # "own", and is the fallback whenever laya is unavailable.
-  if os.environ.get("GA_CHOICE_LAYA", "0") == "1":
+  if os.environ.get("GA_CHOICE_LAYA", "1") == "1":
     try:
       from persona.prompt_template.laya_choose import decide as _lc_decide
       lc = _lc_decide(prompt, name)

@@ -1036,6 +1036,11 @@ class ReverieServer:
         {persona.name, "community bulletin board", "job", "work"},
         9 if ("took the town-service post" in desc or "hired them" in desc) else 5,
         (desc, emb), [])
+      try:
+        import schedule_tools as _st
+        _st.notice_tick(persona, desc, self.maze)
+      except Exception as _st_err:
+        print(f"[Agenda] notice tick skipped: {_st_err!r}")
     except Exception as e:
       print(f"[JobBoard] hook failed: {e}")
 

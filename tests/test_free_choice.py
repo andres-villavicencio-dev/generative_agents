@@ -17,8 +17,11 @@ def _stub(monkeypatch, ans):
                         lambda p, i, n, pulls: dict(ans) if ans else None)
 
 
-def test_flag_default_off(monkeypatch):
+def test_flag_default_on(monkeypatch):
+    # project rule: every feature flag is ON unless explicitly switched off
     monkeypatch.delenv("GA_FREE_CHOICE", raising=False)
+    assert plan.free_choice_enabled()
+    monkeypatch.setenv("GA_FREE_CHOICE", "0")
     assert not plan.free_choice_enabled()
 
 

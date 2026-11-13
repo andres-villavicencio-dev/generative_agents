@@ -42,8 +42,8 @@ from persona.prompt_template.gpt_structure import OLLAMA_BASE_URL, OLLAMA_CHAT_M
 
 # Master flag: set GA_JEV_SCORING=1 in the backend's environment to enable.
 # Backend: laya typed decisions by default (see JEV_BACKEND below).
-# Default off: everything routes through the legacy generation path.
-USE_JEV_SCORING = os.environ.get("GA_JEV_SCORING", "0") == "1"
+# Default ON (GA_JEV_SCORING=0 routes everything through the legacy generation path).
+USE_JEV_SCORING = os.environ.get("GA_JEV_SCORING", "1") == "1"
 
 # Per-call-type margin gates. A decision that isn't sharply separated from
 # its runner-up defers to the legacy CoT path. Poignancy is a 10-way score

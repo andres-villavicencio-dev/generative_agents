@@ -205,6 +205,7 @@ def build_schedule_from_req(daily_req, wake_up_hour, name=''):
   the plan is exhausted gets rotating fillers (consecutive fillers differ
   so hour-compression can't merge them into one giant block)."""
   items = []
+  inferred = set()        # idx of items whose start we guessed (no time in the text)
   last_start = last_end = None
   for idx, req in enumerate(daily_req or []):
     s, e, act = parse_plan_item(req)
@@ -215,6 +216,7 @@ def build_schedule_from_req(daily_req, wake_up_hour, name=''):
         s = last_end
       elif last_start is not None:
         s = last_start + 1
+      inferred.add(idx)
     if s is None or s > 23:
       continue
     if e is not None and e <= s:
@@ -238,15 +240,40 @@ def build_schedule_from_req(daily_req, wake_up_hour, name=''):
     if e is not None:
       for h in range(s, min(e, 24)):
         slots[h] = act
-  # 2) point anchors own their start hour (lunch at 12 inside a work range)
-  point_starts = sorted({s for s, e, _, _ in items})
+  # 2) point anchors own their start hour (lunch at 12 inside a work range).
+  # FIX (Nov 2026, Valentine's party): an anchor whose start we merely INFERRED
+  # (an untimed item after "dinner around 5:30") must never overwrite a slot
+  # that a timed item already owns; it moves to the next free hour or is
+  # dropped. Explicit anchors keep their old precedence (meals inside ranges).
+  # Appointments are protected by the agenda overlay (agenda.py), not here.
+  anchors = []
   for s, e, idx, act in sorted(items, key=lambda x: x[2]):
-    if e is None:
-      slots[s] = act
-  # 3) open-ended items run until the next item starts
-  for s, e, idx, act in sorted(items, key=lambda x: (x[0], x[2])):
     if e is not None:
       continue
+    if idx in inferred:
+      anchors.append((1, s, idx, act))
+    else:
+      anchors.append((0, s, idx, act))
+  anchors.sort(key=lambda a: (a[0], a[2]))          # explicit first, then inferred
+  point_starts_set = set()
+  placed = {}                                       # idx -> hour actually used
+  for kind, s, idx, act in anchors:
+    h = s
+    if kind == 1:                                   # inferred: only into free slots
+      while h < min(sleep_hour, 24) and slots[h] is not None:
+        h += 1
+    if h >= min(sleep_hour, 24) and h != s:
+      continue                                      # nowhere to go: drop it
+    if h < 24:
+      slots[h] = act
+      point_starts_set.add(h)
+      placed[idx] = h
+  point_starts = sorted(point_starts_set | {s for s, e, _, _ in items if e is not None})
+  # 3) open-ended items run until the next item starts
+  for s, e, idx, act in sorted(items, key=lambda x: (x[0], x[2])):
+    if e is not None or idx not in placed:
+      continue
+    s = placed[idx]
     nxt = [p for p in point_starts if p > s]
     stop = min(nxt[0] if nxt else sleep_hour, sleep_hour)
     limit = (8 if _WORKLIKE_RE.search(act)
@@ -1263,6 +1290,17 @@ def revise_identity(persona):
   persona.scratch.daily_plan_req = new_daily_req
 
 
+def _agenda_plan_tick(persona, maze=None):
+  """AGENDA: before the day's plan is written, the agent reads its own notes
+  (`currently`, plan requirement) and records events it committed to or is
+  hosting, with real tool calls. Fail-open."""
+  try:
+    import schedule_tools as _st
+    _st.plan_tick(persona, maze)
+  except Exception as _e:
+    print(f"[Agenda] {persona.name} plan tick skipped: {_e!r}")
+
+
 def _long_term_planning(persona, new_day, maze=None):
   """
   Formulates the persona's daily long-term plan if it is the start of a new
@@ -1290,11 +1328,13 @@ def _long_term_planning(persona, new_day, maze=None):
     # if this is the start of generation (so there is no previous day's
     # daily requirement, or if we are on a new day, we want to create a new
     # set of daily requirements.
+    _agenda_plan_tick(persona, maze)
     persona.scratch.daily_req = generate_first_daily_plan(persona,
                                                           wake_up_hour,
                                                           resource_manager)
   elif new_day == "New day":
     revise_identity(persona)
+    _agenda_plan_tick(persona, maze)
 
     # FIX (Sep 2026): stock GA left this as a TODO — `daily_req = daily_req`
     # — so agents replayed DAY ONE's plan forever, and anyone whose first
@@ -1353,11 +1393,41 @@ def _long_term_planning(persona, new_day, maze=None):
   # Based on the daily_req, we create an hourly schedule for the persona, 
   # which is a list of todo items with a time duration (in minutes) that 
   # add up to 24 hours.
+  # AGENDA (GA_AGENDA, default on): events the agent has said it will attend
+  # today are part of today's plan text, so the plan and the schedule agree.
+  _agenda_on = False
+  try:
+    import agenda as _ag
+    _agenda_on = _ag.enabled()
+    if _agenda_on:
+      _ag.mark_past(persona.scratch)
+      _today = persona.scratch.curr_time.date().isoformat()
+      for _ev in _ag._store(persona.scratch):
+        if _ev["status"] == "going" and _ev["date"] == _today:
+          _line = (f"attend {_ev['title']}"
+                   + (f" at {_ev['place']}" if _ev.get("place") else "")
+                   + f" from {_ev['start'] // 60 % 12 or 12}:{_ev['start'] % 60:02d} "
+                   + f"{'am' if _ev['start'] < 720 else 'pm'} to "
+                   + f"{_ev['end'] // 60 % 12 or 12}:{_ev['end'] % 60:02d} "
+                   + f"{'am' if _ev['end'] < 720 else 'pm'}")
+          if not any(_ev["title"] in str(x) for x in persona.scratch.daily_req):
+            persona.scratch.daily_req.append(_line)
+  except Exception as _ag_err:
+    print(f"[Agenda] {persona.name} plan hook skipped: {_ag_err!r}")
+
   persona.scratch.f_daily_schedule = generate_hourly_schedule(persona, 
                                                               wake_up_hour)
   persona.scratch.f_daily_schedule_hourly_org = (persona.scratch
                                                    .f_daily_schedule[:])
   _commit_post_block(persona)
+  if _agenda_on:
+    try:
+      _ag.reset_overlay(persona.scratch)       # the schedule was just rebuilt
+      _n = _ag.overlay(persona.scratch)
+      if _n:
+        print(f"[Agenda] {persona.name} pinned {_n} event(s) into today's schedule")
+    except Exception as _ag_err:
+      print(f"[Agenda] {persona.name} overlay skipped: {_ag_err!r}")
 
 
   # Added March 4 -- adding plan to the memory.
@@ -1445,10 +1515,10 @@ FREE_CHOICE_SAFETY = 10     # a need below this is handled by rule, not choice
 
 
 def free_choice_enabled():
-  return os.environ.get("GA_FREE_CHOICE", "0") == "1"
+  return os.environ.get("GA_FREE_CHOICE", "1") == "1"
 
 
-def _free_choice(persona):
+def _free_choice(persona, maze=None):
   """One decision for the next block. Returns {"choice", "activity",
   "minutes", "why", "pulls"} or None (legacy behaviour: pulls first, then the
   schedule). Records compliance on scratch for the agent card / metrics."""
@@ -1470,16 +1540,55 @@ def _free_choice(persona):
   pulls = list(s.resource_goals)
   if asleep or (getattr(s, "chatting_with", None)):
     return None
+  # AGENDA: events that are about to start (travel + 10 min) or under way are
+  # offered as pulls, with the clock and the agenda in the prompt, so the
+  # agent can weigh a promise or invitation against its plan. Nothing forces
+  # attendance: the decider (Laya, LLM fallback) chooses.
+  agenda_goals = {}
+  try:
+    import agenda as _ag
+    if _ag.enabled():
+      _ag.mark_past(s, now)
+      for _ev in _ag.due(s, now, persona, maze):
+        if _ev["status"] == "going" and (_ev["title"].lower() in item.lower()
+                                          or _ag._similar(item, _ev["title"])):
+          continue            # already the plan: attending needs no second offer
+        _g = f"attending {_ev['title']}" + (f" at {_ev['place']}" if _ev.get("place") else "")
+        if _g not in pulls:
+          pulls.append(_g)
+        agenda_goals[_g] = _ev
+      s._agenda_pull_notes = {g: _ag.describe(e, now, persona, maze) for g, e in agenda_goals.items()}
+  except Exception as _ag_err:
+    print(f"[Agenda] {persona.name} choice hook skipped: {_ag_err!r}")
+    agenda_goals = {}
   from persona.prompt_template.run_gpt_prompt import run_gpt_prompt_choose_activity
   out = run_gpt_prompt_choose_activity(persona, item, nxt, pulls)
   if out is None:
     return None
+  taken = None
+  if agenda_goals and isinstance(out["choice"], int) and out["choice"] >= 1:
+    taken = agenda_goals.get(pulls[out["choice"] - 1])
+    if taken is not None:
+      # going: pin it into today's schedule from now (right length, decomposed
+      # like any block) and let the normal schedule path run it
+      _ag.modify_event(s, taken["id"], status="going")
+      _ag.overlay(s, now)
+      out = dict(out, choice=0, activity="")
+      pulls = []
   out["pulls"] = pulls
+  if agenda_goals:
+    _ag.trace({"t": now.strftime("%Y-%m-%d %H:%M"), "who": persona.name, "kind": "choice",
+               "plan": item[:80], "due": [_ag.describe(e, now) for e in agenda_goals.values()],
+               "attended": taken["id"] if taken else None,
+               "choice": out["choice"], "why": str(out.get("why", ""))[:200]})
   stats = getattr(s, "choice_stats", None)
   if not isinstance(stats, dict):
     stats = {"decisions": 0, "complied": 0, "pull": 0, "own": 0, "last": ""}
   stats["decisions"] += 1
-  if out["choice"] == 0:
+  if taken is not None:
+    stats["event"] = stats.get("event", 0) + 1
+    shown = f"goes to '{taken['title']}'"
+  elif out["choice"] == 0:
     stats["complied"] += 1
     shown = "follows the plan"
   elif out["choice"] == "own":
@@ -1761,7 +1870,7 @@ def _determine_action(persona, maze):
   _own_act = _own_min = None
   if free_choice_enabled() and hasattr(persona.scratch, "resource_goals"):
     try:
-      _decision = _free_choice(persona)
+      _decision = _free_choice(persona, maze)
     except Exception as _fc_err:
       print(f"[Choice] error ({type(_fc_err).__name__}: {_fc_err}) — legacy")
       _decision = None
@@ -2177,6 +2286,15 @@ def _create_react(persona, inserted_act, inserted_act_dur,
         f"sched_total={sum(int(d) for _, d in p.scratch.f_daily_schedule) - _span + sum(int(d) for _, d in ret)}m",
         flush=True)
   p.scratch.f_daily_schedule[start_index:end_index] = ret
+  # AGENDA: a replan rewrites a whole window; events the agent said it would
+  # attend must survive it, so pin them again.
+  try:
+    import agenda as _ag
+    if _ag.enabled():
+      _ag.reset_overlay(p.scratch)
+      _ag.overlay(p.scratch)
+  except Exception as _ag_err:
+    print(f"[Agenda] {p.name} post-replan overlay skipped: {_ag_err!r}")
   p.scratch.add_new_action(act_address,
                            inserted_act_dur,
                            inserted_act,

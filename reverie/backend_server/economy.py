@@ -164,7 +164,7 @@ PUBLIC_SLOTS = {"clinic": 2, "police": 1, "gazette": 1, "townhall": 1, "lecture"
 
 def jobboard_enabled():
     import os
-    return os.environ.get("GA_JOBBOARD", "0") == "1"
+    return os.environ.get("GA_JOBBOARD", "1") == "1"
 
 
 def community_enabled():

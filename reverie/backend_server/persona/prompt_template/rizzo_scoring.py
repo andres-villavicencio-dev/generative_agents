@@ -20,7 +20,7 @@ import os
 import time
 import urllib.request
 
-USE_RIZZO_POIGNANCY = os.environ.get("GA_RIZZO_POIGNANCY", "0") == "1"
+USE_RIZZO_POIGNANCY = os.environ.get("GA_RIZZO_POIGNANCY", "1") == "1"
 RIZZO_URL = os.environ.get("GA_RIZZO_URL", "http://127.0.0.1:8017").rstrip("/")
 RIZZO_MIN_CONF = float(os.environ.get("GA_RIZZO_MIN_CONF", "0.5"))
 RIZZO_TIMEOUT = float(os.environ.get("GA_RIZZO_TIMEOUT", "20"))

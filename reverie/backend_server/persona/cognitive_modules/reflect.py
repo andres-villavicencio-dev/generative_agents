@@ -321,6 +321,14 @@ def _reflect_on_convo(persona, chatting_with, chat_rows):
   if pin_commitments_enabled():
     _pin_chat_commitments(persona, all_utt)
 
+  # AGENDA tool loop (GA_AGENDA, default on): the agent records events it heard
+  # about or arranged, for any date, with real tool calls. Fail-open.
+  try:
+    import schedule_tools as _st
+    _st.chat_tick(persona, all_utt)
+  except Exception as _st_err:
+    print(f"[Agenda] {persona.scratch.name} chat tick skipped: {_st_err!r}")
+
 
 def _pin_chat_commitments(persona, transcript):
   """Pin promises made in a chat (e.g. 'I'll be there 5-7 PM') into

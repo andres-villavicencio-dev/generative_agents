@@ -1,0 +1,7 @@
+Mobile App Documentation and API Reference – February 14
+
+I’m currently finalizing the feature documentation and API reference for the new mobile app. The goal is to make the documentation clear, accurate, and easy to find. I’ve organized the API reference by feature, grouped related endpoints, and added inline examples where possible. The mobile app team can use the documentation to build the feature, while developers can reference the API directly.
+
+I’m also reviewing the latest technologies and testing the documentation against the current codebase. I want the documentation to reflect what the app actually does today, not what it was designed to do.
+
+I’m still considering the town-service position at The Willows Market. It would be a useful experience, but I want to make sure the role fits my strengths before applying. I’m also considering the café assistant position at Hobbs Cafe, but I’m not ready to commit to it yet. I’ll review the full responsibilities and interview requirem...

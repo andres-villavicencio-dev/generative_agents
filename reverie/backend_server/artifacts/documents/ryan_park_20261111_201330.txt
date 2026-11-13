@@ -1,0 +1,21 @@
+Feature Changelog – Mobile App
+
+Release Notes – February 14
+
+New Features
+Task scheduling: Users can now create and manage recurring tasks with customizable due dates and reminders.
+Quick notes: Add, edit, and delete notes directly from the app without leaving the current screen.
+Local favorites: Favorites are now saved locally, so they remain available even when the app is closed.
+
+Improvements
+Faster navigation: The main menu now opens in under 0.5 seconds.
+Improved search: The search bar now filters results by title, author, and tag.
+Better error handling: App crashes are now more visible, and users receive clear guidance on how to recover.
+Accessibility: Screen readers and keyboard navigation have been updated to match the latest WCAG standards.
+
+Known Issues
+The “Export” button sometimes appears disabled when the app is opened after an incomplete session.
+Certain cached images may display incorrectly on older devices.
+
+Technical Notes
+The app is now compatible with iOS 17 and A...

@@ -1,0 +1,9 @@
+Mobile App Unit Test Plan – Feature: Cart and Checkout
+
+I’m building the mobile app for The Willows Market and need a solid unit test suite for the cart and checkout flow. The goal is to verify that the cart updates correctly when items are added, removed, or modified, that quantities and prices are calculated accurately, and that the checkout process completes without critical errors.
+
+I’ll start with the core cart operations: adding and removing items, updating quantities, and recalculating totals. Each test should include a fresh cart state and verify that the expected price and quantity are returned. I’ll also test edge cases such as empty carts, zero quantities, and out-of-stock items.
+
+Next, I’ll validate the checkout flow. This includes selecting the correct payment method, entering a valid card number, and confirming that the total is calculated correctly before submission. The test suite should also cover partial payments, insufficient funds, and invalid card details.
+
+I’ll...

@@ -1,0 +1,11 @@
+Mobile App Integration Test Plan
+
+Project: New Mobile App  
+Date: Monday, February 13  
+Status: Integration testing in progress  
+
+I am currently writing integration tests for the new mobile app’s feature interactions. The goal is to verify that the app behaves correctly across the main user flows, including registration, login, profile updates, notifications, and data persistence.
+
+The test suite covers both functional and edge-case scenarios. For example, I am testing that a user can complete a full registration cycle, that session tokens are properly validated, and that the app handles missing or invalid input without crashing. I am also checking that notifications are delivered correctly, that data is saved and restored as expected, and that the app remains responsive during typical usage.
+
+Some integration points are still uncertain. I need to confirm the behavior of the notification service when the app is closed and reopened, and I am reviewing the authentication flow for any...

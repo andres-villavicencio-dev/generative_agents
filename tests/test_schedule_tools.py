@@ -158,3 +158,10 @@ def test_past_start_is_rejected_and_agent_can_correct():
   assert ag.start_in_past("today", "22:14", D(2023, 2, 13, 22, 14, 30)) is None
   assert ag.start_in_past("today", "23:00", D(2023, 2, 13, 22, 14)) is None
   assert ag.start_in_past("garbage", "xx", D(2023, 2, 13, 22, 14)) is None
+
+
+def test_prompts_tell_agent_to_ask_instead_of_guessing():
+  p = persona()
+  txt = st._prompt(p, "You just finished this conversation: ...", [], None)
+  assert "never guess" in txt and "ask the person" in txt
+  assert "ask them" in ag.ASK_WHEN_UNSURE and "instead of guessing" in ag.ASK_WHEN_UNSURE

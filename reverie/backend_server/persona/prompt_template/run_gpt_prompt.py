@@ -3943,6 +3943,7 @@ def run_gpt_generate_iterative_chat_utt(maze, init_persona, target_persona, retr
       import agenda as _ag
       if _ag.enabled():
         init_iss += "\n" + _ag.time_context(init_persona.scratch, persona=init_persona, maze=maze)
+        init_iss += ("\n" + _ag.ASK_WHEN_UNSURE)
     except Exception:
       pass
 

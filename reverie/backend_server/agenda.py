@@ -285,6 +285,11 @@ def render(scratch, now=None, persona=None, maze=None, horizon_min=36 * 60, limi
   return "\n".join(describe(ev, now, persona, maze) for _, ev in rows)
 
 
+ASK_WHEN_UNSURE = ("If someone mentions an event or a plan and you do not know exactly which day, "
+                   "what time or where, ask them (for example \"What day and what time?\") instead "
+                   "of guessing.")
+
+
 def time_context(scratch, now=None, persona=None, maze=None):
   """'It is Tuesday 16:25. Coming up: ...' for choice/chat/replan prompts."""
   now = now or scratch.curr_time

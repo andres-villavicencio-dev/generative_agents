@@ -1,0 +1,355 @@
+{"kind": "sale", "who": "Klaus Mueller", "amount": 100.0, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.0, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 100.0, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "draw tax", "amount": 44.0, "venue": "Hobbs Cafe"}
+{"kind": "owner_draw", "who": "Isabella Rodriguez", "amount": 396.0, "venue": "Hobbs Cafe"}
+{"kind": "tax", "who": "sales tax", "amount": 1.0, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 100.0, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "community", "who": "Klaus Mueller", "amount": 9.0, "t": "Feb 15 11:30", "note": "park upkeep at Johnson Park"}
+{"kind": "community", "who": "Klaus Mueller", "amount": 3.0, "t": "Feb 15 12:00", "note": "park upkeep at Johnson Park"}
+{"kind": "dividend", "who": "Arthur Burton", "amount": 40.0}
+{"kind": "dividend", "who": "Isabella Rodriguez", "amount": 40.0}
+{"kind": "dividend", "who": "Klaus Mueller", "amount": 40.0}
+{"kind": "dividend", "who": "Maria Lopez", "amount": 40.0}
+{"kind": "seed", "who": "town treasury", "amount": 150.0}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 0.01, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 0.1, "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "tax", "who": "sales tax", "amount": 1.05, "t": "Feb 15 12:00", "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 12:00", "venue": "Hobbs Cafe", "note": "1x coffee"}
+{"kind": "seed", "who": "town treasury", "amount": 150.0}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Ana", "amount": 3.0, "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "duty", "who": "Isabella Rodriguez", "amount": 0.6, "venue": "Hobbs Cafe", "note": "cafe.serve_order x1"}
+{"kind": "seed", "who": "town treasury", "amount": 150.0}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Ana", "amount": 3.0, "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "seed", "who": "town treasury", "amount": 150.0}
+{"kind": "tax", "who": "draw tax", "amount": 12.0, "venue": "Hobbs Cafe"}
+{"kind": "owner_draw", "who": "Isabella Rodriguez", "amount": 108.0, "venue": "Hobbs Cafe"}
+{"kind": "seed", "who": "town treasury", "amount": 150.0}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Ana", "amount": 3.0, "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Ana", "amount": 3.0, "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Ana", "amount": 3.0, "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Ana", "amount": 3.0, "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Ana", "amount": 3.0, "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Ana", "amount": 3.0, "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Ana", "amount": 3.0, "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Ana", "amount": 3.0, "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Ana", "amount": 3.0, "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Ana", "amount": 3.0, "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Ana", "amount": 3.0, "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "tax", "who": "sales tax", "amount": 0.03, "venue": "Hobbs Cafe"}
+{"kind": "sale", "who": "Ana", "amount": 3.0, "venue": "Hobbs Cafe", "note": "1x pastries"}
+{"kind": "seed", "who": "town treasury", "amount": 150.0, "t": "Feb 15 11:30"}
+{"kind": "wage", "who": "Klaus Mueller", "amount": 10.0, "t": "Feb 15 11:30", "venue": "The Rose and Crown Pub"}
+{"kind": "seed", "who": "town treasury", "amount": 150.0, "t": "Feb 15 10:30"}
+{"kind": "seed", "who": "town treasury", "amount": 150.0, "t": "Feb 15 18:00"}
+{"kind": "seed", "who": "town treasury", "amount": 150.0}
+{"kind": "wage", "who": "Klaus Mueller", "amount": 10.0, "venue": "The Rose and Crown Pub"}
+{"kind": "wage", "who": "Maria Lopez", "amount": 10.0, "venue": "The Rose and Crown Pub"}

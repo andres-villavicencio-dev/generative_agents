@@ -166,7 +166,9 @@ def _prompt(persona, trigger, history, maze):
     f"{trigger}\n\n"
     "You keep your own agenda with tools. Reply with exactly ONE JSON object: "
     '{"tool": "<name>", "args": {...}}\nTools:\n' + tools + "\n"
-    "Record an event only if a real date and time were given. If nothing needs "
+    "Record an event only if its day and time were actually stated; never guess them. "
+    "If you are not sure when it is, do not record it (reply done) and ask the person next "
+    "time you talk. If nothing needs "
     'recording, reply {"tool": "done", "args": {}}.' + hist + "\nYour next JSON:")
 
 

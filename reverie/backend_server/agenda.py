@@ -52,9 +52,15 @@ def _similar(a, b):
   return len(wa & wb) / len(wa | wb) >= 0.34
 
 
+_WEEKDAY_RE = re.compile(
+  r"^(mon(?:day)?|tue(?:s(?:day)?)?|wed(?:nesday)?|thu(?:r(?:s(?:day)?)?)?|"
+  r"fri(?:day)?|sat(?:urday)?|sun(?:day)?)\b\.?")
+
+
 def _norm_date(d, now):
   """ISO string for a date given as ISO, 'today', 'tomorrow', 'Feb 14',
-  'February 14, 2023', a weekday name, or a date object; None if unparseable."""
+  'February 14, 2023', a weekday name (alone or in front of a date:
+  'Saturday, February 15'), or a date object; None if unparseable."""
   if isinstance(d, datetime.datetime):
     return d.date().isoformat()
   if isinstance(d, datetime.date):
@@ -79,8 +85,16 @@ def _norm_date(d, now):
     except ValueError:
       return None
   days = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
-  if t[:3] in days:
-    ahead = (days.index(t[:3]) - now.weekday()) % 7
+  wd = _WEEKDAY_RE.match(t)
+  if wd:
+    # "Saturday, February 15": the stated date wins over the weekday name
+    # (before, the weekday alone was read and the date dropped -> Feb 18)
+    rest = t[wd.end():].lstrip(" ,").strip()
+    if rest:
+      stated = _norm_date(rest, now)
+      if stated is not None:
+        return stated
+    ahead = (days.index(wd[1][:3]) - now.weekday()) % 7
     return (now.date() + datetime.timedelta(days=ahead)).isoformat()
   return None
 

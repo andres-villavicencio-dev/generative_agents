@@ -216,3 +216,54 @@ def test_event_already_in_plan_is_not_offered_again(monkeypatch):
   monkeypatch.setattr(rgp, "run_gpt_prompt_choose_activity", fake)
   plan._free_choice(p)
   assert seen["p"] == []
+
+
+def test_stated_date_wins_over_weekday_name():
+  """n76: 'Saturday, February 15' was read as the next Saturday (Feb 18)."""
+  now = D(2023, 2, 13, 9, 0)                                   # a Monday
+  assert ag._norm_date("Saturday, February 15", now) == "2023-02-15"
+  assert ag._norm_date("Saturday, February 17, 2023", now) == "2023-02-17"
+  assert ag._norm_date("Monday, February 13", now) == "2023-02-13"
+  assert ag._norm_date("Tue Feb 14th", now) == "2023-02-14"
+  assert ag._norm_date("Friday, 2023-02-17", now) == "2023-02-17"
+  # a weekday alone, or with something that is not a date, still means the next such day
+  assert ag._norm_date("Saturday", now) == "2023-02-18"
+  assert ag._norm_date("Thurs.", now) == "2023-02-16"
+  assert ag._norm_date("Saturday evening", now) == "2023-02-18"
+  # words that merely start like a weekday are not one
+  assert ag._norm_date("sunny afternoon", now) is None
+  assert ag._norm_date("monthly meeting", now) is None
+
+
+def _choice_rows(tmp_path):
+  with open(tmp_path / "agenda.jsonl") as f:
+    return [json.loads(l) for l in f if '"choice"' in l]
+
+
+def test_trace_keeps_the_deciders_answer_when_an_event_is_taken(monkeypatch, tmp_path):
+  """The attended event is run as the plan (out['choice'] becomes 0); the trace
+  must still say the decider chose the event, not 'follow the plan'."""
+  import persona.cognitive_modules.plan as plan
+  import persona.prompt_template.run_gpt_prompt as rgp
+  monkeypatch.setenv("GA_TRACE_DIR", str(tmp_path))
+  p = _fc_persona(D(2023, 2, 14, 16, 45), [["sleep", 420], ["read at home", 1020]])
+  party(p.scratch, status="known")
+  monkeypatch.setattr(rgp, "run_gpt_prompt_choose_activity",
+                      lambda persona, i, n, pulls: {"choice": 1, "activity": "", "minutes": 30, "why": "invited"})
+  out = plan._free_choice(p)
+  assert out["choice"] == 0                                    # runtime behaviour unchanged
+  row = _choice_rows(tmp_path)[-1]
+  assert row["choice"] == 1 and row["took"] == "event" and row["attended"] == p.scratch.agenda[0]["id"]
+
+
+def test_trace_records_follow_the_plan_as_plan(monkeypatch, tmp_path):
+  import persona.cognitive_modules.plan as plan
+  import persona.prompt_template.run_gpt_prompt as rgp
+  monkeypatch.setenv("GA_TRACE_DIR", str(tmp_path))
+  p = _fc_persona(D(2023, 2, 14, 16, 45), [["sleep", 420], ["read at home", 1020]])
+  party(p.scratch, status="known")
+  monkeypatch.setattr(rgp, "run_gpt_prompt_choose_activity",
+                      lambda persona, i, n, pulls: {"choice": 0, "activity": "", "minutes": 30, "why": "tired"})
+  plan._free_choice(p)
+  row = _choice_rows(tmp_path)[-1]
+  assert row["choice"] == 0 and row["took"] == "plan" and row["attended"] is None

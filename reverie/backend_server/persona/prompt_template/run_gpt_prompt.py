@@ -867,6 +867,39 @@ def run_gpt_prompt_generate_hourly_schedule(persona,
 
 
 
+def fit_decomp_to_duration(output, duration, task):
+  """Trim a decomposition [[subtask, minutes], ...] to <duration> minutes: keep
+  the steps that fit and give the remainder to the last one.
+
+  The list is never empty. A first step longer than the whole block (one
+  85-minute step for an 84-minute block: n76, Giorgio Rossi, IndexError on 66
+  consecutive ticks) is kept and clipped; with no usable step at all the task
+  itself fills the block."""
+  fin_output = []
+  time_sum = 0
+  for item in output or []:
+    try:
+      if not isinstance(item, (list, tuple)) or len(item) != 2:
+        continue
+      i_task, i_duration = item
+      i_duration = int(i_duration)
+    except (ValueError, TypeError):
+      continue
+    if i_duration <= 0:
+      continue
+    time_sum += i_duration
+    if time_sum <= duration:
+      fin_output += [[i_task, i_duration]]
+    else:
+      if not fin_output:
+        fin_output = [[i_task, duration]]
+      break
+  if not fin_output:
+    return [[task, duration]]
+  fin_output[-1][1] += duration - sum(d for _, d in fin_output)
+  return fin_output
+
+
 def run_gpt_prompt_task_decomp(persona,
                                task,
                                duration,
@@ -1080,27 +1113,7 @@ def run_gpt_prompt_task_decomp(persona,
   # print (prompt)
   print (output)
 
-  fin_output = []
-  time_sum = 0
-  for item in output:
-    try:
-      if not isinstance(item, (list, tuple)) or len(item) != 2:
-        continue
-      i_task, i_duration = item
-      i_duration = int(i_duration)
-    except (ValueError, TypeError):
-      continue
-    time_sum += i_duration
-    if time_sum <= duration:
-      fin_output += [[i_task, i_duration]]
-    else:
-      break
-  ftime_sum = 0
-  for fi_task, fi_duration in fin_output:
-    ftime_sum += fi_duration
-
-  # print ("for debugging... line 365", fin_output)
-  fin_output[-1][1] += (duration - ftime_sum)
+  fin_output = fit_decomp_to_duration(output, duration, task)
   output = fin_output
 
 

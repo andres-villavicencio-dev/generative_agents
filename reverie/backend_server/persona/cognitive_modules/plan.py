@@ -1566,6 +1566,7 @@ def _free_choice(persona, maze=None):
   if out is None:
     return None
   taken = None
+  decided = out["choice"]     # what the decider answered, before it is rewritten below
   if agenda_goals and isinstance(out["choice"], int) and out["choice"] >= 1:
     taken = agenda_goals.get(pulls[out["choice"] - 1])
     if taken is not None:
@@ -1580,7 +1581,12 @@ def _free_choice(persona, maze=None):
     _ag.trace({"t": now.strftime("%Y-%m-%d %H:%M"), "who": persona.name, "kind": "choice",
                "plan": item[:80], "due": [_ag.describe(e, now) for e in agenda_goals.values()],
                "attended": taken["id"] if taken else None,
-               "choice": out["choice"], "why": str(out.get("why", ""))[:200]})
+               # the decider's own answer (an attended event is then run as the
+               # plan, so out["choice"] is 0 by now and would read as "follow")
+               "choice": decided,
+               "took": ("event" if taken else "plan" if decided == 0
+                        else "own" if decided == "own" else "pull"),
+               "why": str(out.get("why", ""))[:200]})
   stats = getattr(s, "choice_stats", None)
   if not isinstance(stats, dict):
     stats = {"decisions": 0, "complied": 0, "pull": 0, "own": 0, "last": ""}

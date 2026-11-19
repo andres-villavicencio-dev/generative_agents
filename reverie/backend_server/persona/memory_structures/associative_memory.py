@@ -12,8 +12,79 @@ sys.path.append('../../')
 
 import json
 import datetime
+import os
+import re
 
 from global_methods import *
+
+
+# ---------------------------------------------------------------------------
+# THOUGHT DEDUP (GA_THOUGHT_DEDUP, default on, Nov 2026): the insight and
+# reflection layers kept re-writing the same thought with cosmetic edits —
+# 63% of the memory lines an agent carried into its chat prompts were
+# near-duplicates (measured on run n76's utterance traces), inflating every
+# utterance prompt. A new thought that is too similar to one already added in
+# the last 24h is rejected at intake. The once-daily plan marker is exempt
+# (it is near-identical every day by design). Fail-open: any error in the gate
+# lets the thought through; the sim never breaks over a dedup.
+# ---------------------------------------------------------------------------
+THOUGHT_DEDUP_LOOKBACK_H = 24
+THOUGHT_DEDUP_JACCARD = 0.45
+
+
+def thought_dedup_enabled():
+  """GA_THOUGHT_DEDUP, default ON (project rule: feature flags are on unless set off)."""
+  return os.environ.get("GA_THOUGHT_DEDUP", "1") != "0"
+
+
+def _dedup_words(text):
+  return {w for w in re.findall(r"[a-z0-9]+", str(text or "").lower()) if len(w) > 2}
+
+
+def _is_plan_marker(description):
+  """True for the daily 'This is X's plan for <day>' thought: a deliberate
+  once-a-day marker whose near-identical wording is not spam."""
+  t = str(description or "")
+  return t.startswith("This is ") and "'s plan for " in t
+
+
+def _trace_dedup(created, who, new_desc, old_desc):
+  """Append one suppression record to <GA_TRACE_DIR>/thought_dedup.jsonl (fail-open)."""
+  try:
+    base = os.environ.get("GA_TRACE_DIR") or os.path.join(
+      os.path.dirname(__file__), "../../../ga_traces")
+    os.makedirs(base, exist_ok=True)
+    with open(os.path.join(base, "thought_dedup.jsonl"), "a") as f:
+      f.write(json.dumps({"t": str(created), "who": str(who)[:60],
+                          "desc": str(new_desc)[:160],
+                          "dup_of": str(old_desc)[:160]}) + "\n")
+  except Exception:
+    pass
+
+
+def _thought_is_dup(mem, created, description):
+  """True when <description> is too close to a thought from the last
+  LOOKBACK hours. <mem.seq_thought> is newest-first, so the scan stops at
+  the lookback cutoff. Returns False on any error (fail-open)."""
+  if created is None or _is_plan_marker(description):
+    return False
+  try:
+    new = _dedup_words(description)
+    if not new:
+      return False
+    cutoff = created - datetime.timedelta(hours=THOUGHT_DEDUP_LOOKBACK_H)
+    for node in mem.seq_thought:
+      if node.created is None or node.created < cutoff:
+        break
+      if _is_plan_marker(node.description):
+        continue
+      old = _dedup_words(node.description)
+      if old and len(new & old) / len(new | old) >= THOUGHT_DEDUP_JACCARD:
+        _trace_dedup(created, node.subject, description, node.description)
+        return True
+  except Exception:
+    return False
+  return False
 
 
 class ConceptNode: 
@@ -199,6 +270,14 @@ class AssociativeMemory:
   def add_thought(self, created, expiration, s, p, o, 
                         description, keywords, poignancy, 
                         embedding_pair, filling):
+    # THOUGHT DEDUP (GA_THOUGHT_DEDUP): reject a near-duplicate of a recent
+    # thought at intake, so reflection spam never reaches the prompts. The
+    # caller's embedding work is already done; we only skip storing the node.
+    # Returns None (no caller uses the return value; fail-open on errors).
+    if thought_dedup_enabled() and _thought_is_dup(self, created, description):
+      print(f"[ThoughtDedup] {s}: suppressed duplicate thought: {str(description)[:70]}")
+      return None
+
     # Setting up the node ID and counts.
     node_count = len(self.id_to_node.keys()) + 1
     type_count = len(self.seq_thought) + 1

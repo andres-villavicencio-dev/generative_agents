@@ -3930,7 +3930,7 @@ def run_gpt_generate_iterative_chat_utt(maze, init_persona, target_persona, retr
     if convo_str == "":
       convo_str = "[The conversation has not started yet -- start it!]"
 
-    init_iss = f"Here is Here is a brief description of {init_persona.scratch.name}.\n{init_persona.scratch.get_str_iss()}"
+    init_iss = f"Here is a brief description of {init_persona.scratch.name}.\n{init_persona.scratch.get_str_iss()}"
 
     try:
       from needs_env import urgent_need_note
@@ -3957,6 +3957,12 @@ def run_gpt_generate_iterative_chat_utt(maze, init_persona, target_persona, retr
       if _ag.enabled():
         init_iss += "\n" + _ag.time_context(init_persona.scratch, persona=init_persona, maze=maze)
         init_iss += ("\n" + _ag.ASK_WHEN_UNSURE)
+        # ...and, right after the conversation, the question to ask (or the
+        # answer to give) when a day/time was just left out. See agenda.ask_hint.
+        _hint = _ag.chat_hints(curr_chat, init_persona.scratch.name,
+                               init_persona.scratch, target_persona.scratch)
+        if _hint and curr_chat:
+          convo_str += "\n" + _hint + "\n"
     except Exception:
       pass
 

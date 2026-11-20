@@ -123,7 +123,8 @@ def parse_clock(v):
 def add_event(scratch, title, place="", date=None, start=None, end=None,
               source="chat", status="known", note="", now=None):
   """Add an event, or update the matching one (same date, close start, similar
-  title). Returns the event dict, or None if the date/time cannot be read."""
+  title; its status changes only if <status> is an explicit decision, not
+  "known"). Returns the event dict, or None if the date/time cannot be read."""
   now = now or scratch.curr_time
   d = _norm_date(date, now)
   s = parse_clock(start)
@@ -139,13 +140,16 @@ def add_event(scratch, title, place="", date=None, start=None, end=None,
     same_slot = bool(place and ev.get("place") and ev["start"] == s
                      and _similar(ev["place"], place))
     if ev["date"] == d and abs(ev["start"] - s) <= 30 and (_similar(ev["title"], title) or same_slot):
-      if status == "going" or ev["status"] not in LIVE:
+      # Hearing about an event again ("known") changes nothing: it must not
+      # bring back one the agent declined, or downgrade one it is going to.
+      # Only an explicit decision (going, declined...) changes the status.
+      if status != "known":
         ev["status"] = status
       for k, v in (("place", place), ("note", note)):
         if v and not ev.get(k):
           ev[k] = str(v)[:200]
       ev["end"] = max(ev["end"], e)
-      ev.pop("pinned", None)
+      unpin(scratch, ev)
       return ev
   nid = 1 + max([x.get("id", 0) for x in store] or [0])
   ev = {"id": nid, "title": str(title).strip()[:120], "place": str(place or "")[:120],
@@ -198,7 +202,7 @@ def modify_event(scratch, ev_id, **fields):
       ev["status"] = v
   if ev["end"] <= ev["start"]:
     ev["end"] = min(ev["start"] + 60, 1439)
-  ev.pop("pinned", None)
+  unpin(scratch, ev)       # the caller pins it again (overlay) if still going
   return ev
 
 
@@ -209,7 +213,7 @@ def cancel_event(scratch, ev_id, reason=""):
   ev["status"] = "declined"
   if reason:
     ev["note"] = str(reason)[:200]
-  ev.pop("pinned", None)
+  unpin(scratch, ev)
   return ev
 
 
@@ -304,6 +308,135 @@ ASK_WHEN_UNSURE = ("If someone mentions an event or a plan and you do not know e
                    "of guessing.")
 
 
+# --------------------------------------------------------------------------
+# asking: get the missing day/time from the person who knows it
+# --------------------------------------------------------------------------
+_NUMW = r"(?:\d{1,2}|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)"
+_SOFT_TIME = re.compile(r"^(?:tonight|this (?:evening|afternoon))$", re.I)
+_RANGE_TIME = re.compile(
+  r"\bfrom\s+" + _NUMW + r"\s*(?:to|until|till|-|–)\s*" + _NUMW + r"\b|"
+  r"\b(?:around|until|till)\s+" + _NUMW + r"\b(?!\s*(?:people|of|or|more|minutes?|hours?|days?|weeks?))", re.I)
+_MONTH = (r"(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|"
+          r"sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)")
+# a day still ahead: "tomorrow", "on Friday", "February 14", "this weekend"
+_DAY_CUE = re.compile(
+  r"(?<!last )(?<!a )\b(?:tonight|tomorrow(?: (?:morning|afternoon|evening|night))?|"
+  r"this (?:evening|weekend)|next week(?:end)?|"
+  r"(?:this |next |on )?(?:mon|tues|wednes|thurs|fri|satur|sun)day(?: (?:morning|afternoon|evening|night))?|"
+  + _MONTH + r"\.? \d{1,2}(?:st|nd|rd|th)?|(?:the )?\d{1,2}(?:st|nd|rd|th) of " + _MONTH + r")\b", re.I)
+# something the two of them would do together, or an invitation
+_JOINT = re.compile(
+  r"\b(?:let(?:'|’)s|shall we|why don(?:'|’)t (?:we|you)|we (?:can|could|should)|"
+  r"join (?:me|us)|come (?:to|by|over|along|with)|meet (?:you|me|up)|"
+  r"you(?:'|’)?(?:re| are) (?:invited|welcome to)|invit(?:e|ing) you|"
+  r"(?:would|do) you (?:like|want) to (?:come|join|meet))\b", re.I)
+_ASKED_WHEN = re.compile(r"\b(?:what time|what day|when)\b[^.!?\n]*\?", re.I)
+_TITLE_STOP = {"the", "and", "with", "for", "from", "day", "event"}
+
+
+def states_clock_time(text):
+  """True if the text states an hour: "at 5", "5:30 pm", "noon", "from 5 to 7",
+  "around six". A part of the day ("tonight", "this afternoon") or a day name
+  is not a clock time: an event cannot be recorded from it."""
+  from persona.prompt_template.run_gpt_prompt import _TIME_CUE
+  t = str(text or "")
+  return (any(not _SOFT_TIME.match(m.group(0)) for m in _TIME_CUE.finditer(t))
+          or bool(_RANGE_TIME.search(t)))
+
+
+def _names_event(ev, line):
+  """True if <line> names the event: at least two words of its title (place
+  words and filler left out), and two thirds of them."""
+  want = _words(ev.get("title", "")) - _words(ev.get("place", "")) - _TITLE_STOP
+  if len(want) < 2:
+    return False
+  hit = len(want & _words(line))
+  return hit >= 2 and hit * 3 >= len(want) * 2
+
+
+def ask_hint(curr_chat, me, my_scratch=None, other_scratch=None, now=None):
+  """One line for <me>'s chat prompt, telling it to ask the other speaker for
+  the day and time they left out; '' when there is nothing to ask.
+
+  It fires when nobody in the conversation has stated a clock time and the
+  other speaker's last line either
+    (a) names an event that is on THEIR agenda and not on mine (they know when
+        it is, I do not), or
+    (b) proposes something to do together on a coming day ("let's have lunch
+        tomorrow", "come by on Friday").
+  At most one question per conversation: after <me> asked when/what time, the
+  hint stays off. It never contains the answer (the other agent has to say it).
+
+  Why a situational line: the general sentence (ASK_WHEN_UNSURE) sits ~2,000
+  tokens above the task. In n76 it raised when-questions overall, but only 7 of
+  259 untimed day mentions were followed by one. A line placed right after the
+  conversation, naming what was left out, got a question in 22 of 30 replays
+  (4 of 30 without). A bare day word ("tonight", "this afternoon") is not a
+  trigger: in those replays it produced questions like "What time is tonight?"."""
+  try:
+    turns = [(str(t[0]), str(t[1])) for t in (curr_chat or []) if len(t) >= 2]
+  except Exception:
+    return ""
+  if not turns or turns[-1][0] == me:
+    return ""
+  other, last = turns[-1]
+  if states_clock_time("\n".join(u for _, u in turns)):
+    return ""
+  if any(a == me and _ASKED_WHEN.search(u) for a, u in turns):
+    return ""
+  if other_scratch is not None:
+    now = now or getattr(other_scratch, "curr_time", None)
+    mine = _store(my_scratch) if my_scratch is not None else []
+    try:
+      theirs = [ev for _, ev in upcoming(other_scratch, now, horizon_min=14 * 24 * 60)]
+    except Exception:
+      theirs = []
+    for ev in theirs:
+      if _names_event(ev, last) and not any(_similar(m.get("title", ""), ev["title"]) for m in mine):
+        return (f"{other} brought up \"{ev['title']}\" but has not said when it is. If you might "
+                f"go, ask {other} which day and what time it is (and where, if you do not know).")
+  cue = _DAY_CUE.search(last)
+  if cue is not None and _JOINT.search(last):
+    return (f"{other} suggested something for {cue.group(0)} but nobody has said at what time. "
+            f"If you agree to it, ask {other} what time exactly (and where, if you do not know).")
+  return ""
+
+
+def answer_hint(curr_chat, me, my_scratch, now=None):
+  """One line for <me>'s chat prompt when the other speaker just asked when
+  something is and it is an event on MY agenda that the conversation named:
+  the day, time and place as I recorded them, so I answer with them instead of
+  making a time up. '' otherwise."""
+  try:
+    turns = [(str(t[0]), str(t[1])) for t in (curr_chat or []) if len(t) >= 2]
+    if not turns or turns[-1][0] == me or my_scratch is None:
+      return ""
+    other, last = turns[-1]
+    if not _ASKED_WHEN.search(last):
+      return ""
+    now = now or my_scratch.curr_time
+    recent = "\n".join(u for _, u in turns[-4:])
+    for _, ev in upcoming(my_scratch, now, horizon_min=14 * 24 * 60):
+      if _names_event(ev, recent):
+        where = f" at {ev['place']}" if ev.get("place") else ""
+        day = _abs_start(ev).strftime("%A %B %d").replace(" 0", " ")
+        return (f"{other} is asking when. On your agenda: \"{ev['title']}\"{where}, {day}, "
+                f"{_when(ev, now)}. Tell {other} that day and that time.")
+  except Exception:
+    pass
+  return ""
+
+
+def chat_hints(curr_chat, me, my_scratch=None, other_scratch=None, now=None):
+  """The lines placed right after the conversation in <me>'s chat prompt
+  (GA_AGENDA_ASK, default ON): give the day and time when asked, ask for them
+  when the other speaker left them out. '' when neither applies."""
+  if os.environ.get("GA_AGENDA_ASK", "1") == "0":
+    return ""
+  return (answer_hint(curr_chat, me, my_scratch, now)
+          or ask_hint(curr_chat, me, my_scratch, other_scratch, now))
+
+
 def time_context(scratch, now=None, persona=None, maze=None):
   """'It is Tuesday 16:25. Coming up: ...' for choice/chat/replan prompts."""
   now = now or scratch.curr_time
@@ -341,10 +474,80 @@ def mark_past(scratch, now=None):
 # --------------------------------------------------------------------------
 # follow: pin 'going' events into today's schedule
 # --------------------------------------------------------------------------
+def _slice(pieces, a, b):
+  """The part of <pieces> ([[task, minutes], ...], starting at minute 0)
+  between minutes a and b."""
+  out, t = [], 0
+  for task, d in pieces:
+    lo, hi = max(t, a), min(t + d, b)
+    t += d
+    if hi > lo:
+      out.append([task, hi - lo])
+  return out
+
+
+def _swap(pieces, base, label, src, src_base):
+  """In <pieces> (starting at absolute minute <base>) replace every stretch
+  named <label> by what <src> (starting at <src_base>) holds for the same
+  minutes. A stretch <src> does not cover is kept. Neighbours that end up
+  with the same task are joined, so a block that was split around a pinned
+  event becomes one block again."""
+  src_end = src_base + sum(d for _, d in src)
+  out, t = [], base                      # out: [task, minutes, touched]
+  for task, d in pieces:
+    lo, hi = max(t, src_base), min(t + d, src_end)
+    if task != label or hi <= lo:
+      out.append([task, d, False])
+    else:
+      if lo > t:
+        out.append([task, lo - t, True])
+      out += [[x, m, True] for x, m in _slice(src, lo - src_base, hi - src_base)]
+      if t + d > hi:
+        out.append([task, t + d - hi, True])
+    t += d
+  joined = []
+  for task, d, touched in out:
+    if joined and joined[-1][0] == task and (touched or joined[-1][2]):
+      joined[-1][1] += d
+      joined[-1][2] = True
+    else:
+      joined.append([task, d, touched])
+  return [[task, d] for task, d, _ in joined]
+
+
+def unpin(scratch, ev):
+  """Take the event's block out of today's schedule and put back what it had
+  replaced. Called when the event is cancelled, changed, or no longer 'going'.
+  Before, only the 'pinned' flag was cleared: a cancelled event stayed in
+  f_daily_schedule (the agent still went), and a moved one was there twice.
+  Returns True if the schedule changed."""
+  pin = ev.pop("pin", None)
+  ev.pop("pinned", None)
+  try:
+    sched = getattr(scratch, "f_daily_schedule", None)
+    if not pin or not sched or pin["date"] != scratch.curr_time.date().isoformat():
+      return False
+    label, old, a = pin["label"], pin.get("replaced") or [], pin["start"]
+    new = _swap(sched, 0, label, old, a)
+    # another event pinned on top of this one remembers this label as what
+    # it replaced: it must give back the original too, not this block
+    for other in _store(scratch):
+      op = other.get("pin")
+      if other is not ev and op and op.get("date") == pin["date"]:
+        op["replaced"] = _swap(op.get("replaced") or [], op["start"], label, old, a)
+    if new == sched:
+      return False
+    scratch.f_daily_schedule = new
+    return True
+  except Exception:
+    return False
+
+
 def overlay(scratch, now=None):
   """Pin today's 'going' events into f_daily_schedule (once per edit; the
   'pinned' flag is cleared by add/modify/cancel and by reset_overlay after the
-  daily schedule is regenerated). Returns the number of events pinned."""
+  schedule is rebuilt). ev['pin'] records the minutes taken and what was there
+  before, so unpin() can give it back. Returns the number of events pinned."""
   from persona.prompt_template.run_gpt_prompt import pin_commitment
   now = now or scratch.curr_time
   today = now.date().isoformat()
@@ -360,14 +563,30 @@ def overlay(scratch, now=None):
     if not sched:
       continue
     label = ev["title"] + (f" at {ev['place']}" if ev.get("place") else "")
-    scratch.f_daily_schedule = pin_commitment(sched, start, max(5, ev["end"] - start), label)
+    minutes = max(5, ev["end"] - start)
+    total = sum(d for _, d in sched)
+    a = max(0, min(start, total - 5))            # the same clamps as pin_commitment
+    b = min(a + minutes, total)
+    under = _slice(sched, a, b)
+    old = ev.get("pin")
+    if old and old.get("date") == today:
+      # pinned again after a replan that kept the block: what lies under it
+      # is what the first pin replaced, not the block itself
+      under = _swap(under, a, old["label"], old.get("replaced") or [], old["start"])
+    org = getattr(scratch, "f_daily_schedule_hourly_org", None)
+    if org and any(task == label for task, _ in under):
+      under = _swap(under, a, label, _slice(org, a, b), a)     # last resort: the day's own plan
+    scratch.f_daily_schedule = pin_commitment(sched, start, minutes, label)
+    ev["pin"] = {"date": today, "start": a, "end": b, "label": label, "replaced": under}
     ev["pinned"] = today
     n += 1
   return n
 
 
 def reset_overlay(scratch):
-  """Call after the daily schedule is rebuilt: events must be pinned again."""
+  """Call after the schedule is rebuilt: events must be pinned again. The
+  record of what each pin replaced is kept; overlay() reuses it when the
+  rebuilt schedule still holds the block."""
   for ev in _store(scratch):
     ev.pop("pinned", None)
 

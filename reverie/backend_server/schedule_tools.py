@@ -1,12 +1,12 @@
 """Schedule-as-a-tool: the agent edits its own agenda with real tool calls.
 
-A tool loop runs when something worth recording may have happened (a chat
-that mentioned a time or a day, a notice read). Each turn the model emits ONE
+A tool loop runs when something worth recording may have happened (a chat or
+a notice that states a clock time). Each turn the model emits ONE
 JSON call; the system executes it, feeds the result back, and asks again:
 
     check_schedule  -> the agenda and the rest of today's plan
     add_event       -> record an event (going=true only if the agent decides to go)
-    modify_event    -> change time/place/title
+    modify_event    -> change time/place/title, or decide to go after all
     cancel_event    -> drop or decline, with a reason
     done            -> finish
 
@@ -20,7 +20,6 @@ agenda is left as it was (the legacy chat-commitment pin still runs).
 Every call is traced to <GA_TRACE_DIR>/agenda.jsonl.
 """
 import json
-import re
 
 import agenda as ag
 
@@ -33,23 +32,24 @@ TOOLS = {
                          "going": "true only if you decided to attend, else false"},
                 "doc": "record an event you heard about or arranged"},
   "modify_event": {"args": {"id": "int", "title": "str?", "place": "str?", "date": "str?",
-                            "start": "str?", "end": "str?"},
+                            "start": "str?", "end": "str?",
+                            "going": "true if you now decide to attend (optional)"},
                    "doc": "change an event on your agenda"},
   "cancel_event": {"args": {"id": "int", "reason": "str"}, "doc": "drop or decline an event"},
   "done": {"args": {}, "doc": "finish; use it at once if nothing needs recording"},
 }
 
-_DAYWORDS = re.compile(
-  r"\b(today|tonight|tomorrow|this (?:morning|afternoon|evening|weekend)|next week|weekend|"
-  r"monday|tuesday|wednesday|thursday|friday|saturday|sunday|"
-  r"jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:tember)?|"
-  r"oct(?:ober)?|nov(?:ember)?|dec(?:ember)?|invit\w*|rsvp)\b", re.I)
-
-
 def has_temporal_cue(text):
-  """Cheap gate: the text names a clock time or a day/date. No topic words."""
+  """Cheap gate: the text states a clock time ("at 5", "5:30 pm", "noon"...),
+  the same test the commitment pin uses. No topic words.
+
+  A day word alone does not open the loop. An event cannot be recorded without
+  a start time, and on the n75/n76 call log the day-only loops (818 of 1,376:
+  "how are you today", "you may", "tomorrow"...) produced 88 events with an
+  invented time against 3 with a stated one. The agent is told to ask for the
+  day and time instead (agenda.ASK_WHEN_UNSURE)."""
   from persona.prompt_template.run_gpt_prompt import has_time_cue
-  return has_time_cue(text) or bool(_DAYWORDS.search(str(text)))
+  return has_time_cue(text)
 
 
 # --------------------------------------------------------------------------
@@ -130,9 +130,29 @@ def execute(persona, name, args, maze=None):
         ag.overlay(s, now)
       return True, "Recorded: " + ag.describe(ev, now)
     if name == "modify_event":
-      ev = ag.modify_event(s, args.get("id"), **{k: v for k, v in args.items() if k != "id"})
-      if ev is None:
+      old = ag.get_event(s, args.get("id"))
+      if old is None:
         return False, f"Error: no event #{args.get('id')} on your agenda."
+      given = lambda k: args.get(k) not in (None, "")
+      if given("date") and ag._norm_date(args["date"], now) is None:
+        return False, f"Error: cannot read the date {args['date']!r}; use YYYY-MM-DD, today or tomorrow."
+      for k in ("start", "end"):
+        if given(k) and ag.parse_clock(args[k]) is None:
+          return False, f"Error: cannot read the {k} time {args[k]!r}; use a time like 17:00."
+      if given("date") or given("start"):
+        # same rule as add_event: an event cannot be moved to a time already gone
+        start = ag.parse_clock(args["start"]) if given("start") else old["start"]
+        past = ag.start_in_past(args["date"] if given("date") else old["date"],
+                                f"{start // 60:02d}:{start % 60:02d}", now)
+        if past:
+          return False, past
+      fields = {k: v for k, v in args.items() if k not in ("id", "going")}
+      if given("going"):
+        if _truthy(args["going"]):
+          fields["status"] = "going"
+        elif old["status"] == "going":
+          fields["status"] = "known"          # no longer planning to go; cancel_event declines
+      ev = ag.modify_event(s, args.get("id"), **fields)
       if ev["status"] == "going":
         ag.overlay(s, now)
       return True, "Updated: " + ag.describe(ev, now)
@@ -222,12 +242,13 @@ def run_tool_loop(persona, trigger, maze=None, ask=None, max_turns=MAX_TURNS, ki
 
 def chat_tick(persona, transcript, maze=None, ask=None):
   """After a conversation: let the agent record/adjust agenda items. No-op
-  unless GA_AGENDA is on and the transcript names a time or a day."""
+  unless GA_AGENDA is on and the transcript states a clock time."""
   if not ag.enabled() or not str(transcript or "").strip():
     return None
-  if not has_temporal_cue(transcript):
+  shown = str(transcript).strip()[-1500:]       # gate on what the model will be shown
+  if not has_temporal_cue(shown):
     return None
-  trigger = ("You just finished this conversation:\n" + str(transcript).strip()[-1500:] +
+  trigger = ("You just finished this conversation:\n" + shown +
              "\nDid it make you aware of an event, or did you agree to something at a specific "
              "date and time? Decide whether to add it to your agenda, and whether you will go.")
   return run_tool_loop(persona, trigger, maze, ask, kind="chat")
@@ -235,10 +256,11 @@ def chat_tick(persona, transcript, maze=None, ask=None):
 
 def notice_tick(persona, text, maze=None, ask=None):
   """After the agent reads something posted in the world (a notice board, a
-  flyer): same tool loop, different trigger. No-op without a time or day."""
-  if not ag.enabled() or not str(text or "").strip() or not has_temporal_cue(text):
+  flyer): same tool loop, different trigger. No-op without a clock time."""
+  shown = str(text or "").strip()[-1200:]
+  if not ag.enabled() or not shown or not has_temporal_cue(shown):
     return None
-  trigger = ("You just read this notice:\n" + str(text).strip()[-1200:] +
+  trigger = ("You just read this notice:\n" + shown +
              "\nDoes it announce an event or a deadline worth putting on your agenda, "
              "and will you go?")
   return run_tool_loop(persona, trigger, maze, ask, kind="notice")
@@ -252,9 +274,10 @@ def plan_tick(persona, maze=None, ask=None):
     return None
   notes = "\n".join(x for x in (str(getattr(s, "currently", "") or ""),
                                  str(getattr(s, "daily_plan_req", "") or "")) if x.strip())
+  notes = notes[-1500:]
   if not has_temporal_cue(notes):
     return None
-  trigger = ("You are planning your day. Your own notes about what is coming up:\n" + notes[-1500:] +
+  trigger = ("You are planning your day. Your own notes about what is coming up:\n" + notes +
              "\nIs there an event with a date and time that you are hosting or committed to? "
              "Put it on your agenda (going=true if you will be there).")
   return run_tool_loop(persona, trigger, maze, ask, kind="plan")

@@ -165,3 +165,86 @@ def test_prompts_tell_agent_to_ask_instead_of_guessing():
   txt = st._prompt(p, "You just finished this conversation: ...", [], None)
   assert "never guess" in txt and "ask the person" in txt
   assert "ask them" in ag.ASK_WHEN_UNSURE and "instead of guessing" in ag.ASK_WHEN_UNSURE
+
+
+def test_gate_needs_a_clock_time_not_a_day_word():
+  """n75/n76: day words opened 59% of the loops ("how are you today", "you
+  may", "I will march on") and those produced invented times."""
+  for chat in ("How are you today?", "You may sit here.", "I will march on.", "See you tomorrow!",
+               "Come to my party on Tuesday!", "I'm inviting everyone this weekend."):
+    assert not st.has_temporal_cue(chat), chat
+    assert st.chat_tick(persona(), chat, ask=scripted()) is None
+  for chat in ("Come to my party tomorrow from 5 to 7 pm", "see you at 5:30", "let's meet at noon",
+               "the meeting is at three o'clock"):
+    assert st.has_temporal_cue(chat), chat
+
+
+def test_gate_looks_only_at_the_text_the_model_is_shown():
+  ask = scripted()
+  early = "Ann: see you at 5 pm.\n" + "Bob: nice weather we are having, is it not?\n" * 60
+  assert st.chat_tick(persona(), early, ask=ask) is None and ask.prompts == []   # the time was cut off
+  late = "Bob: nice weather we are having, is it not?\n" * 60 + "Ann: see you at 5 pm."
+  assert st.chat_tick(persona(), late, ask=ask) is not None and "5 pm" in ask.prompts[0]
+
+
+def call(tool, **args):
+  return json.dumps({"tool": tool, "args": args})
+
+
+def test_modify_cannot_move_an_event_into_the_past():
+  p = persona(D(2023, 2, 13, 9, 30))
+  st.run_tool_loop(p, "x", ask=scripted(ADD))
+  ev = p.scratch.agenda[0]
+  before = dict(ev)
+  for args in ({"date": "2023-02-12"}, {"date": "today", "start": "08:00"}, {"date": "Sunday, February 12"}):
+    ok, msg = st.execute(p, "modify_event", dict(args, id=1))
+    assert ok is False and "in the past" in msg and ev == before, args
+  ok, _ = st.execute(p, "modify_event", {"id": 1, "date": "today", "start": "18:00", "end": "20:00"})
+  assert ok and (ev["date"], ev["start"], ev["end"]) == ("2023-02-13", 1080, 1200)
+  # changing only the place of an event under way is not a move into the past
+  p.scratch.curr_time = D(2023, 2, 13, 18, 30)
+  ok, _ = st.execute(p, "modify_event", {"id": 1, "place": "The Rose and Crown Pub"})
+  assert ok and ev["place"] == "The Rose and Crown Pub"
+
+
+def test_modify_reports_unreadable_values_instead_of_saying_updated():
+  p = persona()
+  st.run_tool_loop(p, "x", ask=scripted(ADD))
+  before = dict(p.scratch.agenda[0])
+  for args in ({"date": "someday"}, {"start": "late"}, {"end": "whenever"}):
+    ok, msg = st.execute(p, "modify_event", dict(args, id=1))
+    assert ok is False and "cannot read" in msg and p.scratch.agenda[0] == before, args
+
+
+def test_modify_going_changes_the_decision():
+  p = persona()
+  st.execute(p, "add_event", {"title": "Book club", "place": "Library", "date": "today",
+                              "start": "17:00", "going": False})
+  ev = p.scratch.agenda[0]
+  assert ev["status"] == "known" and "pinned" not in ev
+  ok, msg = st.execute(p, "modify_event", {"id": 1, "going": "true"})
+  assert ok and ev["status"] == "going" and "[going]" in msg
+  assert ev["pinned"] == "2023-02-13" and any("Book club" in x[0] for x in p.scratch.f_daily_schedule)
+  st.execute(p, "modify_event", {"id": 1, "going": False})
+  assert ev["status"] == "known"
+  st.execute(p, "cancel_event", {"id": 1, "reason": "tired"})
+  st.execute(p, "modify_event", {"id": 1, "going": False})       # false never revives a declined event
+  assert ev["status"] == "declined"
+  assert "going" in st._prompt(p, "x", [], None).split("modify_event")[1].split("cancel_event")[0]
+
+
+def test_tools_take_a_dropped_event_out_of_the_schedule():
+  base = [["sleep", 420], ["work", 1020]]
+  add = {"title": "Book club", "place": "Library", "date": "today", "start": "17:00", "going": True}
+  for drop in (("cancel_event", {"id": 1, "reason": "tired"}), ("modify_event", {"id": 1, "going": False}),
+               ("modify_event", {"id": 1, "date": "tomorrow"})):
+    p = persona()
+    st.execute(p, "add_event", dict(add))
+    assert ["Book club at Library", 60] in p.scratch.f_daily_schedule
+    ok, _ = st.execute(p, *drop)
+    assert ok and p.scratch.f_daily_schedule == base, drop
+  p = persona()
+  st.execute(p, "add_event", dict(add))
+  st.execute(p, "modify_event", {"id": 1, "start": "19:00", "end": "20:00"})
+  assert [x for x in p.scratch.f_daily_schedule if "Book club" in x[0]] == [["Book club at Library", 60]]
+  assert p.scratch.f_daily_schedule[1] == ["work", 720]            # the old 17:00 slot is work again

@@ -1247,7 +1247,7 @@ def revise_identity(persona):
   statements = "[Statements]\n"
   for key, val in retrieved.items():
     for i in val: 
-      statements += f"{i.created.strftime('%A %B %d -- %H:%M %p')}: {i.embedding_key}\n"
+      statements += f"{i.created.strftime('%A %B %d -- %H:%M')}: {i.embedding_key}\n"   # was '13:20 PM'
 
   # print (";adjhfno;asdjao;idfjo;af", p_name)
   plan_prompt = statements + "\n"

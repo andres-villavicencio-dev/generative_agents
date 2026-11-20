@@ -204,6 +204,8 @@ def run_reflect(persona):
     thoughts = generate_insights_and_evidence(persona, nodes, 5)
     for thought, evidence in thoughts.items(): 
       created = persona.scratch.curr_time
+      if persona.a_mem.is_dup_thought(created, thought):
+        continue                 # rejected anyway: skip triple/poignancy/embedding
       expiration = persona.scratch.curr_time + datetime.timedelta(days=30)
       s, p, o = generate_action_event_triple(thought, persona)
       keywords = set([s, p, o])
@@ -288,35 +290,17 @@ def _reflect_on_convo(persona, chatting_with, chat_rows):
                      key=lambda kv: kv[1].created, reverse=True)[:2]
     evidence = [nid for nid, _ in _recent]
 
-  planning_thought = generate_planning_thought_on_convo(persona, all_utt)
-  planning_thought = f"For {persona.scratch.name}'s planning: {planning_thought}"
+  planning_thought = str(generate_planning_thought_on_convo(persona, all_utt) or "").strip()
+  if planning_thought:           # an empty reply stored "For X's planning: " (n76: 4)
+    _store_convo_thought(persona,
+                         f"For {persona.scratch.name}'s planning: {planning_thought}",
+                         evidence)
 
-  created = persona.scratch.curr_time
-  expiration = persona.scratch.curr_time + datetime.timedelta(days=30)
-  s, p, o = generate_action_event_triple(planning_thought, persona)
-  keywords = set([s, p, o])
-  thought_poignancy = generate_poig_score(persona, "thought", planning_thought)
-  thought_embedding_pair = (planning_thought, get_embedding(planning_thought))
-
-  persona.a_mem.add_thought(created, expiration, s, p, o, 
-                            planning_thought, keywords, thought_poignancy, 
-                            thought_embedding_pair, evidence)
-
-
-
-  memo_thought = generate_memo_on_convo(persona, all_utt)
-  memo_thought = f"{persona.scratch.name} {memo_thought}"
-
-  created = persona.scratch.curr_time
-  expiration = persona.scratch.curr_time + datetime.timedelta(days=30)
-  s, p, o = generate_action_event_triple(memo_thought, persona)
-  keywords = set([s, p, o])
-  thought_poignancy = generate_poig_score(persona, "thought", memo_thought)
-  thought_embedding_pair = (memo_thought, get_embedding(memo_thought))
-
-  persona.a_mem.add_thought(created, expiration, s, p, o, 
-                            memo_thought, keywords, thought_poignancy, 
-                            thought_embedding_pair, evidence)
+  memo_thought = str(generate_memo_on_convo(persona, all_utt) or "").strip()
+  if memo_thought:
+    memo_thought = _memo_with_name(persona.scratch.name, memo_thought)
+    if not persona.a_mem.is_dup_thought(persona.scratch.curr_time, memo_thought):
+      _store_convo_thought(persona, memo_thought, evidence)
 
   if pin_commitments_enabled():
     _pin_chat_commitments(persona, all_utt)
@@ -328,6 +312,28 @@ def _reflect_on_convo(persona, chatting_with, chat_rows):
     _st.chat_tick(persona, all_utt)
   except Exception as _st_err:
     print(f"[Agenda] {persona.scratch.name} chat tick skipped: {_st_err!r}")
+
+
+def _memo_with_name(name, memo):
+  """The memo prompt ends with the agent's name for the model to continue
+  ("<name> found ..."), but the chat model usually writes a whole sentence,
+  so the old unconditional prefix gave "Klaus Mueller Klaus Mueller found"
+  (in 46% of utterance prompts) or "Yuriko Yamamoto Rajiv Patel was". Add
+  the name only when the reply continues the sentence (starts lowercase)."""
+  memo = memo.strip().strip('"').strip()
+  return f"{name} {memo}" if memo[:1].islower() else memo
+
+
+def _store_convo_thought(persona, thought, evidence):
+  created = persona.scratch.curr_time
+  expiration = persona.scratch.curr_time + datetime.timedelta(days=30)
+  s, p, o = generate_action_event_triple(thought, persona)
+  keywords = set([s, p, o])
+  thought_poignancy = generate_poig_score(persona, "thought", thought)
+  thought_embedding_pair = (thought, get_embedding(thought))
+  persona.a_mem.add_thought(created, expiration, s, p, o, 
+                            thought, keywords, thought_poignancy, 
+                            thought_embedding_pair, evidence)
 
 
 def _pin_chat_commitments(persona, transcript):

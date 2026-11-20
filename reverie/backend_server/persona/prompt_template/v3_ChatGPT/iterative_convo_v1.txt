@@ -4,7 +4,7 @@ Variables:
 !<INPUT 0>! -- persona ISS
 !<INPUT 1>! -- persona name
 !<INPUT 2>! -- retrieved memory
-!<INPUT 3>! -- past context
+!<INPUT 3>! -- past context (with its 'Past Context:' header, or empty)
 !<INPUT 4>! -- current location
 !<INPUT 5>! -- current context
 !<INPUT 6>! -- persona name
@@ -25,10 +25,7 @@ Here is the memory that is in !<INPUT 1>!'s head:
 !<INPUT 2>!
 
 PART 2. 
-Past Context: 
-!<INPUT 3>!
-
-Current Location: !<INPUT 4>!
+!<INPUT 3>!Current Location: !<INPUT 4>!
 
 Current Context: 
 !<INPUT 5>!

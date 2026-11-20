@@ -742,9 +742,9 @@ class Scratch:
     OUTPUT 
       A string output of the current time.
     EXAMPLE STR OUTPUT
-      "14:05 P.M."
+      "14:05"
     """
-    return self.act_start_time.strftime("%H:%M %p")
+    return self.act_start_time.strftime("%H:%M")
 
 
   def act_check_finished(self): 
@@ -811,7 +811,7 @@ class Scratch:
     OUTPUT 
       ret: A human readable summary of the action.
     """
-    start_datetime_str = self.act_start_time.strftime("%A %B %d -- %H:%M %p")
+    start_datetime_str = self.act_start_time.strftime("%A %B %d -- %H:%M")
     ret = f"[{start_datetime_str}]\n"
     ret += f"Activity: {self.name} is {self.act_description}\n"
     ret += f"Address: {self.act_address}\n"

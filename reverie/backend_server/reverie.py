@@ -657,6 +657,8 @@ class ReverieServer:
     from persona.prompt_template.run_gpt_prompt import run_gpt_prompt_artifact_reaction
     from persona.prompt_template.gpt_structure import get_embedding
     thought = run_gpt_prompt_artifact_reaction(persona, target)
+    if persona.a_mem.is_dup_thought(persona.scratch.curr_time, thought):
+      return                     # same reaction as a recent one: skip the embedding
 
     keywords = set([target["type"], target["name"].lower(), target["creator"].lower()])
     if thought in persona.a_mem.embeddings:

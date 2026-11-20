@@ -38,7 +38,30 @@ def thought_dedup_enabled():
 
 
 def _dedup_words(text):
-  return {w for w in re.findall(r"[a-z0-9]+", str(text or "").lower()) if len(w) > 2}
+  """Content words of <text>. Numbers and clock times are always kept
+  ("5:00", "14"), so thoughts that differ only in a time or a date are
+  never taken for duplicates."""
+  return {w for w in re.findall(r"\d+(?::\d+)?|[a-z]+", str(text or "").lower())
+          if len(w) > 2 or w[0].isdigit()}
+
+
+_WHEN_WORDS = {"monday", "tuesday", "wednesday", "thursday", "friday", "saturday",
+               "sunday", "today", "tomorrow", "tonight", "yesterday", "morning",
+               "afternoon", "evening", "january", "february", "march", "april",
+               "may", "june", "july", "august", "september", "october",
+               "november", "december"}
+
+
+def _when(words):
+  return {w for w in words if w[0].isdigit() or w in _WHEN_WORDS}
+
+
+def _similar(a_words, b_words):
+  """Near-duplicate: Jaccard >= THOUGHT_DEDUP_JACCARD and the same numbers,
+  times, days and months (a changed time or day is new information)."""
+  if not (a_words and b_words) or _when(a_words) != _when(b_words):
+    return False
+  return len(a_words & b_words) / len(a_words | b_words) >= THOUGHT_DEDUP_JACCARD
 
 
 def _is_plan_marker(description):
@@ -48,11 +71,21 @@ def _is_plan_marker(description):
   return t.startswith("This is ") and "'s plan for " in t
 
 
+def _is_exempt(description):
+  """Thoughts the gate never rejects: the daily plan marker, and the
+  'For X's planning:' note written after each chat, which carries that
+  chat's commitments (a new step can share most words with an older note:
+  on n76 the gate dropped e.g. 'ask the patient whether a referral is
+  needed' as a copy of an earlier note about the same patient)."""
+  t = str(description or "")
+  return _is_plan_marker(t) or (t.startswith("For ") and "'s planning:" in t[:80])
+
+
 def _trace_dedup(created, who, new_desc, old_desc):
   """Append one suppression record to <GA_TRACE_DIR>/thought_dedup.jsonl (fail-open)."""
   try:
-    base = os.environ.get("GA_TRACE_DIR") or os.path.join(
-      os.path.dirname(__file__), "../../../ga_traces")
+    base = os.environ.get("GA_TRACE_DIR") or os.path.join(   # repo/ga_traces
+      os.path.dirname(__file__), "../../../../ga_traces")
     os.makedirs(base, exist_ok=True)
     with open(os.path.join(base, "thought_dedup.jsonl"), "a") as f:
       f.write(json.dumps({"t": str(created), "who": str(who)[:60],
@@ -66,7 +99,7 @@ def _thought_is_dup(mem, created, description):
   """True when <description> is too close to a thought from the last
   LOOKBACK hours. <mem.seq_thought> is newest-first, so the scan stops at
   the lookback cutoff. Returns False on any error (fail-open)."""
-  if created is None or _is_plan_marker(description):
+  if created is None or _is_exempt(description):
     return False
   try:
     new = _dedup_words(description)
@@ -76,15 +109,34 @@ def _thought_is_dup(mem, created, description):
     for node in mem.seq_thought:
       if node.created is None or node.created < cutoff:
         break
-      if _is_plan_marker(node.description):
+      if _is_exempt(node.description):
         continue
-      old = _dedup_words(node.description)
-      if old and len(new & old) / len(new | old) >= THOUGHT_DEDUP_JACCARD:
+      if _similar(new, _dedup_words(node.description)):
         _trace_dedup(created, node.subject, description, node.description)
         return True
   except Exception:
     return False
   return False
+
+
+def unique_nodes(nodes):
+  """<nodes> without repeats, first (best-ranked) kept: the same node found
+  by several focal points, and near-duplicate wordings (the same rule as the
+  intake gate). Read-time, so saves written before the gate are covered too.
+  On n76, 45% of the memory lines in utterance prompts were exact repeats
+  and another 18% near-duplicates."""
+  out, seen_ids, seen_words = [], set(), []
+  for n in nodes:
+    nid = getattr(n, "node_id", None) or id(n)
+    if nid in seen_ids:
+      continue
+    seen_ids.add(nid)
+    w = _dedup_words(getattr(n, "description", ""))
+    if any(_similar(w, s) for s in seen_words):
+      continue
+    seen_words.append(w)
+    out.append(n)
+  return out
 
 
 class ConceptNode: 
@@ -170,8 +222,12 @@ class AssociativeMemory:
         self.add_chat(created, expiration, s, p, o, 
                    description, keywords, poignancy, embedding_pair, filling)
       elif node_type == "thought": 
+        # dedup=False: loading must rebuild the saved memory exactly. The
+        # gate here dropped 18% of n76's thoughts on load and renumbered
+        # every later node, so evidence links pointed at the wrong memories.
         self.add_thought(created, expiration, s, p, o, 
-                   description, keywords, poignancy, embedding_pair, filling)
+                   description, keywords, poignancy, embedding_pair, filling,
+                   dedup=False)
 
     kw_strength_load = json.load(open(f_saved + "/kw_strength.json"))
     if kw_strength_load["kw_strength_event"]: 
@@ -267,14 +323,23 @@ class AssociativeMemory:
     return node
 
 
+  def is_dup_thought(self, created, description):
+    """True when add_thought would reject <description>. Callers ask this
+    BEFORE the triple / poignancy / embedding calls, so a rejected thought
+    costs nothing (on n76 the 1001 rejections had already paid ~2000 LLM
+    calls plus their embeddings)."""
+    return thought_dedup_enabled() and _thought_is_dup(self, created, description)
+
+
   def add_thought(self, created, expiration, s, p, o, 
                         description, keywords, poignancy, 
-                        embedding_pair, filling):
+                        embedding_pair, filling, dedup=True):
     # THOUGHT DEDUP (GA_THOUGHT_DEDUP): reject a near-duplicate of a recent
-    # thought at intake, so reflection spam never reaches the prompts. The
-    # caller's embedding work is already done; we only skip storing the node.
-    # Returns None (no caller uses the return value; fail-open on errors).
-    if thought_dedup_enabled() and _thought_is_dup(self, created, description):
+    # thought at intake, so reflection spam never reaches the prompts.
+    # Callers that do expensive work first should ask is_dup_thought().
+    # dedup=False when loading a save. Returns None when rejected (no caller
+    # uses the return value; fail-open on errors).
+    if dedup and thought_dedup_enabled() and _thought_is_dup(self, created, description):
       print(f"[ThoughtDedup] {s}: suppressed duplicate thought: {str(description)[:70]}")
       return None
 

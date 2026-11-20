@@ -3918,11 +3918,19 @@ def run_gpt_generate_iterative_chat_utt(maze, init_persona, target_persona, retr
     curr_arena= f"{maze.access_tile(persona.scratch.curr_tile)['arena']}"
     curr_location = f"{curr_arena} in {curr_sector}"
 
+    # Each memory once: the three focal points find many of the same nodes
+    # (45% of lines were exact repeats on n76) plus near-duplicate wordings.
+    from persona.memory_structures.associative_memory import unique_nodes
     retrieved_str = ""
-    for key, vals in retrieved.items():
-      for v in vals:
-        retrieved_str += f"- {v.description}\n"
+    for v in unique_nodes([v for vals in retrieved.values() for v in vals]):
+      retrieved_str += f"- {v.description}\n"
 
+    # 'Past Context:' only when there is one (it was an empty header in 99.5%
+    # of utterance prompts).
+    if prev_convo_insert.strip():
+      prev_convo_insert = f"Past Context: \n{prev_convo_insert.strip()}\n\n"
+    else:
+      prev_convo_insert = ""
 
     convo_str = ""
     for i in curr_chat:
@@ -4139,7 +4147,8 @@ Your response:"""
       except (ValueError, IndexError):
         pass
       return {
-        "name": parts[0][:100],  # cap length
+        # cap length; collapse a stuttered word ("Midnight Midnight Croissant")
+        "name": re.sub(r"\b(\w+)(?:\s+\1\b)+", r"\1", parts[0], flags=re.I)[:100],
         "description": parts[1][:200],
         "content_summary": parts[2][:300],
         "quality": quality,

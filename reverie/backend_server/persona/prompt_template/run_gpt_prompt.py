@@ -297,7 +297,7 @@ _SCHED_RANGE_RE = re.compile(
 _SCHED_CONT_RE = re.compile(
     r'^(\d{1,2}):(\d{2})\s*([ap]\.?m\.?)?\s*(?:--|—|–)\s*(.+)$', re.I)
 _SCHED_WINDOW_RE = re.compile(
-    r'schedule from (\d{1,2}):(\d{2})\s*[AP]M to (\d{1,2}):(\d{2})\s*[AP]M')
+    r'schedule from (\d{1,2}):(\d{2})\s*(?:[AP]M)? to (\d{1,2}):(\d{2})\s*(?:[AP]M)?')
 
 
 def _sched_min(h, m, ap=None):
@@ -948,8 +948,8 @@ def run_gpt_prompt_task_decomp(persona,
                       + datetime.timedelta(minutes=start_min))
         end_time = (datetime.datetime.strptime("00:00:00", "%H:%M:%S")
                       + datetime.timedelta(minutes=end_min))
-        start_time_str = start_time.strftime("%H:%M%p")
-        end_time_str = end_time.strftime("%H:%M%p")
+        start_time_str = start_time.strftime("%H:%M")   # was %H:%M%p -> "13:00PM"
+        end_time_str = end_time.strftime("%H:%M")
         summ_str += f"{start_time_str} ~ {end_time_str}, {persona.name} is planning on {persona.scratch.f_daily_schedule_hourly_org[index][0]}, "
         if curr_f_org_index+1 == index:
           curr_time_range = f'{start_time_str} ~ {end_time_str}'
@@ -1949,8 +1949,8 @@ def run_gpt_prompt_new_decomp_schedule(persona,
                            inserted_act_dur,
                            test_input=None):
     persona_name = persona.name
-    start_hour_str = start_time_hour.strftime("%H:%M %p")
-    end_hour_str = end_time_hour.strftime("%H:%M %p")
+    start_hour_str = start_time_hour.strftime("%H:%M")   # was "13:00 PM"; _SCHED_WINDOW_RE takes both
+    end_hour_str = end_time_hour.strftime("%H:%M")
 
     original_plan = ""
     for_time = start_time_hour
@@ -2128,7 +2128,7 @@ def _jev_decide_to_talk_prompt(persona, target_persona, retrieved):
   for c_node in retrieved["thoughts"]:
     context +=  f"{c_node.description}. "
 
-  curr_time = persona.scratch.curr_time.strftime("%B %d, %Y, %H:%M:%S %p")
+  curr_time = persona.scratch.curr_time.strftime("%B %d, %Y, %H:%M:%S")
   init_act_desc = persona.scratch.act_description
   if "(" in init_act_desc:
     init_act_desc = init_act_desc.split("(")[-1][:-1]
@@ -2207,7 +2207,7 @@ def run_gpt_prompt_decide_to_talk(persona, target_persona, retrieved,test_input=
     for c_node in retrieved["thoughts"]:
       context +=  f"{c_node.description}. "
 
-    curr_time = init_persona.scratch.curr_time.strftime("%B %d, %Y, %H:%M:%S %p")
+    curr_time = init_persona.scratch.curr_time.strftime("%B %d, %Y, %H:%M:%S")
     init_act_desc = init_persona.scratch.act_description
     if "(" in init_act_desc:
       init_act_desc = init_act_desc.split("(")[-1][:-1]
@@ -2310,7 +2310,7 @@ def run_gpt_prompt_decide_to_react(persona, target_persona, retrieved,test_input
     for c_node in retrieved["thoughts"]:
       context +=  f"{c_node.description}. "
 
-    curr_time = init_persona.scratch.curr_time.strftime("%B %d, %Y, %H:%M:%S %p")
+    curr_time = init_persona.scratch.curr_time.strftime("%B %d, %Y, %H:%M:%S")
     init_act_desc = init_persona.scratch.act_description
     if "(" in init_act_desc:
       init_act_desc = init_act_desc.split("(")[-1][:-1]
